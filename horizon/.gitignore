@@ -1,0 +1,47 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# You are building a mental health journaling project named Horizon using Next.js with the App Router and TypeScript for the frontend, with Supabase as your backend for authentication and database storage. We first discussed the overall project setup, including the pages you would need (/signup, /login, /dashboard, /journal/new, /journal/history) and the purpose of the lib folder in Next.js, which is a convention to store shared clients, helpers, or utility functions (like the Supabase client). We then set up environment variables in a .env.local file at the project root, storing NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY so they can be accessed in code via process.env.NEXT_PUBLIC_…. The Supabase client was created in src/lib/supabase.ts and used across pages and API routes.
+
+# Next, we created the signup page in src/app/signup/page.tsx with a simple form in React, which called a signup API route located at pages/api/auth/signup.ts. We then built the login page similarly in src/app/login/page.tsx with its API route in pages/api/auth/login.ts. During testing, you encountered several issues: first, a 404 error because Next.js could not find the API route, which was caused by the API file not being in the correct pages/api folder; then, a row-level security (RLS) violation when inserting a new user into the users table because Supabase enables RLS by default and requires explicit policies for inserts, updates, or selects. We fixed this by creating an RLS insert policy allowing authenticated users to insert rows where id = auth.uid() and optionally adding a select policy to allow reading their own user info.
+
+# Finally, you noticed that after signup, the email column in your users table was showing null. This happened because the signup API only inserted id and name, not the email. I explained that this can be fixed either by explicitly inserting email along with id and name in the signup API, or by creating a Supabase database trigger that automatically adds a new row in the users table when a new auth.users record is created. For your project flow, explicitly including the email in the API insert is simpler and recommended. With these fixes, your signup and login pages are fully functional, RLS policies are correctly configured, and the Supabase client is ready for use across the frontend and backend.
