@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,6 +24,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = createClientComponentClient();
+
   return (
     <html lang="en">
       <body
