@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSupabaseClient, useSessionContext } from "@supabase/auth-helpers-react";
 
-interface User {
-  idx?: number;
+interface UserProfile {
   id: string;
-  name: string | null;
-  email: string | null;
-  baseline_happiness?: number | null;
+  full_name?: string | null;
+  email?: string | null;
   typical_sleep_hours?: number | null;
   common_problems?: string | null;
   known_conditions?: string | null;
@@ -19,60 +17,87 @@ interface User {
 
 export default function Dashboard() {
   const supabase = useSupabaseClient();
-  const session = useSession();
+  const { session, isLoading: sessionLoading } = useSessionContext();
   const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Redirect if not logged in
   useEffect(() => {
-    if (!session) {
-      router.push("/login");
-      return;
+    if (!session && !sessionLoading) {
+      router.push("/auth");
     }
-console.log("Session user id:", session.user.id);
+  }, [session, sessionLoading, router]);
+
+  // Fetch user profile from 'profiles' table
+  useEffect(() => {
+    if (!session) return;
 
     const fetchUser = async () => {
-      const userId = session.user.id;
-
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("*")
-        .eq("id", userId)
-        .maybeSingle(); // allows 0 or 1 row
+        .eq("id", session.user.id)
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching user:", error.message);
+      }
+
+      if (!data) {
+        // Redirect to login if profile not found
+        router.push("/auth");
       } else {
-        // handle rare case if data is returned as an array
-        const userData = Array.isArray(data) ? data[0] : data;
-
-        console.log("Full user object:", userData);
-
-        setUser(userData || null);
+        setUser(data);
       }
 
       setLoading(false);
     };
 
     fetchUser();
-  }, [session, router, supabase]);
+  }, [session, supabase, router]);
 
-  if (!session || loading) return <div>Loading dashboard...</div>;
-  if (!user) return <div>User not found.</div>;
+  if (loading || sessionLoading) return <div>Loading dashboard...</div>;
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow rounded">
-      <h1 className="text-3xl font-bold mb-4">
-        Hello, {user.name || user.email}!
+    <div className="max-w-md mx-auto p-6 bg-white shadow rounded mt-10">
+      <h1 className="text-3xl font-bold mb-6">
+        Welcome, {user?.full_name || user?.email}!
       </h1>
 
-      <div className="mt-4">
-        <h2 className="font-semibold mb-2">User Details:</h2>
-        <pre className="bg-gray-100 p-2 rounded text-sm overflow-x-auto">
-          {JSON.stringify(user, null, 2)}
-        </pre>
-      </div>
+      {user && (
+        <div className="space-y-3">
+          <div>
+            <span className="font-semibold">Email: </span>
+            <span>{user.email || "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Full Name: </span>
+            <span>{user.full_name || "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Typical Sleep Hours: </span>
+            <span>{user.typical_sleep_hours ?? "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Common Problems: </span>
+            <span>{user.common_problems || "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Known Conditions: </span>
+            <span>{user.known_conditions || "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Location: </span>
+            <span>{user.location || "Not provided"}</span>
+          </div>
+          <div>
+            <span className="font-semibold">Joined On: </span>
+            <span>{user.created_at ? new Date(user.created_at).toLocaleDateString() : "Unknown"}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
