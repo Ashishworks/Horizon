@@ -10,16 +10,17 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   const [step, setStep] = useState(1);
-  const [fullName, setFullName] = useState(""); // Added
+  const [fullName, setFullName] = useState("");
   const [sleep, setSleep] = useState(7);
   const [problems, setProblems] = useState("");
   const [conditions, setConditions] = useState("");
   const [location, setLocation] = useState("");
+  const [happiness, setHappiness] = useState(5); // baseline_happiness (default 5/10)
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (!session) {
-      router.push("/auth"); // redirect if not logged in
+      router.push("/auth");
     } else {
       setFullName(session.user?.user_metadata?.full_name || "");
     }
@@ -28,28 +29,29 @@ export default function OnboardingPage() {
   const handleNext = async () => {
     if (!session) return setMessage("User not logged in");
 
-    if (step < 5) { // Now we have 5 steps
+    if (step < 6) { // Now we have 6 steps
       setStep(step + 1);
     } else {
       // Submit all data for the current logged-in user
-      const { error } = await supabase.from("profiles").upsert({
-        id: session.user.id, // current user ID
+      const { error } = await supabase.from("profiles").insert({
+        id: session.user.id,
+        email: session.user.email,
         name: fullName,
         typical_sleep_hours: sleep,
         common_problems: problems,
         known_conditions: conditions,
         location,
+        baseline_happiness: happiness, // ✅ new field
       });
       if (error) return setMessage(error.message);
 
-      // Redirect to dashboard after onboarding
       router.push("/dashboard");
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">Onboarding ({step}/5)</h2>
+      <h2 className="text-2xl font-bold mb-4">Onboarding ({step}/6)</h2>
 
       {step === 1 && (
         <div>
@@ -111,11 +113,27 @@ export default function OnboardingPage() {
         </div>
       )}
 
+      {step === 6 && (
+        <div>
+          <label>
+            Scale your average happiness level on an average day ({happiness}/10)
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            value={happiness}
+            onChange={e => setHappiness(+e.target.value)}
+            className="w-full mb-4"
+          />
+        </div>
+      )}
+
       <button
         onClick={handleNext}
         className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
       >
-        {step < 5 ? "Next" : "Finish"}
+        {step < 6 ? "Next" : "Finish"}
       </button>
 
       {message && <p className="mt-4 text-red-500">{message}</p>}

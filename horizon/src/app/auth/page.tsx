@@ -20,7 +20,7 @@ export default function AuthBox() {
       if (error) setMessage(error.message);
       else {
         setMessage("Login successful!");
-        router.push("/onboarding"); // redirect after login
+        router.push("/dashboard"); // redirect after login
       }
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password });
