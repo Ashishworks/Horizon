@@ -6,29 +6,47 @@ import { useRouter } from "next/navigation";
 
 export default function AuthBox() {
   const supabase = useSupabaseClient();
-  const router = useRouter(); // moved inside the component
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true); // toggle between login and signup
+  const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleAuth = async () => {
+    setLoading(true);
     setMessage("");
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMessage(error.message);
-      else {
-        setMessage("Login successful!");
-        router.push("/dashboard"); // redirect after login
+    setError(false);
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setError(true);
+          setMessage(error.message);
+        } else {
+          setMessage("Login successful!");
+          router.push("/dashboard");
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          setError(true);
+          setMessage(error.message);
+        } else if (data.user) {
+          // Profile is automatically created by the database trigger
+
+          setMessage("Signup successful! Redirecting to onboarding...");
+          router.push(`/onboarding?user_id=${data.user.id}`);
+        }
       }
-    } else {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) setMessage(error.message);
-      else {
-        setMessage("Signup successful! Redirecting to onboarding...");
-        router.push(`/onboarding?user_id=${data.user?.id}`); // redirect to onboarding
-      }
+    } catch (err) {
+      setError(true);
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,11 +79,17 @@ export default function AuthBox() {
         />
         <button
           onClick={handleAuth}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          disabled={loading}
+          className={`w-full py-2 rounded ${loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"} text-white`}
         >
-          {isLogin ? "Login" : "Sign Up"}
+          {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
         </button>
-        {message && <p className="mt-4 text-center text-red-500">{message}</p>}
+
+        {message && (
+          <p className={`mt-4 text-center ${error ? "text-red-500" : "text-green-500"}`}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
