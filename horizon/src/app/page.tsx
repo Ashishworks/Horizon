@@ -1,103 +1,172 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+import CountUp from './components/Countup';
+import { useState, useRef, useEffect } from 'react';
+import moment from 'moment';
+import Face from './components/face';
+
+interface Stat {
+  label: string;
+  value: number; // full number
+  info: string;
+}
+
+// Convert to millions or billions
+const formatNumber = (num: number) => {
+  if (num >= 1_000_000_000) {
+    return Math.round((num / 1_000_000_000) * 10) / 10; // 1 decimal
+  }
+  return Math.round((num / 1_000_000) * 10) / 10;
+};
+
+const isBillion = (num: number) => num >= 1_000_000_000;
+
+const stats: Stat[] = [
+  { label: 'Prevalence', value: 1_100_000_000, info: 'Global mental health' },
+  { label: 'Depression', value: 332_000_000, info: 'Global depression rate' },
+  { label: 'Suicide', value: 727_000, info: 'Global suicide deaths' },
+  { label: 'Economic Impact', value: 1_000_000, info: 'Lost productivity' },
+  { label: 'Access to Treatment', value: 910_000_000, info: 'Untreated depression' },
+];
+
+export default function MentalHealthLanding() {
+  const router = useRouter();
+  const [reveal, setReveal] = useState(false);
+  const [time, setTime] = useState(moment().format('HH:mm:ss'));
+  const [mouthSize, setMouthSize] = useState<{ width: number; height: number }>({
+    width: 20,
+    height: 10,
+  });
+  const circleRef = useRef<HTMLDivElement | null>(null);
+  const mouthTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Update clock every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(moment().format('HH:mm:ss'));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    const button = e.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const circle = circleRef.current;
+
+    if (!circle) return;
+
+    circle.style.left = `${rect.left + rect.width / 2}px`;
+    circle.style.top = `${rect.top + rect.height / 2}px`;
+
+    setReveal(true);
+
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 700);
+  };
+
+  // Helper to handle mouse enter for mouth size
+  const handleMouseEnter = (width: number, height: number) => {
+    if (mouthTimeoutRef.current) clearTimeout(mouthTimeoutRef.current);
+    setMouthSize({ width, height });
+  };
+
+  // Helper to handle mouse leave with 0.5s delay
+  const handleMouseLeave = (width: number, height: number) => {
+    if (mouthTimeoutRef.current) clearTimeout(mouthTimeoutRef.current);
+    mouthTimeoutRef.current = setTimeout(() => {
+      setMouthSize({ width, height });
+    }, 500);
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-16 px-4 relative overflow-hidden">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      {/* Small Face at top-left */}
+      <div className="absolute top-4 left-4 z-20 transition-all duration-300">
+        <Face
+          size={80}
+          color={4}
+          shadow={2}
+          mouthWidth={mouthSize.width}
+          mouthHeight={mouthSize.height}
+        />
+      </div>
+
+      {/* Expanding Circle */}
+      <div
+        ref={circleRef}
+        className={`absolute w-0 h-0 bg-black rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-[1200ms] ease-out ${reveal ? 'w-[2000px] h-[2000px]' : ''
+          }`}
+        style={{ zIndex: 50 }}
+      ></div>
+
+      {/* Real-Time Clock */}
+      <div className="absolute top-4 right-4 text-black font-mono text-lg sm:text-2xl z-20 font-bold">
+        {time}
+      </div>
+
+      {/* Main Title */}
+      <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 text-center text-black">
+        Horizon
+      </h1>
+
+      {/* Tagline */}
+      <p className="text-xl sm:text-2xl font-medium mb-12 text-center text-gray-700">
+        See Your Mind Clearly.
+      </p>
+
+      {/* Stats */}
+      <div className="flex flex-wrap justify-center gap-6 mb-12">
+        {stats.map((stat, idx) => {
+          const displayValue = formatNumber(stat.value);
+          const suffix = isBillion(stat.value) ? 'B+' : 'M+';
+
+          return (
+            <div
+              key={idx}
+              className="bg-white text-black w-40 sm:w-48 md:w-52 lg:w-56 h-40 sm:h-48 md:h-52 lg:h-56
+       flex flex-col items-center justify-center rounded-full
+       shadow-[0_20px_40px_rgba(0,0,0,0.25)]
+       hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
+       
+       transition-colors duration-700 ease-in-out
+       transition-shadow"
+              onMouseEnter={() => handleMouseEnter(30, -10)}
+              onMouseLeave={() => handleMouseLeave(20, 10)}
+            >
+              <div className="flex items-baseline justify-center text-3xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
+                <CountUp
+                  from={0}
+                  to={displayValue}
+                  duration={2}
+                  separator=","
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold "
+                  onStart={() => { }}
+                  onEnd={() => { }}
+                />
+                <span className="ml-1">{suffix}</span>
+              </div>
+              <p className="mt-2  font-medium text-center text-sm sm:text-base">
+                {stat.info}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Get Started Button */}
+      <button
+        onClick={handleClick}
+        onMouseEnter={() => handleMouseEnter(30, 20)}
+        onMouseLeave={() => handleMouseLeave(20, 10)}
+        className="bg-white text-black border border-black font-semibold px-8 py-4 rounded-full text-lg 
+                   hover:bg-black hover:text-white hover:shadow-2xl hover:shadow-black
+                   transition-all duration-300 relative z-10"
+      >
+        Get Started
+      </button>
     </div>
   );
 }
