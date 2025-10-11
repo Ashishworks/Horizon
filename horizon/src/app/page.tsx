@@ -136,7 +136,7 @@ export default function MentalHealthLanding() {
       )}
 
       {/* Main Title */}
-      <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 text-center text-black">
+      <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 text-center text-black sm:mt-0 mt-15">
         Horizon
       </h1>
 
