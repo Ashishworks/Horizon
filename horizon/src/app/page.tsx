@@ -34,6 +34,7 @@ const stats: Stat[] = [
 export default function MentalHealthLanding() {
   const router = useRouter();
   const [reveal, setReveal] = useState(false);
+  const [ringColor, setRingColor] = useState("#00000076");
   const [time, setTime] = useState<string | null>(null);
   const [mouthSize, setMouthSize] = useState<{ width: number; height: number }>({
     width: 20,
@@ -103,7 +104,7 @@ export default function MentalHealthLanding() {
           visible={true}
           height="120"
           width="120"
-          color="#00000076"
+          color={ringColor}
           ariaLabel="rings-loading"
           wrapperStyle={{}}
           wrapperClass=""
@@ -178,8 +179,8 @@ export default function MentalHealthLanding() {
        hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
        transition-colors duration-700 ease-in-out
        transition-shadow"
-              onMouseEnter={() => handleMouseEnter(30, -10)}
-              onMouseLeave={() => handleMouseLeave(20, 10)}
+              onMouseEnter={() => {handleMouseEnter(30, -10); setRingColor("#ff7878ff");}}
+              onMouseLeave={() => {handleMouseLeave(20, 10);  setRingColor("#00000076");}}
             >
 
               <div className="flex items-baseline justify-center text-3xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
@@ -214,8 +215,9 @@ export default function MentalHealthLanding() {
       {/* Get Started Button */}
       <button
         onClick={handleClick}
-        onMouseEnter={() => handleMouseEnter(30, 20)}
-        onMouseLeave={() => handleMouseLeave(20, 10)}
+        onMouseEnter={() => {handleMouseEnter(30, 20); setRingColor("#8aff78ff");}}
+        onMouseLeave={() => {handleMouseLeave(20, 10); setRingColor("#00000076");}}
+        
         className="bg-white text-black border border-black font-semibold px-8 py-4 rounded-full text-lg 
                    hover:bg-black hover:text-white hover:shadow-2xl hover:shadow-black
                    transition-all duration-300 relative z-10"
