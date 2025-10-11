@@ -43,6 +43,7 @@ export default function AuthBox() {
         }
       }
     } catch (err) {
+      console.error(err);
       setError(true);
       setMessage("Something went wrong. Please try again.");
     } finally {

@@ -5,7 +5,6 @@ import CountUp from './components/Countup';
 import { useState, useRef, useEffect } from 'react';
 import moment from 'moment';
 import Face from './components/face';
-import DnaWaveSpinner from './components/dna';
 import { Bars, DNA, Rings, Watch } from 'react-loader-spinner';
 
 interface Stat {
