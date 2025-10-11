@@ -25,7 +25,7 @@ export default function Face({
   const pupilSize = eyeSize * 0.4; // 40% of eye size
 
   // Use custom mouth size if provided
-  const mouthW = mouthWidth ?? size * 0.5; 
+  const mouthW = mouthWidth ?? size * 0.5;
   const mouthH = mouthHeight ?? size * 0.4;
 
   // Map color prop to actual color
@@ -121,15 +121,16 @@ export default function Face({
           transition: transform 0.05s;
         }
         .mouth {
-          position: absolute;
-          bottom: ${0.15 * size}px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: ${mouthW}px;
-          height: ${mouthH}px;
-          border-bottom: 5px solid black;
-          border-radius: 50%;
-        }
+  position: absolute;
+  bottom: ${0.15 * size}px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: ${mouthW}px;
+  height: ${mouthH}px;
+  border-bottom: 5px solid black;
+  border-radius: 50%;
+  transition: width 0.3s ease, height 0.3s ease; /* <-- smooth transition */
+}
       `}</style>
     </div>
   );

@@ -5,6 +5,8 @@ import CountUp from './components/Countup';
 import { useState, useRef, useEffect } from 'react';
 import moment from 'moment';
 import Face from './components/face';
+import DnaWaveSpinner from './components/dna';
+import { Bars, DNA, Rings, Watch } from 'react-loader-spinner';
 
 interface Stat {
   label: string;
@@ -33,7 +35,7 @@ const stats: Stat[] = [
 export default function MentalHealthLanding() {
   const router = useRouter();
   const [reveal, setReveal] = useState(false);
-  const [time, setTime] = useState(moment().format('HH:mm:ss'));
+  const [time, setTime] = useState<string | null>(null);
   const [mouthSize, setMouthSize] = useState<{ width: number; height: number }>({
     width: 20,
     height: 10,
@@ -41,8 +43,9 @@ export default function MentalHealthLanding() {
   const circleRef = useRef<HTMLDivElement | null>(null);
   const mouthTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Update clock every second
+  // Update clock every second (after client hydration)
   useEffect(() => {
+    setTime(moment().format('HH:mm:ss')); // initialize after mount
     const interval = setInterval(() => {
       setTime(moment().format('HH:mm:ss'));
     }, 1000);
@@ -84,6 +87,7 @@ export default function MentalHealthLanding() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-16 px-4 relative overflow-hidden">
 
       {/* Small Face at top-left */}
+      {/* Small Face at top-left */}
       <div className="absolute top-4 left-4 z-20 transition-all duration-300">
         <Face
           size={80}
@@ -94,6 +98,20 @@ export default function MentalHealthLanding() {
         />
       </div>
 
+      {/* Rings loader beneath the Face on z-axis */}
+      <div className="absolute -top-1.5 -left-1.5 z-10 transition-all duration-300 flex justify-center items-center">
+        <Rings
+          visible={true}
+          height="120"
+          width="120"
+          color="#00000076"
+          ariaLabel="rings-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
+        />
+      </div>
+
+
       {/* Expanding Circle */}
       <div
         ref={circleRef}
@@ -102,10 +120,21 @@ export default function MentalHealthLanding() {
         style={{ zIndex: 50 }}
       ></div>
 
-      {/* Real-Time Clock */}
-      <div className="absolute top-4 right-4 text-black font-mono text-lg sm:text-2xl z-20 font-bold">
-        {time}
-      </div>
+      {/* Real-Time Clock (render only after client mount) */}
+      {time && (
+        <div className="absolute top-4 right-4 text-black font-mono text-lg sm:text-2xl z-20 font-bold flex items-center space-x-2">
+          <Watch
+            visible={true}
+            height="40"
+            width="40"
+            radius="0"
+            color="#000000ff"
+            ariaLabel="watch-loading"
+          />
+          <span>{time}</span>
+        </div>
+
+      )}
 
       {/* Main Title */}
       <h1 className="text-5xl sm:text-7xl font-extrabold mb-4 text-center text-black">
@@ -113,9 +142,27 @@ export default function MentalHealthLanding() {
       </h1>
 
       {/* Tagline */}
-      <p className="text-xl sm:text-2xl font-medium mb-12 text-center text-gray-700">
+      <div className="flex items-center justify-center text-xl sm:text-2xl font-medium mb-12 text-center text-gray-700 gap-2">
+        <Bars
+          height="20"
+          width="20"
+          color="#00000050"
+          ariaLabel="bars-loading"
+          wrapperClass=""
+          visible={true}
+        />
         See Your Mind Clearly.
-      </p>
+        <Bars
+          height="20"
+          width="20"
+          color="#00000050"
+          ariaLabel="bars-loading"
+          wrapperClass=""
+          visible={true}
+        />
+      </div>
+
+
 
       {/* Stats */}
       <div className="flex flex-wrap justify-center gap-6 mb-12">
@@ -130,12 +177,12 @@ export default function MentalHealthLanding() {
        flex flex-col items-center justify-center rounded-full
        shadow-[0_20px_40px_rgba(0,0,0,0.25)]
        hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
-       
        transition-colors duration-700 ease-in-out
        transition-shadow"
               onMouseEnter={() => handleMouseEnter(30, -10)}
               onMouseLeave={() => handleMouseLeave(20, 10)}
             >
+
               <div className="flex items-baseline justify-center text-3xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
                 <CountUp
                   from={0}
@@ -148,10 +195,19 @@ export default function MentalHealthLanding() {
                 />
                 <span className="ml-1">{suffix}</span>
               </div>
-              <p className="mt-2  font-medium text-center text-sm sm:text-base">
+              <p className="mt-2 font-medium text-center text-sm sm:text-base">
                 {stat.info}
               </p>
+              <DNA
+                visible={true}
+                height="50"
+                width="40"
+                ariaLabel="dna-loading"
+                wrapperStyle={{}}
+                wrapperClass="dna-wrapper"
+              />
             </div>
+
           );
         })}
       </div>
