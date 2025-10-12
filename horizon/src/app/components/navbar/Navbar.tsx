@@ -2,9 +2,18 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname(); // get current path
+
+  const links = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/services', label: 'Services' },
+    { href: '/contact', label: 'Contact' },
+  ];
 
   return (
     <nav className="bg-white shadow-md fixed w-full z-50">
@@ -15,12 +24,22 @@ const Navbar: React.FC = () => {
               Horizon
             </Link>
           </div>
+
+          {/* Desktop links */}
           <div className="hidden md:flex space-x-8 items-center">
-            <Link href="/" className="text-gray-700 hover:text-gray-900">Home</Link>
-            <Link href="/about" className="text-gray-700 hover:text-gray-900">About</Link>
-            <Link href="/services" className="text-gray-700 hover:text-gray-900">Services</Link>
-            <Link href="/contact" className="text-gray-700 hover:text-gray-900">Contact</Link>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-gray-700 hover:text-gray-900 ${
+                  pathname === link.href ? 'font-bold' : 'font-normal'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
+
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
@@ -58,10 +77,17 @@ const Navbar: React.FC = () => {
       {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white px-2 pt-2 pb-3 space-y-1 shadow-md">
-          <Link href="/" className="block text-gray-700 hover:text-gray-900">Home</Link>
-          <Link href="/about" className="block text-gray-700 hover:text-gray-900">About</Link>
-          <Link href="/services" className="block text-gray-700 hover:text-gray-900">Services</Link>
-          <Link href="/contact" className="block text-gray-700 hover:text-gray-900">Contact</Link>
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`block text-gray-700 hover:text-gray-900 ${
+                pathname === link.href ? 'font-bold' : 'font-normal'
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       )}
     </nav>
