@@ -121,16 +121,16 @@ export default function Face({
           transition: transform 0.05s;
         }
         .mouth {
-  position: absolute;
-  bottom: ${0.15 * size}px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: ${mouthW}px;
-  height: ${mouthH}px;
-  border-bottom: 5px solid black;
-  border-radius: 50%;
-  transition: width 0.3s ease, height 0.3s ease; /* <-- smooth transition */
-}
+          position: absolute;
+          bottom: ${0.15 * size}px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: ${mouthW}px;
+          height: ${mouthH}px;
+          border-bottom: 5px solid black;
+          border-radius: 50%;
+          transition: width 0.3s ease, height 0.3s ease; /* <-- smooth transition */
+        }
       `}</style>
     </div>
   );
