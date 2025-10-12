@@ -54,11 +54,11 @@ export default function AuthBox() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-md w-96">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-10">
           <h2 className="text-2xl text-black font-bold">{isLogin ? "Login" : "Sign Up"}</h2>
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-500 underline text-sm"
+            className="text-black underline text-sm"
           >
             {isLogin ? "Sign Up" : "Login"}
           </button>
@@ -81,7 +81,7 @@ export default function AuthBox() {
         <button
           onClick={handleAuth}
           disabled={loading}
-          className={`w-full py-2 rounded ${loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"} text-white`}
+          className={`w-full py-2 rounded ${loading ? "bg-gray-900 text-white hover:text-white" : "bg-black hover:bg-white"}  hover:text-black hover:border`}
         >
           {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
         </button>
