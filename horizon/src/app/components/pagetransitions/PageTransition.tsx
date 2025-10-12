@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface PageTransitionProps {
   targetUrl: string;
-  children: ReactElement<any, any>;
+  children: ReactElement<Record<string, unknown>>;
   duration?: number; // animation duration in ms
   circleColor?: string; // color of the expanding circle
   blurIntensity?: number; // blur amount in px
@@ -14,16 +14,16 @@ interface PageTransitionProps {
 export default function PageTransition({
   targetUrl,
   children,
-  duration = 1200, // default 1.2s
-  circleColor = "rgba(0,0,0,0.1)", // default semi-transparent black
-  blurIntensity = 4, // default blur px
+  duration = 1200,
+  circleColor = "rgba(0,0,0,0.1)",
+  blurIntensity = 4,
 }: PageTransitionProps) {
   const router = useRouter();
   const [reveal, setReveal] = useState(false);
   const circleRef = useRef<HTMLDivElement | null>(null);
 
   const handleClick = (e: MouseEvent<HTMLElement>) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect();
     const circle = circleRef.current;
     if (!circle) return;
 
@@ -34,22 +34,20 @@ export default function PageTransition({
 
     setTimeout(() => {
       router.push(targetUrl);
-    }, duration - 200); // slightly before animation ends
+    }, duration - 200);
   };
 
-  // Safely clone the child and attach onClick
   const wrappedElement = isValidElement(children)
-    ? cloneElement(children as ReactElement<any>, {
+    ? cloneElement(children, {
         onClick: handleClick,
       })
     : children;
 
   return (
     <>
-      {/* Expanding Circle */}
       <div
         ref={circleRef}
-        className={`absolute w-0 h-0 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ease-out`}
+        className="absolute w-0 h-0 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ease-out"
         style={{
           zIndex: 50,
           backgroundColor: circleColor,
@@ -60,7 +58,6 @@ export default function PageTransition({
         }}
       ></div>
 
-      {/* The element that triggers the transition */}
       {wrappedElement}
     </>
   );
