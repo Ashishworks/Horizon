@@ -195,7 +195,7 @@ export default function MentalHealthLanding() {
       </div>
 
       {/* Get Started Button */}
-      <PageTransition targetUrl="/dashboard">
+      <PageTransition targetUrl="/dashboard" circleColor="rgba(0, 0, 0, 0.1)"  blurIntensity={10}>
         <button
           onMouseEnter={() => { handleMouseEnter(30, 20); setRingColor("#8aff78ff"); }}
           onMouseLeave={() => { handleMouseLeave(20, 10); setRingColor("#00000076"); }}

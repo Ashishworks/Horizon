@@ -32,6 +32,33 @@ export default function Dashboard() {
 
   // Fetch user profile only if logged in
   useEffect(() => {
+  if (!session) return;
+
+  const fetchUser = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (error || !data) {
+      console.error("Error fetching user:", error?.message);
+      router.replace("/auth"); // redirect if fetch fails
+    } else {
+      setUser(data);
+
+      // Redirect to onboarding if name or location is missing
+      if (!data.name || !data.location) {
+        router.replace("/onboarding");
+      }
+    }
+
+    setLoading(false);
+  };
+
+  fetchUser();
+}, [session, supabase, router]);
+  useEffect(() => {
     if (!session) return;
 
     const fetchUser = async () => {
