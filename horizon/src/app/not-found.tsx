@@ -22,7 +22,7 @@ export default function NotFound() {
     setReveal(true);
 
     setTimeout(() => {
-      router.push("/");
+      router.push("/dashboard");
     }, 700);
   };
 
