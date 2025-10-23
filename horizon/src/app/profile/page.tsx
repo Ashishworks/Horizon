@@ -30,7 +30,7 @@ export default function ProfilePage() {
     // Desktop skeleton loader
     const DesktopSkeleton = () => (
         <div className="animate-pulse">
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-8 mb-6">
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-8 mb-6 p-8">
                 {/* Avatar */}
                 <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
                     <div className="w-32 h-32 bg-gray-300 dark:bg-gray-700 rounded-full mb-2" />
@@ -55,6 +55,7 @@ export default function ProfilePage() {
                         <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded mb-2 w-1/3"></div>
                         <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded"></div>
                     </div>
+                    
                 </div>
             </div>
 
@@ -202,7 +203,7 @@ export default function ProfilePage() {
     if (loading || !profile) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white px-4">
-                <div className="w-full max-w-3xl p-8 border rounded-lg shadow-lg bg-white dark:bg-gray-800">
+                <div className="w-full max-w-3xl p-8 mt-24 border rounded-lg shadow-lg bg-white dark:bg-gray-800">
                     <DesktopSkeleton />
                 </div>
             </div>
