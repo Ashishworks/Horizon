@@ -56,24 +56,25 @@ export default function Navbar() {
     });
 
     return () => listener.subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   useEffect(() => {
-  const handleProfileUpdate = async () => {
-    if (!user) return;
+    const handleProfileUpdate = async () => {
+      if (!user) return;
 
-    const { data: profileData, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-    if (!error && profileData) setProfile(profileData);
-  };
+      if (!error && profileData) setProfile(profileData);
+    };
 
-  window.addEventListener("profileUpdated", handleProfileUpdate);
-  return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
-}, [user]);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
+  }, [user]);
+
   useEffect(() => {
     // Close dropdown when clicking outside
     const handleClickOutside = () => setDropdownOpen(false);
@@ -97,7 +98,7 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md fixed w-full z-50 text-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-16 items-center relative">
           {/* Mobile Hamburger + Logo */}
           <div className="flex items-center space-x-4">
             <button
@@ -121,16 +122,18 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={`${
-                  pathname === link.href ? "font-bold text-blue-600" : "font-normal text-gray-700"
+                  pathname === link.href
+                    ? "font-bold text-blue-600"
+                    : "font-normal text-gray-700"
                 } hover:text-blue-500 transition`}
               >
                 {link.label}
               </Link>
             ))}
 
+            {/* Desktop profile dropdown */}
             {user && (
               <div className="relative">
-                {/* User Avatar or Icon */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -149,18 +152,20 @@ export default function Navbar() {
                   )}
                 </button>
 
-                {/* Dropdown Menu */}
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-md z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white font-semibold">
+                      {profile?.name || "User"}
+                    </div>
                     <Link
                       href="/profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
                     >
                       Profile
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 transition"
                     >
                       Logout
                     </button>
@@ -169,6 +174,49 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Mobile profile button on top-right */}
+          {user && (
+            <div className="absolute right-4 top-4 md:hidden">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen((prev) => !prev);
+                }}
+                className="p-1 rounded-full hover:bg-gray-100 transition"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-6 h-6 text-gray-700" />
+                )}
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
+                  <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white font-semibold">
+                    {profile?.name || "User"}
+                  </div>
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 transition"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -198,36 +246,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-
-          {user && (
-            <>
-              <Link
-                href="/profile"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center space-x-2 text-gray-700 font-semibold hover:text-blue-600"
-              >
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt="Avatar"
-                    className="w-6 h-6 rounded-full object-cover"
-                  />
-                ) : (
-                  <UserIcon className="w-5 h-5" />
-                )}
-                <span>Profile</span>
-              </Link>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMobileOpen(false);
-                }}
-                className="text-left text-red-600 font-semibold hover:text-red-800"
-              >
-                Logout
-              </button>
-            </>
-          )}
         </div>
       </div>
 
