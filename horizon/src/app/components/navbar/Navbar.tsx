@@ -4,12 +4,16 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { User } from "@supabase/supabase-js"; // ✅ import User type
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { User as UserIcon } from "lucide-react";
 
 export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null); // ✅ typed properly
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -17,19 +21,65 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
 
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
+    const fetchUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+
+      if (user) {
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (!error && profileData) setProfile(profileData);
+      }
     };
-    fetchUser();
+
+    fetchUserProfile();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (!error) setProfile(data);
+          });
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => listener.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ ignore supabase.auth in deps safely
+  }, []);
+  useEffect(() => {
+  const handleProfileUpdate = async () => {
+    if (!user) return;
+
+    const { data: profileData, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (!error && profileData) setProfile(profileData);
+  };
+
+  window.addEventListener("profileUpdated", handleProfileUpdate);
+  return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
+}, [user]);
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = () => setDropdownOpen(false);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
 
   if (!mounted) return null;
 
@@ -65,23 +115,58 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex md:items-center space-x-6">
+          <div className="hidden md:flex md:items-center space-x-6 relative">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`${pathname === link.href ? "font-bold" : "font-normal"}`}
+                className={`${
+                  pathname === link.href ? "font-bold text-blue-600" : "font-normal text-gray-700"
+                } hover:text-blue-500 transition`}
               >
                 {link.label}
               </Link>
             ))}
+
             {user && (
-              <button
-                onClick={handleLogout}
-                className="ml-4 text-red-600 font-semibold hover:text-red-800"
-              >
-                Logout
-              </button>
+              <div className="relative">
+                {/* User Avatar or Icon */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDropdownOpen((prev) => !prev);
+                  }}
+                  className="ml-4 p-1 rounded-full hover:bg-gray-100 transition"
+                >
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-6 h-6 text-gray-700" />
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-md z-50">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -105,7 +190,9 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`${pathname === link.href ? "font-bold" : "font-normal"}`}
+              className={`${
+                pathname === link.href ? "font-bold text-blue-600" : "font-normal text-gray-700"
+              }`}
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
@@ -113,15 +200,33 @@ export default function Navbar() {
           ))}
 
           {user && (
-            <button
-              onClick={() => {
-                handleLogout();
-                setMobileOpen(false);
-              }}
-              className="text-left text-red-600 font-semibold hover:text-red-800"
-            >
-              Logout
-            </button>
+            <>
+              <Link
+                href="/profile"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center space-x-2 text-gray-700 font-semibold hover:text-blue-600"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Avatar"
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-5 h-5" />
+                )}
+                <span>Profile</span>
+              </Link>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setMobileOpen(false);
+                }}
+                className="text-left text-red-600 font-semibold hover:text-red-800"
+              >
+                Logout
+              </button>
+            </>
           )}
         </div>
       </div>
