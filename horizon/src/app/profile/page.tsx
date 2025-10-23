@@ -211,7 +211,7 @@ export default function ProfilePage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white">
-            <main className="flex-grow flex items-center justify-center px-4">
+            <main className="flex-grow flex items-center justify-center px-4 mt-24">
                 <div className="w-full max-w-3xl p-8 border rounded-lg shadow-lg bg-white dark:bg-gray-800">
                     <h2 className="text-3xl font-bold mb-6 text-center">Your Profile</h2>
 
