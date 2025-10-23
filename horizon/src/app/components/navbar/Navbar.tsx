@@ -2,27 +2,38 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { User as UserIcon } from "lucide-react";
+
+interface Profile {
+  id: string;
+  name?: string;
+  avatar_url?: string | null;
+  email?: string;
+}
 
 export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClientComponentClient();
 
+  // Fetch user & profile
   useEffect(() => {
     setMounted(true);
 
     const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
@@ -32,7 +43,7 @@ export default function Navbar() {
           .eq("id", user.id)
           .single();
 
-        if (!error && profileData) setProfile(profileData);
+        if (!error && profileData) setProfile(profileData as Profile);
       }
     };
 
@@ -48,7 +59,7 @@ export default function Navbar() {
           .eq("id", session.user.id)
           .single()
           .then(({ data, error }) => {
-            if (!error) setProfile(data);
+            if (!error && data) setProfile(data as Profile);
           });
       } else {
         setProfile(null);
@@ -56,8 +67,9 @@ export default function Navbar() {
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
+  // Listen for profile updates
   useEffect(() => {
     const handleProfileUpdate = async () => {
       if (!user) return;
@@ -68,15 +80,15 @@ export default function Navbar() {
         .eq("id", user.id)
         .single();
 
-      if (!error && profileData) setProfile(profileData);
+      if (!error && profileData) setProfile(profileData as Profile);
     };
 
     window.addEventListener("profileUpdated", handleProfileUpdate);
     return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
-  }, [user]);
+  }, [user, supabase]);
 
+  // Close dropdown on outside click
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = () => setDropdownOpen(false);
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
@@ -85,7 +97,7 @@ export default function Navbar() {
   if (!mounted) return null;
 
   const navLinks = [
-    { label: "Home", href: "/" },
+    { label: "Home", href: "/dashboard" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
@@ -94,6 +106,21 @@ export default function Navbar() {
     await supabase.auth.signOut();
     router.push("/");
   };
+
+  const Avatar = () =>
+    profile?.avatar_url ? (
+      <div className="w-8 h-8 rounded-full overflow-hidden">
+  <Image
+    src={profile.avatar_url || "/default-avatar.png"}
+    alt="Avatar"
+    width={32}
+    height={32}
+    className="object-cover w-full h-full"
+  />
+</div>
+    ) : (
+      <UserIcon className="w-6 h-6 text-gray-700" />
+    );
 
   return (
     <nav className="bg-white shadow-md fixed w-full z-50 text-black">
@@ -141,20 +168,12 @@ export default function Navbar() {
                   }}
                   className="ml-4 p-1 rounded-full hover:bg-gray-100 transition"
                 >
-                  {profile?.avatar_url ? (
-                    <img
-                      src={profile.avatar_url}
-                      alt="Avatar"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="w-6 h-6 text-gray-700" />
-                  )}
+                  <Avatar />
                 </button>
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white font-semibold">
+                    <div className="px-4 py-3 bg-gray-100 text-gray-800 font-semibold">
                       {profile?.name || "User"}
                     </div>
                     <Link
@@ -175,7 +194,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile profile button on top-right */}
+          {/* Mobile profile button */}
           {user && (
             <div className="absolute right-4 top-4 md:hidden">
               <button
@@ -185,20 +204,12 @@ export default function Navbar() {
                 }}
                 className="p-1 rounded-full hover:bg-gray-100 transition"
               >
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt="Avatar"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <UserIcon className="w-6 h-6 text-gray-700" />
-                )}
+                <Avatar />
               </button>
 
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 overflow-hidden">
-                  <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white font-semibold">
+                  <div className="px-4 py-3 bg-gray-100 text-gray-800 font-semibold">
                     {profile?.name || "User"}
                   </div>
                   <Link
