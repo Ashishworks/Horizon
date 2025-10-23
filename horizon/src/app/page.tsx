@@ -90,7 +90,6 @@ export default function MentalHealthLanding() {
         />
       </div>
 
-
       {/* Expanding Circle */}
       <div
         ref={circleRef}
@@ -98,7 +97,6 @@ export default function MentalHealthLanding() {
           }`}
         style={{ zIndex: 50 }}
       ></div>
-
 
       {/* Real-Time Clock (render only after client mount) */}
       {time && (
@@ -113,7 +111,6 @@ export default function MentalHealthLanding() {
           />
           <span>{time}</span>
         </div>
-
       )}
 
       {/* Main Title */}
@@ -142,27 +139,28 @@ export default function MentalHealthLanding() {
         />
       </div>
 
-
-
       {/* Stats */}
       <div className="flex flex-wrap justify-center gap-6 mb-12">
         {stats.map((stat, idx) => {
           const displayValue = formatNumber(stat.value);
           const suffix = isBillion(stat.value) ? 'B+' : 'M+';
 
+          // For mobile: 2 per row except last one centered
+          let widthClass = 'w-40 sm:w-48 md:w-52 lg:w-56';
+          if (idx === stats.length - 1) widthClass += ' mx-auto'; // last item centered
+
           return (
             <div
               key={idx}
-              className="bg-white text-black w-40 sm:w-48 md:w-52 lg:w-56 h-40 sm:h-48 md:h-52 lg:h-56
+              className={`bg-white text-black ${widthClass} h-40 sm:h-48 md:h-52 lg:h-56
        flex flex-col items-center justify-center rounded-full
        shadow-[0_20px_40px_rgba(0,0,0,0.25)]
        hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
        transition-colors duration-700 ease-in-out
-       transition-shadow"
+       transition-shadow`}
               onMouseEnter={() => { handleMouseEnter(30, -10); setRingColor("#ff7878ff"); }}
               onMouseLeave={() => { handleMouseLeave(20, 10); setRingColor("#00000076"); }}
             >
-
               <div className="flex items-baseline justify-center text-3xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
                 <CountUp
                   from={0}
@@ -187,7 +185,6 @@ export default function MentalHealthLanding() {
                 wrapperClass="dna-wrapper"
               />
             </div>
-
           );
         })}
       </div>
