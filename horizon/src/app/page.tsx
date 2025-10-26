@@ -1,8 +1,8 @@
 'use client';
-import CountUp from './components/Countup';
+import CountUp from './components/ui/Countup';
 import { useState, useRef, useEffect } from 'react';
 import moment from 'moment';
-import Face from './components/face';
+import Face from './components/ui/face';
 import { Bars, DNA, Rings, Watch } from 'react-loader-spinner';
 import PageTransition from './components/pagetransitions/PageTransition';
 
