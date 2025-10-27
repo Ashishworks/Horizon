@@ -78,11 +78,6 @@ function Slider({
     setValue(defaultValue);
   }, [defaultValue]);
 
-//   // Whenever value changes, notify parent
-//   useEffect(() => {
-//     onValueChange?.(value);
-//   }, [value, onValueChange]);
-
   useMotionValueEvent(clientX, 'change', (latest) => {
     if (sliderRef.current) {
       const { left, right } = sliderRef.current.getBoundingClientRect();
