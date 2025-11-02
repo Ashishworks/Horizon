@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  position: relative;
   width: 100%; /* full width of parent */
  /* optional, you can adjust */
 }
