@@ -16,7 +16,7 @@ interface Profile {
 }
 
 export default function Navbar() {
-  const [mounted, setMounted] = useState(false);
+  
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -28,7 +28,7 @@ export default function Navbar() {
 
   // Fetch user & profile
   useEffect(() => {
-    setMounted(true);
+    
 
     const fetchUserProfile = async () => {
       const {
@@ -94,11 +94,11 @@ export default function Navbar() {
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
-  if (!mounted) return null;
+  
 
   const navLinks = [
     { label: "Home", href: "/dashboard" },
-    { label: "About", href: "/about" },
+    { label: "About", href: "/journal/new" },
     { label: "Contact", href: "/contact" },
   ];
 

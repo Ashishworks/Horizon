@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { TextHoverEffect } from '@/app/components/ui/text-hover';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
+import FrostGlassScrollButton from '@/app/components/ui/FrostGlassScrollButton';
+import { useRef } from "react";
+
 
 // The interface remains the same
 interface JournalEntry {
@@ -45,7 +48,7 @@ export default function JournalPage() {
         mood: 5,
         exercise: [],
     });
-
+    const scrollRef = useRef<HTMLDivElement>(null);
     // --- Stepper State ---
     const [currentStep, setCurrentStep] = useState(1);
     const totalSteps = 4;
@@ -72,25 +75,38 @@ export default function JournalPage() {
     };
 
     // --- Stepper Navigation ---
-    const nextStep = () => {
-        setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    };
+   const nextStep = () => {
+  setCurrentStep((prev) => {
+    const newStep = Math.min(prev + 1, totalSteps);
+    // scroll back to top of the scrollable div
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    return newStep;
+  });
+};
 
     const prevStep = () => {
-        setCurrentStep((prev) => Math.max(prev - 1, 1));
-    };
+  setCurrentStep((prev) => {
+    const newStep = Math.max(prev - 1, 1);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    return newStep;
+  });
+};
 
     return (
         // MODIFICATION: Set explicit screen height and flex-col
         <div className="h-screen py-10 px-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white flex flex-col items-center">
-            
+
             {/* 1. HEADER (Fixed height) */}
             <h1 className="w-full flex justify-center mt-10">
                 <div className="w-full max-w-3xl">
                     <TextHoverEffect text="MARK YOUR DAY!" />
                 </div>
             </h1>
-            
+
             {/* MODIFICATION: 
                 - `flex-1` makes this card take all remaining vertical space.
                 - `flex flex-col` allows us to pin the header/footer inside.
@@ -98,15 +114,15 @@ export default function JournalPage() {
                 - `mt-6` (optional) adds space between header and card.
             */}
             <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-xl shadow flex flex-col flex-1  overflow-hidden">
-                
+
                 {/* 2. STEPPER UI (Fixed at top of card) */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">
                         {stepTitles[currentStep - 1]}
                     </h2>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-4">
-                        <div 
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                        <div
+                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                         ></div>
                     </div>
@@ -117,7 +133,8 @@ export default function JournalPage() {
                     - `overflow-y-auto` adds a scrollbar *only if* the step's content is too tall.
                     - `pr-4 -mr-4` is a common trick to give content padding from the scrollbar.
                 */}
-                <div className="flex-1 overflow-y-auto pr-4 -mr-4 hide-scrollbar">
+
+                <div ref={scrollRef} className="flex-1 overflow-y-auto pr-4 -mr-4 hide-scrollbar relative">
                     {/* === STEP 1: Mental Check-in === */}
                     {currentStep === 1 && (
                         <div className="space-y-8">
@@ -139,7 +156,7 @@ export default function JournalPage() {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Overthinking */}
                             <div>
                                 <label className="block font-semibold mb-1">Overthinking Status /5</label>
@@ -346,7 +363,7 @@ export default function JournalPage() {
                                     </select>
                                 </div>
                             </div>
-                            
+
                             {/* Social Interaction */}
                             <div>
                                 <label className="block font-semibold mb-1">
@@ -432,7 +449,7 @@ export default function JournalPage() {
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 />
                             </div>
-                            
+
                             {/* Daily Summary */}
                             <div>
                                 <label className="block font-semibold mb-1">Describe your day in one paragraph (Optional)</label>
@@ -445,6 +462,7 @@ export default function JournalPage() {
                             </div>
                         </div>
                     )}
+                    
                 </div>
 
                 {/* MODIFICATION: 
@@ -459,7 +477,9 @@ export default function JournalPage() {
                     >
                         Previous
                     </button>
-
+                    <div className="absolute left-1/2 -translate-x-1/2 z-20">
+                        <FrostGlassScrollButton containerRef={scrollRef} label="Scroll to End" />
+                    </div>
                     {currentStep < totalSteps && (
                         <button
                             onClick={nextStep}
