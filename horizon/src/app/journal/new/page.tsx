@@ -183,8 +183,13 @@ export default function JournalPage() {
                 error: (err) => ` Error: ${err.message || 'Failed to save.'}`,
             });
             // router.push('/dashboard'); // Optionally redirect on success
-        } catch (err: any) {
-            console.error('Error saving journal:', err.message);
+        } catch (err) {
+            // Check if the error is an Error object before accessing .message
+            if (err instanceof Error) {
+                console.error('Error saving journal:', err.message);
+            } else {
+                console.error('An unknown error occurred:', err);
+            }
             // The toast.promise handles showing the error toast
         } finally {
             setLoading(false);
@@ -387,8 +392,8 @@ export default function JournalPage() {
                                             type="button"
                                             onClick={() => handleMultiSelect('exercise', option)}
                                             className={`px-3 py-1 rounded border transition ${entry.exercise.includes(option)
-                                                    ? 'bg-blue-500 text-white border-blue-500'
-                                                    : 'bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-600'
+                                                ? 'bg-blue-500 text-white border-blue-500'
+                                                : 'bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-600'
                                                 }`}
                                         >
                                             {option}
@@ -664,8 +669,8 @@ export default function JournalPage() {
                             onClick={handleSubmit}
                             disabled={loading}
                             className={`px-6 py-2 rounded font-semibold transition ${loading
-                                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                    : 'bg-green-500 hover:bg-green-600 text-white'
+                                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                                : 'bg-green-500 hover:bg-green-600 text-white'
                                 }`}
                         >
                             {loading ? 'Saving...' : 'Submit Journal'}
