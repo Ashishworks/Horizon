@@ -98,8 +98,8 @@ export default function Navbar() {
 
   const navLinks = [
     { label: "Home", href: "/dashboard" },
-    { label: "About", href: "/journal/new" },
-    { label: "Contact", href: "/contact" },
+    { label: "Reflect", href: "/journal/new" },
+    { label: "Calender", href: "/contact" },
   ];
 
   const handleLogout = async () => {
