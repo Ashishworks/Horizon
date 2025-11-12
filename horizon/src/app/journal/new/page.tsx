@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { format } from 'date-fns';
+import { Toaster, toast } from 'react-hot-toast'; // <-- IMPORT TOAST
 import { TextHoverEffect } from '@/app/components/ui/text-hover';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
 import FrostGlassScrollButton from '@/app/components/ui/FrostGlassScrollButton';
-import { useRef } from "react";
 
-
-// The interface remains the same
+// Interface for the journal entry data
 interface JournalEntry {
     mood: number;
     sleep_quality?: string;
@@ -33,28 +35,52 @@ interface JournalEntry {
     time_outdoors?: string;
 }
 
+// Constants
 const exerciseOptions = ['Running', 'Gym', 'Cycling', 'Freeform', 'Other'];
-
-// Define titles for each step
 const stepTitles = [
     'Step 1: Mental Check-in',
     'Step 2: Health & Activity',
     'Step 3: Productivity & Events',
-    'Step 4: Daily Reflection'
+    'Step 4: Daily Reflection',
 ];
 
 export default function JournalPage() {
+    // --- STATE AND REFS ---
     const [entry, setEntry] = useState<JournalEntry>({
         mood: 5,
         exercise: [],
     });
-    const scrollRef = useRef<HTMLDivElement>(null);
-    // --- Stepper State ---
     const [currentStep, setCurrentStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
     const totalSteps = 4;
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
+    const supabase = createClientComponentClient();
 
-    // --- State Handlers (Unchanged) ---
-    const handleChange = <K extends keyof JournalEntry>(field: K, value: JournalEntry[K]) => {
+    // --- AUTH CHECK ---
+    useEffect(() => {
+        const checkUser = async () => {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                toast.error('Please log in to access your journal.'); // <-- REPLACED ALERT
+                router.push('/login'); // <-- ❗️ IMPORTANT: Update '/login'
+            } else {
+                setUserId(user.id);
+            }
+        };
+
+        checkUser();
+    }, [router, supabase]);
+
+    // --- HANDLERS ---
+    const handleChange = <K extends keyof JournalEntry>(
+        field: K,
+        value: JournalEntry[K]
+    ) => {
         setEntry((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -62,60 +88,136 @@ export default function JournalPage() {
         setEntry((prev) => {
             const current = prev[field] as string[];
             if (current.includes(value)) {
+                if (value === 'Other') {
+                    return {
+                        ...prev,
+                        [field]: current.filter((v) => v !== 'Other' && !v.startsWith('Other:')),
+                    };
+                }
                 return { ...prev, [field]: current.filter((v) => v !== value) };
             } else {
+                if (value === 'Other') {
+                    return { ...prev, [field]: [...current, 'Other', 'Other: '] };
+                }
                 return { ...prev, [field]: [...current, value] };
             }
         });
     };
 
-    const handleSubmit = () => {
-        console.log('Journal submitted:', entry);
-        // TODO: Save to Supabase or Elasticsearch
+    const handleOtherExerciseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        handleChange(
+            'exercise',
+            entry.exercise.map((ex) =>
+                ex.startsWith('Other:') ? `Other: ${e.target.value}` : ex
+            )
+        );
     };
 
-    // --- Stepper Navigation ---
-   const nextStep = () => {
-  setCurrentStep((prev) => {
-    const newStep = Math.min(prev + 1, totalSteps);
-    // scroll back to top of the scrollable div
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    return newStep;
-  });
-};
+
+    // --- NAVIGATION ---
+    const nextStep = () => {
+        setCurrentStep((prev) => {
+            const newStep = Math.min(prev + 1, totalSteps);
+            if (scrollRef.current)
+                scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            return newStep;
+        });
+    };
 
     const prevStep = () => {
-  setCurrentStep((prev) => {
-    const newStep = Math.max(prev - 1, 1);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+        setCurrentStep((prev) => {
+            const newStep = Math.max(prev - 1, 1);
+            if (scrollRef.current)
+                scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            return newStep;
+        });
+    };
+
+    // --- SUBMIT ---
+    const handleSubmit = async () => {
+        // Use toast.promise for a great loading/success/error UX
+        const promise = (async () => {
+            setLoading(true);
+
+            if (!userId) {
+                router.push('/login');
+                throw new Error('User session not found. Please log in again.');
+            }
+
+            if (!entry.mood) {
+                throw new Error('Please select your mood before submitting.');
+            }
+
+            const today = format(new Date(), 'yyyy-MM-dd');
+
+            // ... inside handleSubmit
+
+            // 1. Filter the array: Remove the 'Other' toggle and any empty 'Other: ' strings
+            const exercisesToSave = entry.exercise
+                ? entry.exercise.filter(ex => ex !== 'Other' && ex.trim() !== 'Other:')
+                : []; // Default to an empty array
+
+            // 2. Prepare data for Supabase
+            const journalData = {
+                user_id: userId,
+                date: today,
+                ...entry,
+                // ✅ FIX: Send the filtered array directly, or null if it's empty
+                exercise: exercisesToSave.length ? exercisesToSave : null,
+                updated_at: new Date(),
+            };
+            // ...
+
+            const { error } = await supabase
+                .from('journals')
+                .upsert(journalData, { onConflict: 'user_id,date' });
+
+            if (error) throw error;
+        })();
+
+        // This will show a loading toast, then success or error
+        try {
+            await toast.promise(promise, {
+                loading: 'Saving journal...',
+                success: ' Journal saved successfully!',
+                error: (err) => ` Error: ${err.message || 'Failed to save.'}`,
+            });
+            // router.push('/dashboard'); // Optionally redirect on success
+        } catch (err: any) {
+            console.error('Error saving journal:', err.message);
+            // The toast.promise handles showing the error toast
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- RENDER ---
+
+    if (!userId) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <Toaster position="top-center" /> {/* Add Toaster here too */}
+                <p className="text-black dark:text-white text-lg animate-pulse">
+                    Loading Journal...
+                </p>
+            </div>
+        );
     }
-    return newStep;
-  });
-};
 
     return (
-        // MODIFICATION: Set explicit screen height and flex-col
         <div className="h-screen py-10 px-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white flex flex-col items-center">
+            <Toaster position="top-center" /> {/* <-- ADD TOASTER COMPONENT */}
 
-            {/* 1. HEADER (Fixed height) */}
+            {/* Header */}
             <h1 className="w-full flex justify-center mt-10">
                 <div className="w-full max-w-3xl">
                     <TextHoverEffect text="MARK YOUR DAY!" />
                 </div>
             </h1>
 
-            {/* MODIFICATION: 
-                - `flex-1` makes this card take all remaining vertical space.
-                - `flex flex-col` allows us to pin the header/footer inside.
-                - `overflow-hidden` clips the content for rounded corners.
-                - `mt-6` (optional) adds space between header and card.
-            */}
-            <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-xl shadow flex flex-col flex-1  overflow-hidden">
-
-                {/* 2. STEPPER UI (Fixed at top of card) */}
+            {/* Card Container */}
+            <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden">
+                {/* Stepper */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">
                         {stepTitles[currentStep - 1]}
@@ -128,20 +230,17 @@ export default function JournalPage() {
                     </div>
                 </div>
 
-                {/* MODIFICATION: 
-                    - `flex-1` makes this content area fill the space.
-                    - `overflow-y-auto` adds a scrollbar *only if* the step's content is too tall.
-                    - `pr-4 -mr-4` is a common trick to give content padding from the scrollbar.
-                */}
-
-                <div ref={scrollRef} className="flex-1 overflow-y-auto pr-4 -mr-4 hide-scrollbar relative">
-                    {/* === STEP 1: Mental Check-in === */}
+                {/* Step Content (Scrollable Area) */}
+                <div
+                    ref={scrollRef}
+                    className="flex-1 overflow-y-auto pr-4 -mr-4 hide-scrollbar relative"
+                >
+                    {/* === STEP 1 === */}
                     {currentStep === 1 && (
                         <div className="space-y-8">
-                            {/* Mood */}
                             <div className="flex flex-col items-center w-full">
                                 <label className="block font-semibold mb-3 text-center text-lg">
-                                    Overall Mood
+                                    Overall Mood <span className="text-red-500">*</span>
                                 </label>
                                 <div className="w-full md:w-[90%] lg:w-[95%] flex flex-col items-center">
                                     <ElasticSlider
@@ -150,53 +249,68 @@ export default function JournalPage() {
                                         maxValue={10}
                                         isStepped
                                         stepSize={1}
-                                        leftIcon={<RiEmotionSadFill size={30} className="text-blue-200" />}
-                                        rightIcon={<RiEmotionHappyFill size={30} className="text-yellow-200" />}
+                                        leftIcon={
+                                            <RiEmotionSadFill size={30} className="text-blue-200" />
+                                        }
+                                        rightIcon={
+                                            <RiEmotionHappyFill
+                                                size={30}
+                                                className="text-yellow-200"
+                                            />
+                                        }
                                         onValueChange={(value) => handleChange('mood', value)}
                                     />
                                 </div>
                             </div>
 
-                            {/* Overthinking */}
                             <div>
-                                <label className="block font-semibold mb-1">Overthinking Status /5</label>
+                                <label className="block font-semibold mb-1">
+                                    Overthinking Status /5
+                                </label>
                                 <input
                                     type="range"
                                     min={0}
                                     max={5}
                                     value={entry.overthinking ?? 0}
-                                    onChange={(e) => handleChange('overthinking', +e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('overthinking', +e.target.value)
+                                    }
                                     className="w-full"
                                 />
                                 <span className="ml-2">{entry.overthinking ?? 0}</span>
                             </div>
 
-                            {/* Stress Level */}
                             <div>
-                                <label className="block font-semibold mb-1">Stress Level /10</label>
+                                <label className="block font-semibold mb-1">
+                                    Stress Level /10
+                                </label>
                                 <input
                                     type="range"
                                     min={0}
                                     max={10}
                                     value={entry.stress_level ?? 0}
-                                    onChange={(e) => handleChange('stress_level', +e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('stress_level', +e.target.value)
+                                    }
                                     className="w-full"
                                 />
                                 <span className="ml-2">{entry.stress_level ?? 0}</span>
                             </div>
 
-                            {/* Stress Triggers */}
                             <div>
-                                <label className="block font-semibold mb-1">Stress Triggers</label>
+                                <label className="block font-semibold mb-1">
+                                    Stress Triggers
+                                </label>
                                 <textarea
                                     value={entry.stress_triggers || ''}
-                                    onChange={(e) => handleChange('stress_triggers', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('stress_triggers', e.target.value)
+                                    }
                                     placeholder="What triggered stress today?"
                                     className="w-full p-2 border rounded h-20 dark:bg-gray-700 dark:border-gray-600"
                                 ></textarea>
                             </div>
 
-                            {/* Negative Thoughts */}
                             <div>
                                 <label className="block font-semibold mb-1">
                                     Did you have any negative thoughts today?
@@ -216,7 +330,9 @@ export default function JournalPage() {
                                 {entry.negative_thoughts === 'Yes' && (
                                     <textarea
                                         value={entry.negative_thoughts_detail || ''}
-                                        onChange={(e) => handleChange('negative_thoughts_detail', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('negative_thoughts_detail', e.target.value)
+                                        }
                                         placeholder="Describe briefly (optional)"
                                         className="w-full p-2 border rounded h-20 mt-2 dark:bg-gray-700 dark:border-gray-600"
                                     ></textarea>
@@ -225,35 +341,45 @@ export default function JournalPage() {
                         </div>
                     )}
 
-                    {/* === STEP 2: Health & Activity === */}
+                    {/* === STEP 2 === */}
                     {currentStep === 2 && (
                         <div className="space-y-8">
-                            {/* Sleep Quality & Hours */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
-                                    <label className="block font-semibold mb-1">Sleep Quality Last Night</label>
+                                    <label className="block font-semibold mb-1">
+                                        Sleep Quality Last Night
+                                    </label>
                                     <input
                                         type="text"
                                         value={entry.sleep_quality || ''}
-                                        onChange={(e) => handleChange('sleep_quality', e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('sleep_quality', e.target.value)
+                                        }
                                         placeholder="Good, Okay, Poor..."
                                         className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="block font-semibold mb-1">Hours Slept</label>
+                                    <label className="block font-semibold mb-1">
+                                        Hours Slept
+                                    </label>
                                     <input
                                         type="number"
+                                        min={0}
+                                        step={0.5}
                                         value={entry.sleep_hours ?? ''}
-                                        onChange={(e) => handleChange('sleep_hours', +e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('sleep_hours', +e.target.value)
+                                        }
                                         className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                     />
                                 </div>
                             </div>
 
-                            {/* Exercise */}
                             <div>
-                                <label className="block font-semibold mb-2">Exercise Done</label>
+                                <label className="block font-semibold mb-2">
+                                    Exercise Done
+                                </label>
                                 <div className="flex flex-wrap gap-2 mb-2">
                                     {exerciseOptions.map((option) => (
                                         <button
@@ -261,8 +387,8 @@ export default function JournalPage() {
                                             type="button"
                                             onClick={() => handleMultiSelect('exercise', option)}
                                             className={`px-3 py-1 rounded border transition ${entry.exercise.includes(option)
-                                                ? 'bg-blue-500 text-white border-blue-500'
-                                                : 'bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-600'
+                                                    ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-600'
                                                 }`}
                                         >
                                             {option}
@@ -273,26 +399,29 @@ export default function JournalPage() {
                                     <input
                                         type="text"
                                         placeholder="Specify other exercise"
-                                        value={entry.exercise.find((e) => e.startsWith('Other:'))?.replace('Other: ', '') || ''}
-                                        onChange={(e) =>
-                                            handleChange(
-                                                'exercise',
-                                                entry.exercise.map((ex) =>
-                                                    ex.startsWith('Other:') ? `Other: ${e.target.value}` : ex
-                                                )
-                                            )
+                                        value={
+                                            entry.exercise
+                                                .find((e) => e.startsWith('Other:'))
+                                                ?.replace('Other: ', '') || ''
                                         }
+                                        onChange={handleOtherExerciseChange}
                                         className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                     />
                                 )}
                             </div>
 
-                            {/* Diet Status */}
                             <div>
-                                <label className="block font-semibold mb-1">Diet Status</label>
+                                <label className="block font-semibold mb-1">
+                                    Diet Status
+                                </label>
                                 <select
                                     value={entry.diet_status || ''}
-                                    onChange={(e) => handleChange('diet_status', e.target.value as JournalEntry['diet_status'])}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            'diet_status',
+                                            e.target.value as JournalEntry['diet_status']
+                                        )
+                                    }
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 >
                                     <option value="">Select</option>
@@ -302,7 +431,6 @@ export default function JournalPage() {
                                 </select>
                             </div>
 
-                            {/* Caffeine Intake */}
                             <div>
                                 <label className="block font-semibold mb-1">
                                     Caffeine Intake (Optional)
@@ -311,12 +439,13 @@ export default function JournalPage() {
                                     type="text"
                                     placeholder="E.g., 2 cups coffee, 1 cup tea"
                                     value={entry.caffeine_intake || ''}
-                                    onChange={(e) => handleChange('caffeine_intake', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('caffeine_intake', e.target.value)
+                                    }
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 />
                             </div>
 
-                            {/* Time Spent Outdoors */}
                             <div>
                                 <label className="block font-semibold mb-1">
                                     Time Spent Outdoors (Optional)
@@ -325,35 +454,47 @@ export default function JournalPage() {
                                     type="text"
                                     placeholder="E.g., 30 minutes walk"
                                     value={entry.time_outdoors || ''}
-                                    onChange={(e) => handleChange('time_outdoors', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('time_outdoors', e.target.value)
+                                    }
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 />
                             </div>
                         </div>
                     )}
 
-                    {/* === STEP 3: Productivity & Events === */}
+                    {/* === STEP 3 === */}
                     {currentStep === 3 && (
                         <div className="space-y-8">
-                            {/* Productivity */}
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
-                                    <label className="block font-semibold mb-1">Productivity Scale /10</label>
+                                    <label className="block font-semibold mb-1">
+                                        Productivity Scale /10
+                                    </label>
                                     <input
                                         type="range"
                                         min={0}
                                         max={10}
                                         value={entry.productivity ?? 5}
-                                        onChange={(e) => handleChange('productivity', +e.target.value)}
+                                        onChange={(e) =>
+                                            handleChange('productivity', +e.target.value)
+                                        }
                                         className="w-full"
                                     />
                                     <span className="ml-2">{entry.productivity ?? 5}</span>
                                 </div>
                                 <div className="flex-1">
-                                    <label className="block font-semibold mb-1">Productivity Compared to Yesterday</label>
+                                    <label className="block font-semibold mb-1">
+                                        Productivity Compared to Yesterday
+                                    </label>
                                     <select
                                         value={entry.productivity_comparison || ''}
-                                        onChange={(e) => handleChange('productivity_comparison', e.target.value as JournalEntry['productivity_comparison'])}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                'productivity_comparison',
+                                                e.target.value as JournalEntry['productivity_comparison']
+                                            )
+                                        }
                                         className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                     >
                                         <option value="">Select</option>
@@ -364,7 +505,6 @@ export default function JournalPage() {
                                 </div>
                             </div>
 
-                            {/* Social Interaction */}
                             <div>
                                 <label className="block font-semibold mb-1">
                                     Did you spend time with friends or family?
@@ -372,7 +512,10 @@ export default function JournalPage() {
                                 <select
                                     value={entry.social_time || ''}
                                     onChange={(e) =>
-                                        handleChange('social_time', e.target.value as 'Decent' | 'Less' | 'Zero')
+                                        handleChange(
+                                            'social_time',
+                                            e.target.value as 'Decent' | 'Less' | 'Zero'
+                                        )
                                     }
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 >
@@ -383,41 +526,53 @@ export default function JournalPage() {
                                 </select>
                             </div>
 
-                            {/* Screen Time */}
                             <div>
                                 <label className="block font-semibold mb-1">
                                     Screen Time (Optional)
                                 </label>
                                 <div className="flex flex-col md:flex-row gap-4">
                                     <div className="flex-1">
-                                        <label className="text-sm block mb-1">For Work (hours)</label>
+                                        <label className="text-sm block mb-1">
+                                            For Work (hours)
+                                        </label>
                                         <input
                                             type="number"
                                             min={0}
+                                            step={0.5}
                                             value={entry.screen_work ?? ''}
-                                            onChange={(e) => handleChange('screen_work', +e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange('screen_work', +e.target.value)
+                                            }
                                             className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="text-sm block mb-1">For Entertainment (hours)</label>
+                                        <label className="text-sm block mb-1">
+                                            For Entertainment (hours)
+                                        </label>
                                         <input
                                             type="number"
                                             min={0}
+                                            step={0.5}
                                             value={entry.screen_entertainment ?? ''}
-                                            onChange={(e) => handleChange('screen_entertainment', +e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange('screen_entertainment', +e.target.value)
+                                            }
                                             className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Main Challenges */}
                             <div>
-                                <label className="block font-semibold mb-1">Main Challenges / Plans (Optional)</label>
+                                <label className="block font-semibold mb-1">
+                                    Main Challenges / Plans (Optional)
+                                </label>
                                 <textarea
                                     value={entry.main_challenges || ''}
-                                    onChange={(e) => handleChange('main_challenges', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('main_challenges', e.target.value)
+                                    }
                                     placeholder="Challenges you faced or planned to do"
                                     className="w-full p-2 border rounded h-20 dark:bg-gray-700 dark:border-gray-600"
                                 ></textarea>
@@ -425,51 +580,58 @@ export default function JournalPage() {
                         </div>
                     )}
 
-                    {/* === STEP 4: Daily Reflection === */}
+                    {/* === STEP 4 === */}
                     {currentStep === 4 && (
                         <div className="space-y-8">
-                            {/* Special Day */}
                             <div>
-                                <label className="block font-semibold mb-1">Any Special Day? (Optional)</label>
+                                <label className="block font-semibold mb-1">
+                                    Any Special Day? (Optional)
+                                </label>
                                 <input
                                     type="text"
                                     value={entry.special_day || ''}
-                                    onChange={(e) => handleChange('special_day', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('special_day', e.target.value)
+                                    }
+                                    placeholder="E.g., Birthday, Anniversary, Milestone..."
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 />
                             </div>
 
-                            {/* Deal breaker */}
                             <div>
-                                <label className="block font-semibold mb-1">Deal Breaker of the Day (Optional)</label>
+                                <label className="block font-semibold mb-1">
+                                    Deal Breaker of the Day (Optional)
+                                </label>
                                 <input
                                     type="text"
                                     value={entry.deal_breaker || ''}
-                                    onChange={(e) => handleChange('deal_breaker', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('deal_breaker', e.target.value)
+                                    }
+                                    placeholder="The one thing that ruined the day, if any"
                                     className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                                 />
                             </div>
 
-                            {/* Daily Summary */}
                             <div>
-                                <label className="block font-semibold mb-1">Describe your day in one paragraph (Optional)</label>
+                                <label className="block font-semibold mb-1">
+                                    Describe your day in one paragraph (Optional)
+                                </label>
                                 <textarea
                                     value={entry.daily_summary || ''}
-                                    onChange={(e) => handleChange('daily_summary', e.target.value)}
+                                    onChange={(e) =>
+                                        handleChange('daily_summary', e.target.value)
+                                    }
                                     placeholder="Write your day summary..."
                                     className="w-full p-4 border rounded h-40 dark:bg-gray-700 dark:border-gray-600"
                                 ></textarea>
                             </div>
                         </div>
                     )}
-                    
                 </div>
 
-                {/* MODIFICATION: 
-                    - `pt-8` adds padding above the buttons, separating them from the scrollable area.
-                    - `mt-10` is removed.
-                */}
-                <div className="pt-8 flex justify-between">
+                {/* Footer Buttons */}
+                <div className="pt-8 flex justify-between relative">
                     <button
                         onClick={prevStep}
                         disabled={currentStep === 1}
@@ -477,9 +639,16 @@ export default function JournalPage() {
                     >
                         Previous
                     </button>
+
+                    {/* Scroll helper button */}
                     <div className="absolute left-1/2 -translate-x-1/2 z-20">
-                        <FrostGlassScrollButton containerRef={scrollRef} label="Scroll to End" />
+                        <FrostGlassScrollButton
+                            containerRef={scrollRef}
+                            label="Scroll to End"
+                        />
                     </div>
+
+                    {/* Show 'Next' button if not on the last step */}
                     {currentStep < totalSteps && (
                         <button
                             onClick={nextStep}
@@ -489,12 +658,17 @@ export default function JournalPage() {
                         </button>
                     )}
 
+                    {/* Show 'Submit' button only on the last step */}
                     {currentStep === totalSteps && (
                         <button
                             onClick={handleSubmit}
-                            className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded font-semibold transition"
+                            disabled={loading}
+                            className={`px-6 py-2 rounded font-semibold transition ${loading
+                                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                                    : 'bg-green-500 hover:bg-green-600 text-white'
+                                }`}
                         >
-                            Submit Journal
+                            {loading ? 'Saving...' : 'Submit Journal'}
                         </button>
                     )}
                 </div>
