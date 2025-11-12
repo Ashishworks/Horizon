@@ -8,8 +8,10 @@ import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
-// --- INTERFACE (From your code) ---
+// --- INTERFACE (No changes) ---
 interface JournalEntry {
     date: string;
     mood: number;
@@ -35,11 +37,11 @@ interface JournalEntry {
     time_outdoors?: string;
 }
 
-// --- HELPER CARD COMPONENT ---
+// --- HELPER CARD COMPONENT (CHANGED) ---
 const InfoCard = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <motion.div
-        className="bg-white dark:bg-gray-800 rounded-xl shadow p-6"
-        // Animation for cards appearing
+        // Use theme variables
+        className="bg-card text-card-foreground rounded-xl shadow p-6"
         variants={{
             hidden: { opacity: 0, y: 20 },
             visible: { opacity: 1, y: 0 }
@@ -53,18 +55,19 @@ const InfoCard = ({ title, children }: { title: string, children: React.ReactNod
     </motion.div>
 );
 
-// --- HELPER DATA ROW COMPONENT ---
+// --- HELPER DATA ROW COMPONENT (CHANGED) ---
 const DataRow = ({ label, value }: { label: string, value: React.ReactNode }) => {
     if (!value) return null; // Don't render if value is empty
     return (
         <div>
-            <strong className="text-gray-500 dark:text-gray-400">{label}:</strong>
-            <span className="ml-2 text-black dark:text-white">{value}</span>
+            {/* Use theme variables */}
+            <strong className="text-muted-foreground">{label}:</strong>
+            <span className="ml-2 text-foreground">{value}</span>
         </div>
     );
 };
 
-// --- 2x2 JOURNAL DISPLAY COMPONENT ---
+// --- 2x2 JOURNAL DISPLAY COMPONENT (CHANGED) ---
 function JournalDisplay({ entry }: { entry: JournalEntry }) {
     const displayDate = new Date(entry.date + 'T12:00:00');
 
@@ -77,7 +80,8 @@ function JournalDisplay({ entry }: { entry: JournalEntry }) {
                 visible: { transition: { staggerChildren: 0.1 } } // Animates cards one by one
             }}
         >
-            <h2 className="text-3xl font-bold mb-2 text-black dark:text-white md:col-span-2"> 
+            {/* Use theme variables */}
+            <h2 className="text-3xl font-bold mb-2 text-foreground md:col-span-2"> 
                 {/* Title spans both columns */}
                 Journal for {format(displayDate, 'MMMM d, yyyy')}
             </h2>
@@ -100,7 +104,8 @@ function JournalDisplay({ entry }: { entry: JournalEntry }) {
                 <DataRow label="Time Outdoors" value={entry.time_outdoors} />
                 {entry.exercise && entry.exercise.length > 0 && (
                     <div>
-                        <strong className="text-gray-500 dark:text-gray-400">Exercise:</strong>
+                        {/* Use theme variables */}
+                        <strong className="text-muted-foreground">Exercise:</strong>
                         <ul className="list-disc list-inside ml-4 mt-1">
                             {entry.exercise.map((ex) => (
                                 <li key={ex}>{ex}</li>
@@ -125,7 +130,8 @@ function JournalDisplay({ entry }: { entry: JournalEntry }) {
                 <DataRow label="Special Day" value={entry.special_day} />
                 <DataRow label="Deal Breaker" value={entry.deal_breaker} />
                 <DataRow label="Daily Summary" value={
-                    <p className="italic text-gray-700 dark:text-gray-300">{entry.daily_summary}</p>
+                    // Use theme variables
+                    <p className="italic text-muted-foreground">{entry.daily_summary}</p>
                 } />
             </InfoCard>
 
@@ -140,16 +146,24 @@ export default function JournalHistoryPage() {
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const supabase = createClientComponentClient();
+    const router = useRouter();
     
     // --- HOOKS (No changes) ---
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (user) setUserId(user.id);
+            
+            if (user) {
+                setUserId(user.id);
+            } else {
+                toast.error('Please log in to view your history.');
+                router.push('/auth');
+            }
         };
         getUser();
-    }, [supabase]);
+    }, [supabase, router]); // <-- Add router to the dependency array
 
+    
     useEffect(() => {
         if (!userId || !selectedDate) {
             setJournalEntry(null); 
@@ -184,10 +198,21 @@ export default function JournalHistoryPage() {
         fetchJournalEntry();
     }, [selectedDate, userId, supabase]);
 
-    // --- NEW RESPONSIVE RENDER ---
+    if (!userId) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-background">
+                
+                <p className="text-foreground text-lg animate-pulse">
+                    Loading History...
+                </p>
+            </div>
+        );
+    }
+    // --- NEW RESPONSIVE RENDER (CHANGED) ---
     return (
         <LayoutGroup>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white flex flex-col">
+            {/* Use theme variables */}
+            <div className="min-h-screen bg-background text-foreground flex flex-col">
                 
                 <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
                     Journal History
@@ -196,7 +221,7 @@ export default function JournalHistoryPage() {
                 {/* This is the new responsive layout container */}
                 <div className="w-full max-w-7xl mx-auto flex-grow flex flex-col md:flex-row p-4 md:p-6">
                     
-                    {/* 1. CALENDAR COLUMN (1/4 or full) */}
+                    {/* 1. CALENDAR COLUMN (No changes) */}
                     <motion.div 
                         layout // <-- This is the magic! It animates the layout change.
                         transition={{ type: 'spring', stiffness: 200, damping: 25 }}
@@ -214,7 +239,8 @@ export default function JournalHistoryPage() {
                                     mode="single"
                                     selected={selectedDate}
                                     onSelect={setSelectedDate}
-                                    className="text-black dark:text-white"
+                                    // Use theme variables
+                                    className="text-foreground"
                                     disabled={{ after: new Date() }}
                                     fixedWeeks
                                 />
@@ -222,13 +248,20 @@ export default function JournalHistoryPage() {
                         </div>
                     </motion.div>
 
-                    {/* 2. INFO COLUMN (3/4 or full) */}
+                    {/* 2. INFO COLUMN (No changes) */}
                     <div className={`w-full md:w-3/4 flex-grow md:pl-8 ${selectedDate ? 'block' : 'hidden'}`}>
                         {/* This makes the info panel scrollable on desktop */}
                         <div className="w-full md:pb-32">
                             <AnimatePresence mode="wait">
                                 {loading && (
-                                    <motion.p /* ...animation... */ key="loading">
+                                    <motion.p 
+                                        key="loading"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        // Use theme variables
+                                        className="text-center text-muted-foreground pt-10"
+                                    >
                                         Loading...
                                     </motion.p>
                                 )}
@@ -239,7 +272,8 @@ export default function JournalHistoryPage() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="text-center text-gray-500 dark:text-gray-400 pt-10"
+                                        // Use theme variables
+                                        className="text-center text-muted-foreground pt-10"
                                     >
                                         No journal entry found for {format(selectedDate, 'MMMM d, yyyy')}.
                                     </motion.p>

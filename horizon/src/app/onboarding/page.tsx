@@ -78,9 +78,11 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    // Replaced page background
+    <div className="flex flex-col min-h-screen bg-background">
       <main className="flex-grow flex items-center justify-center">
-        <div className="w-full max-w-md p-6 border rounded-lg shadow-lg bg-white dark:bg-gray-800 text-black dark:text-white">
+        {/* Replaced card and text colors */}
+        <div className="w-full max-w-md p-6 border rounded-lg shadow-lg bg-card text-card-foreground">
           <h2 className="text-2xl font-bold mb-4 text-center">Onboarding ({step}/6)</h2>
 
           {step === 1 && (
@@ -90,7 +92,8 @@ export default function OnboardingPage() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full mb-4 p-2 border rounded placeholder-gray-500 text-black dark:text-white bg-gray-100 dark:bg-gray-700"
+                // Replaced input colors
+                className="w-full mb-4 p-2 border rounded bg-input placeholder:text-muted-foreground"
                 placeholder="Enter your full name"
               />
             </div>
@@ -103,7 +106,8 @@ export default function OnboardingPage() {
                 type="number"
                 value={sleep}
                 onChange={(e) => setSleep(+e.target.value)}
-                className="w-full mb-4 p-2 border rounded placeholder-gray-500 text-black dark:text-white bg-gray-100 dark:bg-gray-700"
+                // Replaced input colors
+                className="w-full mb-4 p-2 border rounded bg-input placeholder:text-muted-foreground"
               />
             </div>
           )}
@@ -115,7 +119,8 @@ export default function OnboardingPage() {
                 type="text"
                 value={problems}
                 onChange={(e) => setProblems(e.target.value)}
-                className="w-full mb-4 p-2 border rounded placeholder-gray-500 text-black dark:text-white bg-gray-100 dark:bg-gray-700"
+                // Replaced input colors
+                className="w-full mb-4 p-2 border rounded bg-input placeholder:text-muted-foreground"
                 placeholder="Enter any common problems"
               />
             </div>
@@ -128,7 +133,8 @@ export default function OnboardingPage() {
                 type="text"
                 value={conditions}
                 onChange={(e) => setConditions(e.target.value)}
-                className="w-full mb-4 p-2 border rounded placeholder-gray-500 text-black dark:text-white bg-gray-100 dark:bg-gray-700"
+                // Replaced input colors
+                className="w-full mb-4 p-2 border rounded bg-input placeholder:text-muted-foreground"
                 placeholder="Enter any known conditions"
               />
             </div>
@@ -141,7 +147,8 @@ export default function OnboardingPage() {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full mb-4 p-2 border rounded placeholder-gray-500 text-black dark:text-white bg-gray-100 dark:bg-gray-700"
+                // Replaced input colors
+                className="w-full mb-4 p-2 border rounded bg-input placeholder:text-muted-foreground"
                 placeholder="Enter your location"
               />
             </div>
@@ -158,22 +165,26 @@ export default function OnboardingPage() {
                 max="10"
                 value={happiness}
                 onChange={(e) => setHappiness(+e.target.value)}
-                className="w-full mb-4"
+                // Added accent-primary for slider color
+                className="w-full mb-4 accent-primary"
               />
             </div>
           )}
 
           <button
             onClick={handleNext}
-            className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+            // Replaced button colors
+            className="w-full bg-primary text-primary-foreground py-2 rounded hover:bg-primary/90"
           >
             {step < 6 ? "Next" : "Finish"}
           </button>
 
-          {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
+          {/* Replaced error text color */}
+          {message && <p className="mt-4 text-destructive text-center">{message}</p>}
         </div>
       </main>
-      <footer className="p-4 text-center text-gray-500 dark:text-gray-400">
+      {/* Themed the inline footer */}
+      <footer className="p-4 text-center text-muted-foreground border-t border-border">
         &copy; {new Date().getFullYear()} Horizon
       </footer>
     </div>

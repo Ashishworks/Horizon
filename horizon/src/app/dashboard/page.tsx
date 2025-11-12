@@ -32,33 +32,6 @@ export default function Dashboard() {
 
   // Fetch user profile only if logged in
   useEffect(() => {
-  if (!session) return;
-
-  const fetchUser = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    if (error || !data) {
-      console.error("Error fetching user:", error?.message);
-      router.replace("/auth"); // redirect if fetch fails
-    } else {
-      setUser(data);
-
-      // Redirect to onboarding if name or location is missing
-      if (!data.name || !data.location) {
-        router.replace("/onboarding");
-      }
-    }
-
-    setLoading(false);
-  };
-
-  fetchUser();
-}, [session, supabase, router]);
-  useEffect(() => {
     if (!session) return;
 
     const fetchUser = async () => {
@@ -73,6 +46,11 @@ export default function Dashboard() {
         router.replace("/auth"); // redirect if fetch fails
       } else {
         setUser(data);
+
+        // Redirect to onboarding if name or location is missing
+        if (!data.name || !data.location) {
+          router.replace("/onboarding");
+        }
       }
 
       setLoading(false);
@@ -81,19 +59,24 @@ export default function Dashboard() {
     fetchUser();
   }, [session, supabase, router]);
 
+  // NOTE: Removed duplicated useEffect block that was here
+
   if (loading || sessionLoading) {
     // Skeleton loader while fetching
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full p-6 bg-white shadow rounded">
+      // Replaced bg-gray-50 with bg-background
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        {/* Replaced bg-white with bg-card */}
+        <div className="max-w-md w-full p-6 bg-card shadow rounded">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-300 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/5"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+            {/* Replaced bg-gray-300 and bg-gray-200 with bg-muted */}
+            <div className="h-6 bg-muted rounded w-1/2"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-2/3"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+            <div className="h-4 bg-muted rounded w-1/4"></div>
+            <div className="h-4 bg-muted rounded w-2/5"></div>
+            <div className="h-4 bg-muted rounded w-1/3"></div>
           </div>
         </div>
       </div>
@@ -103,8 +86,10 @@ export default function Dashboard() {
   if (!user) return null; // Prevent rendering if no user
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full p-6 bg-white shadow rounded text-black">
+    // Replaced bg-gray-50 with bg-background
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      {/* Replaced bg-white and text-black with bg-card and text-card-foreground */}
+      <div className="max-w-md w-full p-6 bg-card shadow rounded text-card-foreground">
         <h1 className="text-3xl font-bold mb-6">
           Welcome, {user.name || "User"}!
         </h1>

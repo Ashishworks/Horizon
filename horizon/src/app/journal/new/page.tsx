@@ -1,10 +1,11 @@
 'use client';
 
+
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { format } from 'date-fns';
-import { Toaster, toast } from 'react-hot-toast'; // <-- IMPORT TOAST
+import { toast } from 'react-hot-toast';
 import { TextHoverEffect } from '@/app/components/ui/text-hover';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
@@ -66,8 +67,7 @@ export default function JournalPage() {
             } = await supabase.auth.getUser();
 
             if (!user) {
-                toast.error('Please log in to access your journal.'); // <-- REPLACED ALERT
-                router.push('/login'); // <-- ❗️ IMPORTANT: Update '/login'
+                router.push('/auth'); // <-- ❗️ IMPORTANT: Update '/login'
             } else {
                 setUserId(user.id);
             }
@@ -140,7 +140,7 @@ export default function JournalPage() {
             setLoading(true);
 
             if (!userId) {
-                router.push('/login');
+                router.push('/auth');
                 throw new Error('User session not found. Please log in again.');
             }
 
@@ -200,9 +200,9 @@ export default function JournalPage() {
 
     if (!userId) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <Toaster position="top-center" /> {/* Add Toaster here too */}
-                <p className="text-black dark:text-white text-lg animate-pulse">
+            <div className="h-screen w-full flex items-center justify-center bg-background">
+                
+                <p className="text-foreground text-lg animate-pulse">
                     Loading Journal...
                 </p>
             </div>
@@ -210,8 +210,8 @@ export default function JournalPage() {
     }
 
     return (
-        <div className="h-screen py-10 px-4 bg-gray-50 dark:bg-gray-900 text-black dark:text-white flex flex-col items-center">
-            <Toaster position="top-center" /> {/* <-- ADD TOASTER COMPONENT */}
+        <div className="h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center">
+            
 
             {/* Header */}
             <h1 className="w-full flex justify-center mt-10">
@@ -221,7 +221,7 @@ export default function JournalPage() {
             </h1>
 
             {/* Card Container */}
-            <div className="w-full max-w-4xl bg-white dark:bg-gray-800 p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden">
+            <div className="w-full max-w-4xl bg-card p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border">
                 {/* Stepper */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">
@@ -312,7 +312,7 @@ export default function JournalPage() {
                                         handleChange('stress_triggers', e.target.value)
                                     }
                                     placeholder="What triggered stress today?"
-                                    className="w-full p-2 border rounded h-20 dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded h-20 bg-input border-border"
                                 ></textarea>
                             </div>
 
@@ -325,7 +325,7 @@ export default function JournalPage() {
                                     onChange={(e) =>
                                         handleChange('negative_thoughts', e.target.value as 'Yes' | 'No')
                                     }
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 >
                                     <option value="">Select</option>
                                     <option value="Yes">Yes</option>
@@ -339,7 +339,7 @@ export default function JournalPage() {
                                             handleChange('negative_thoughts_detail', e.target.value)
                                         }
                                         placeholder="Describe briefly (optional)"
-                                        className="w-full p-2 border rounded h-20 mt-2 dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-full p-2 border rounded h-20 mt-2 bg-input border-border"
                                     ></textarea>
                                 )}
                             </div>
@@ -361,7 +361,7 @@ export default function JournalPage() {
                                             handleChange('sleep_quality', e.target.value)
                                         }
                                         placeholder="Good, Okay, Poor..."
-                                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-full p-2 border rounded bg-input border-border"
                                     />
                                 </div>
                                 <div className="flex-1">
@@ -376,7 +376,7 @@ export default function JournalPage() {
                                         onChange={(e) =>
                                             handleChange('sleep_hours', +e.target.value)
                                         }
-                                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-full p-2 border rounded bg-input border-border"
                                     />
                                 </div>
                             </div>
@@ -392,8 +392,8 @@ export default function JournalPage() {
                                             type="button"
                                             onClick={() => handleMultiSelect('exercise', option)}
                                             className={`px-3 py-1 rounded border transition ${entry.exercise.includes(option)
-                                                ? 'bg-blue-500 text-white border-blue-500'
-                                                : 'bg-white dark:bg-gray-700 text-black dark:text-white border-gray-300 dark:border-gray-600'
+                                                    ? 'bg-blue-500 text-white border-blue-500' // Left this as-is, as no 'primary' border was specified
+                                                    : 'bg-input text-muted-foreground border-border'
                                                 }`}
                                         >
                                             {option}
@@ -410,7 +410,7 @@ export default function JournalPage() {
                                                 ?.replace('Other: ', '') || ''
                                         }
                                         onChange={handleOtherExerciseChange}
-                                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-full p-2 border rounded bg-input border-border"
                                     />
                                 )}
                             </div>
@@ -427,7 +427,7 @@ export default function JournalPage() {
                                             e.target.value as JournalEntry['diet_status']
                                         )
                                     }
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 >
                                     <option value="">Select</option>
                                     <option value="Okaish">Okaish</option>
@@ -447,7 +447,7 @@ export default function JournalPage() {
                                     onChange={(e) =>
                                         handleChange('caffeine_intake', e.target.value)
                                     }
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 />
                             </div>
 
@@ -462,7 +462,7 @@ export default function JournalPage() {
                                     onChange={(e) =>
                                         handleChange('time_outdoors', e.target.value)
                                     }
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 />
                             </div>
                         </div>
@@ -500,7 +500,7 @@ export default function JournalPage() {
                                                 e.target.value as JournalEntry['productivity_comparison']
                                             )
                                         }
-                                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                        className="w-full p-2 border rounded bg-input border-border"
                                     >
                                         <option value="">Select</option>
                                         <option value="Better">Better than yesterday</option>
@@ -522,7 +522,7 @@ export default function JournalPage() {
                                             e.target.value as 'Decent' | 'Less' | 'Zero'
                                         )
                                     }
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 >
                                     <option value="">Select</option>
                                     <option value="Decent">Decent time</option>
@@ -548,7 +548,7 @@ export default function JournalPage() {
                                             onChange={(e) =>
                                                 handleChange('screen_work', +e.target.value)
                                             }
-                                            className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                            className="w-full p-2 border rounded bg-input border-border"
                                         />
                                     </div>
                                     <div className="flex-1">
@@ -563,7 +563,7 @@ export default function JournalPage() {
                                             onChange={(e) =>
                                                 handleChange('screen_entertainment', +e.target.value)
                                             }
-                                            className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                            className="w-full p-2 border rounded bg-input border-border"
                                         />
                                     </div>
                                 </div>
@@ -579,7 +579,7 @@ export default function JournalPage() {
                                         handleChange('main_challenges', e.target.value)
                                     }
                                     placeholder="Challenges you faced or planned to do"
-                                    className="w-full p-2 border rounded h-20 dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded h-20 bg-input border-border"
                                 ></textarea>
                             </div>
                         </div>
@@ -599,7 +599,7 @@ export default function JournalPage() {
                                         handleChange('special_day', e.target.value)
                                     }
                                     placeholder="E.g., Birthday, Anniversary, Milestone..."
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 />
                             </div>
 
@@ -614,7 +614,7 @@ export default function JournalPage() {
                                         handleChange('deal_breaker', e.target.value)
                                     }
                                     placeholder="The one thing that ruined the day, if any"
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-2 border rounded bg-input border-border"
                                 />
                             </div>
 
@@ -628,7 +628,7 @@ export default function JournalPage() {
                                         handleChange('daily_summary', e.target.value)
                                     }
                                     placeholder="Write your day summary..."
-                                    className="w-full p-4 border rounded h-40 dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-full p-4 border rounded h-40 bg-input border-border"
                                 ></textarea>
                             </div>
                         </div>
@@ -640,7 +640,7 @@ export default function JournalPage() {
                     <button
                         onClick={prevStep}
                         disabled={currentStep === 1}
-                        className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-black dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Previous
                     </button>
@@ -669,8 +669,8 @@ export default function JournalPage() {
                             onClick={handleSubmit}
                             disabled={loading}
                             className={`px-6 py-2 rounded font-semibold transition ${loading
-                                ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                                : 'bg-green-500 hover:bg-green-600 text-white'
+                                    ? 'bg-secondary text-secondary-foreground cursor-not-allowed'
+                                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                 }`}
                         >
                             {loading ? 'Saving...' : 'Submit Journal'}
