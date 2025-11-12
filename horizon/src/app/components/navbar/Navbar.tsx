@@ -16,7 +16,6 @@ interface Profile {
 }
 
 export default function Navbar() {
-  
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -99,7 +98,7 @@ export default function Navbar() {
   const navLinks = [
     { label: "Home", href: "/dashboard" },
     { label: "Reflect", href: "/journal/new" },
-    { label: "Calender", href: "/contact" },
+    { label: "Calender", href: "/journal/calender" },
   ];
 
   const handleLogout = async () => {

@@ -371,7 +371,7 @@ export default function JournalPage() {
                                     <input
                                         type="number"
                                         min={0}
-                                        step={0.5}
+                                        step={1}
                                         value={entry.sleep_hours ?? ''}
                                         onChange={(e) =>
                                             handleChange('sleep_hours', +e.target.value)
@@ -543,7 +543,7 @@ export default function JournalPage() {
                                         <input
                                             type="number"
                                             min={0}
-                                            step={0.5}
+                                            step={1}
                                             value={entry.screen_work ?? ''}
                                             onChange={(e) =>
                                                 handleChange('screen_work', +e.target.value)
@@ -558,7 +558,7 @@ export default function JournalPage() {
                                         <input
                                             type="number"
                                             min={0}
-                                            step={0.5}
+                                            step={1}
                                             value={entry.screen_entertainment ?? ''}
                                             onChange={(e) =>
                                                 handleChange('screen_entertainment', +e.target.value)
