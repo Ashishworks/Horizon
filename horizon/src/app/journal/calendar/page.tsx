@@ -10,6 +10,7 @@ import 'react-day-picker/dist/style.css';
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { MutatingDots } from 'react-loader-spinner';
 
 // --- INTERFACE (No changes) ---
 interface JournalEntry {
@@ -72,7 +73,7 @@ function JournalDisplay({ entry }: { entry: JournalEntry }) {
     const displayDate = new Date(entry.date + 'T12:00:00');
 
     return (
-        <motion.div 
+        <motion.div
             className="grid grid-cols-1 md:grid-cols-2 gap-6" // 2x2 Grid on medium screens+
             initial="hidden"
             animate="visible"
@@ -81,7 +82,7 @@ function JournalDisplay({ entry }: { entry: JournalEntry }) {
             }}
         >
             {/* Use theme variables */}
-            <h2 className="text-3xl font-bold mb-2 text-foreground md:col-span-2"> 
+            <h2 className="text-3xl font-bold mb-2 text-foreground md:col-span-2">
                 {/* Title spans both columns */}
                 Journal for {format(displayDate, 'MMMM d, yyyy')}
             </h2>
@@ -147,12 +148,12 @@ export default function JournalHistoryPage() {
     const [userId, setUserId] = useState<string | null>(null);
     const supabase = createClientComponentClient();
     const router = useRouter();
-    
+
     // --- HOOKS (No changes) ---
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            
+
             if (user) {
                 setUserId(user.id);
             } else {
@@ -163,16 +164,16 @@ export default function JournalHistoryPage() {
         getUser();
     }, [supabase, router]); // <-- Add router to the dependency array
 
-    
+
     useEffect(() => {
         if (!userId || !selectedDate) {
-            setJournalEntry(null); 
+            setJournalEntry(null);
             return;
         }
 
         const fetchJournalEntry = async () => {
             setLoading(true);
-            setJournalEntry(null); 
+            setJournalEntry(null);
             const formattedDate = format(selectedDate, 'yyyy-MM-dd');
 
             try {
@@ -181,11 +182,11 @@ export default function JournalHistoryPage() {
                     .select('*')
                     .eq('user_id', userId)
                     .eq('date', formattedDate)
-                    .single(); 
+                    .single();
 
                 if (error) console.warn('No journal entry found for this date.');
                 if (data) setJournalEntry(data);
-                
+
             } catch (err) {
                 if (err instanceof Error) {
                     console.error('Error fetching journal:', err.message);
@@ -201,10 +202,20 @@ export default function JournalHistoryPage() {
     if (!userId) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
-                
-                <p className="text-foreground text-lg animate-pulse">
-                    Loading History...
-                </p>
+
+
+                <MutatingDots
+                    visible={true}
+                    height="100"
+                    width="100"
+                    color="#ff0000ff"
+                    secondaryColor="#4fa94d"
+                    radius="12.5"
+                    ariaLabel="mutating-dots-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                />
+
             </div>
         );
     }
@@ -213,16 +224,16 @@ export default function JournalHistoryPage() {
         <LayoutGroup>
             {/* Use theme variables */}
             <div className="min-h-screen bg-background text-foreground flex flex-col">
-                
+
                 <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
                     Journal History
                 </h1>
 
                 {/* This is the new responsive layout container */}
                 <div className="w-full max-w-7xl mx-auto flex-grow flex flex-col md:flex-row p-4 md:p-6">
-                    
+
                     {/* 1. CALENDAR COLUMN (No changes) */}
-                    <motion.div 
+                    <motion.div
                         layout // <-- This is the magic! It animates the layout change.
                         transition={{ type: 'spring', stiffness: 200, damping: 25 }}
                         // On mobile: full width. On desktop: 1/4 width.
@@ -230,7 +241,7 @@ export default function JournalHistoryPage() {
                     >
                         {/* Sticky container for desktop */}
                         <div className="md:sticky md:top-24">
-                            <motion.div 
+                            <motion.div
                                 layoutId="calendar-wrapper" // Shares this ID
                                 animate={{ scale: selectedDate ? 1.0 : 1.2 }}
                                 className="w-fit"
@@ -254,7 +265,7 @@ export default function JournalHistoryPage() {
                         <div className="w-full md:pb-32">
                             <AnimatePresence mode="wait">
                                 {loading && (
-                                    <motion.p 
+                                    <motion.p
                                         key="loading"
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
@@ -265,7 +276,7 @@ export default function JournalHistoryPage() {
                                         Loading...
                                     </motion.p>
                                 )}
-                                
+
                                 {!loading && !journalEntry && selectedDate && (
                                     <motion.p
                                         key="no-entry"
@@ -278,14 +289,14 @@ export default function JournalHistoryPage() {
                                         No journal entry found for {format(selectedDate, 'MMMM d, yyyy')}.
                                     </motion.p>
                                 )}
-                                
+
                                 {!loading && journalEntry && (
                                     <JournalDisplay key={journalEntry.date} entry={journalEntry} />
                                 )}
                             </AnimatePresence>
                         </div>
                     </div>
-                
+
                 </div>
             </div>
         </LayoutGroup>

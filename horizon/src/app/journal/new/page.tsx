@@ -10,6 +10,7 @@ import { TextHoverEffect } from '@/app/components/ui/text-hover';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
 import FrostGlassScrollButton from '@/app/components/ui/FrostGlassScrollButton';
+import { MutatingDots } from 'react-loader-spinner';
 
 // Interface for the journal entry data
 interface JournalEntry {
@@ -201,17 +202,24 @@ export default function JournalPage() {
     if (!userId) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
-                
-                <p className="text-foreground text-lg animate-pulse">
-                    Loading Journal...
-                </p>
+                    <MutatingDots
+                        visible={true}
+                        height="100"
+                        width="100"
+                        color="#ff0000ff"
+                        secondaryColor="#4fa94d"
+                        radius="12.5"
+                        ariaLabel="mutating-dots-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                    />
             </div>
         );
     }
 
     return (
         <div className="h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center">
-            
+
 
             {/* Header */}
             <h1 className="w-full flex justify-center mt-10">
@@ -392,8 +400,8 @@ export default function JournalPage() {
                                             type="button"
                                             onClick={() => handleMultiSelect('exercise', option)}
                                             className={`px-3 py-1 rounded border transition ${entry.exercise.includes(option)
-                                                    ? 'bg-blue-500 text-white border-blue-500' // Left this as-is, as no 'primary' border was specified
-                                                    : 'bg-input text-muted-foreground border-border'
+                                                ? 'bg-blue-500 text-white border-blue-500' // Left this as-is, as no 'primary' border was specified
+                                                : 'bg-input text-muted-foreground border-border'
                                                 }`}
                                         >
                                             {option}
@@ -669,8 +677,8 @@ export default function JournalPage() {
                             onClick={handleSubmit}
                             disabled={loading}
                             className={`px-6 py-2 rounded font-semibold transition ${loading
-                                    ? 'bg-secondary text-secondary-foreground cursor-not-allowed'
-                                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                ? 'bg-secondary text-secondary-foreground cursor-not-allowed'
+                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                 }`}
                         >
                             {loading ? 'Saving...' : 'Submit Journal'}

@@ -1,128 +1,334 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSupabaseClient, useSessionContext } from "@supabase/auth-helpers-react";
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { ResponsiveLine } from '@nivo/line';
+import { ResponsivePie } from '@nivo/pie';
+import { ResponsiveBar } from '@nivo/bar';
+import { MutatingDots } from 'react-loader-spinner';
+import { format, parseISO } from 'date-fns';
+import WeeklyActivityRing from './elements/WeeklyActivityRing';
 
-interface UserProfile {
-  id: string;
-  name?: string | null;
-  baseline_happiness?: number | null;
-  typical_sleep_hours?: number | null;
-  common_problems?: string | null;
-  known_conditions?: string | null;
-  location?: string | null;
-  created_at?: string | null;
+// --- 1. FULLY DEFINED INTERFACE ---
+// Based on your journal page, this is the data structure
+interface JournalEntry {
+  id: string; // Added ID, essential for keys
+  date: string; // e.g., '2025-11-16'
+  mood: number;
+  sleep_quality?: string;
+  sleep_hours?: number;
+  exercise: string[];
+  deal_breaker?: string;
+  productivity?: number;
+  productivity_comparison?: 'Better' | 'Same' | 'Worse';
+  overthinking?: number;
+  special_day?: string;
+  stress_level?: number;
+  diet_status?: 'Okaish' | 'Good' | 'Bad';
+  stress_triggers?: string;
+  main_challenges?: string;
+  daily_summary?: string;
+  social_time?: 'Decent' | 'Less' | 'Zero';
+  negative_thoughts?: 'Yes' | 'No';
+  negative_thoughts_detail?: string;
+  screen_work?: number;
+  screen_entertainment?: number;
+  caffeine_intake?: string;
+  time_outdoors?: string;
 }
 
-export default function Dashboard() {
-  const supabase = useSupabaseClient();
-  const { session, isLoading: sessionLoading } = useSessionContext();
+export default function DashboardPage() {
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  // --- 2. INITIALIZED SUPABASE AND ROUTER ---
+  const supabase = createClientComponentClient();
   const router = useRouter();
 
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Redirect immediately if not logged in
+  // --- 3. IMPLEMENTED DATA FETCHING ---
   useEffect(() => {
-    if (!session && !sessionLoading) {
-      router.replace("/auth");
-    }
-  }, [session, sessionLoading, router]);
+    const fetchEntries = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  // Fetch user profile only if logged in
-  useEffect(() => {
-    if (!session) return;
-
-    const fetchUser = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
-      if (error || !data) {
-        console.error("Error fetching user:", error?.message);
-        router.replace("/auth"); // redirect if fetch fails
-      } else {
-        setUser(data);
-
-        // Redirect to onboarding if name or location is missing
-        if (!data.name || !data.location) {
-          router.replace("/onboarding");
-        }
+      if (!user) {
+        router.push('/auth'); // Redirect if not logged in
+        return;
       }
 
+      // Fetch all journal data for this user, ordered by date
+      const { data, error } = await supabase
+        .from('journals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching journal entries:', error);
+      } else if (data) {
+        setEntries(data as JournalEntry[]);
+      }
       setLoading(false);
     };
 
-    fetchUser();
-  }, [session, supabase, router]);
+    fetchEntries();
+  }, [supabase, router]);
 
-  // NOTE: Removed duplicated useEffect block that was here
+  // --- 4. IMPLEMENTED DATA PROCESSING (useMemo) ---
+  const moodStressData = useMemo(() => {
+    if (entries.length === 0) return [];
+    const moodSeries = {
+      id: 'Mood',
+      data: entries.map((entry) => ({
+        x: format(parseISO(entry.date), 'MMM dd'),
+        y: entry.mood ?? 0,
+      })),
+    };
+    const stressSeries = {
+      id: 'Stress',
+      data: entries.map((entry) => ({
+        x: format(parseISO(entry.date), 'MMM dd'),
+        y: entry.stress_level ?? 0,
+      })),
+    };
+    return [moodSeries, stressSeries];
+  }, [entries]);
 
-  if (loading || sessionLoading) {
-    // Skeleton loader while fetching
+  const exercisePieData = useMemo(() => {
+    if (entries.length === 0) return [];
+    const exerciseCounts: { [key: string]: number } = {};
+    entries.forEach((entry) => {
+      if (entry.exercise) {
+        entry.exercise.forEach((ex) => {
+          const cleanEx = ex.startsWith('Other:') ? 'Other' : ex;
+          exerciseCounts[cleanEx] = (exerciseCounts[cleanEx] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(exerciseCounts).map(([name, count]) => ({
+      id: name,
+      label: name,
+      value: count,
+    }));
+  }, [entries]);
+
+  const screenTimeBarData = useMemo(() => {
+    if (entries.length === 0) return [];
+    return entries.map((entry) => ({
+      date: format(parseISO(entry.date), 'MMM dd'),
+      Work: entry.screen_work ?? 0,
+      Entertainment: entry.screen_entertainment ?? 0,
+    }));
+  }, [entries]);
+
+  // --- 5. ADDED LOADING & EMPTY STATES ---
+  if (loading) {
     return (
-      // Replaced bg-gray-50 with bg-background
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        {/* Replaced bg-white with bg-card */}
-        <div className="max-w-md w-full p-6 bg-card shadow rounded">
-          <div className="animate-pulse space-y-4">
-            {/* Replaced bg-gray-300 and bg-gray-200 with bg-muted */}
-            <div className="h-6 bg-muted rounded w-1/2"></div>
-            <div className="h-4 bg-muted rounded w-3/4"></div>
-            <div className="h-4 bg-muted rounded w-2/3"></div>
-            <div className="h-4 bg-muted rounded w-1/2"></div>
-            <div className="h-4 bg-muted rounded w-1/4"></div>
-            <div className="h-4 bg-muted rounded w-2/5"></div>
-            <div className="h-4 bg-muted rounded w-1/3"></div>
-          </div>
-        </div>
+      <div className="h-screen w-full flex items-center justify-center bg-background">
+        <MutatingDots
+          visible={true}
+          height="100"
+          width="100"
+          color="#ff0000ff"
+          secondaryColor="#4fa94d"
+        />
       </div>
     );
   }
 
-  if (!user) return null; // Prevent rendering if no user
+  if (entries.length === 0) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-background text-foreground">
+        <h1 className="text-2xl font-semibold">No journal entries found.</h1>
+        <p className="text-muted-foreground">Go write an entry to see your stats!</p>
+      </div>
+    );
+  }
+
+  // --- 6. IMPLEMENTED NIVO THEME ---
+  const nivoDarkTheme = {
+    axis: {
+      ticks: { text: { fill: '#a1a1aa' } }, // zinc-400
+      legend: { text: { fill: '#f4f4f5' } }, // zinc-100
+    },
+    legends: {
+      text: { fill: '#f4f4f5' },
+    },
+    tooltip: {
+      container: {
+        background: '#27272a', // zinc-800
+        color: '#f4f4f5',
+      },
+    },
+  };
 
   return (
-    // Replaced bg-gray-50 with bg-background
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      {/* Replaced bg-white and text-black with bg-card and text-card-foreground */}
-      <div className="max-w-md w-full p-6 bg-card shadow rounded text-card-foreground">
-        <h1 className="text-3xl font-bold mb-6">
-          Welcome, {user.name || "User"}!
-        </h1>
+    <div className="p-4 md:p-10 bg-background text-foreground min-h-screen ">
+      <h1 className="text-3xl md:text-5xl font-bold mb-8 mt-10">Your Journal Dashboard</h1>
 
-        <div className="space-y-3">
-          <div>
-            <span className="font-semibold">Full Name: </span>
-            <span>{user.name || "Not provided"}</span>
+      {/* --- ROW 1: At-a-Glance --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">
+            This Week&apos;s Activity
+          </h2>
+          <WeeklyActivityRing />
+        </div>
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">Latest Mood</h2>
+          <div className="flex items-center justify-center h-full">
+            <p className="text-7xl font-bold text-blue-400">
+              {/* Use optional chaining and nullish coalescing for safety */}
+              {`${entries[entries.length - 1]?.mood ?? 'N/A'}`}/10
+            </p>
           </div>
-          <div>
-            <span className="font-semibold">Baseline Happiness: </span>
-            <span>{user.baseline_happiness ?? 0}</span>
+        </div>
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">Latest Stress</h2>
+          <div className="flex items-center justify-center h-full">
+            <p className="text-7xl font-bold text-red-400">
+              {`${entries[entries.length - 1]?.stress_level ?? 'N/A'}`}/10
+            </p>
           </div>
-          <div>
-            <span className="font-semibold">Typical Sleep Hours: </span>
-            <span>{user.typical_sleep_hours ?? 8}</span>
-          </div>
-          <div>
-            <span className="font-semibold">Common Problems: </span>
-            <span>{user.common_problems || "None"}</span>
-          </div>
-          <div>
-            <span className="font-semibold">Known Conditions: </span>
-            <span>{user.known_conditions || "None"}</span>
-          </div>
-          <div>
-            <span className="font-semibold">Location: </span>
-            <span>{user.location || "Unknown"}</span>
-          </div>
-          <div>
-            <span className="font-semibold">Joined On: </span>
-            <span>{user.created_at ? new Date(user.created_at).toLocaleDateString() : "Unknown"}</span>
-          </div>
+        </div>
+      </div>
+
+      {/* --- ROW 2 & 3: Main Chart Grid --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px]">
+          <h2 className="text-xl font-semibold mb-4">Mood & Stress Over Time</h2>
+          <ResponsiveLine
+            data={moodStressData}
+            theme={nivoDarkTheme}
+            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+            xScale={{ type: 'point' }}
+            yScale={{ type: 'linear', min: 0, max: 10, stacked: false }}
+            axisBottom={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: 'Date',
+              legendOffset: 36,
+              legendPosition: 'middle',
+            }}
+            axisLeft={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: 'Level (0-10)',
+              legendOffset: -40,
+              legendPosition: 'middle',
+            }}
+            colors={{ scheme: 'set1' }}
+            pointSize={10}
+            pointColor={{ theme: 'background' }}
+            pointBorderWidth={2}
+            pointBorderColor={{ from: 'serieColor' }}
+            useMesh={true}
+            animate={true}
+            legends={[{
+              anchor: 'bottom-right',
+              direction: 'column',
+              justify: false,
+              translateX: 100,
+              translateY: 0,
+              itemsSpacing: 0,
+              itemDirection: 'left-to-right',
+              itemWidth: 80,
+              itemHeight: 20,
+              itemOpacity: 0.75,
+              symbolSize: 12,
+              symbolShape: 'circle',
+            }]}
+          />
+        </div>
+
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px]">
+          <h2 className="text-xl font-semibold mb-4">Exercise Breakdown</h2>
+          <ResponsivePie
+            data={exercisePieData}
+            theme={nivoDarkTheme}
+            margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+            innerRadius={0.5}
+            padAngle={0.7}
+            cornerRadius={3}
+            activeOuterRadiusOffset={8}
+            borderWidth={1}
+            borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+            arcLinkLabelsSkipAngle={10}
+            arcLinkLabelsTextColor="#a1a1aa"
+            arcLinkLabelsThickness={2}
+            arcLinkLabelsColor={{ from: 'color' }}
+            arcLabelsSkipAngle={10}
+            arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+            animate={true}
+            legends={[{
+              anchor: 'bottom',
+              direction: 'row',
+              justify: false,
+              translateX: 0,
+              translateY: 56,
+              itemsSpacing: 0,
+              itemWidth: 100,
+              itemHeight: 18,
+              itemDirection: 'left-to-right',
+              itemOpacity: 1,
+              symbolSize: 18,
+              symbolShape: 'circle',
+            }]}
+          />
+        </div>
+
+        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px] lg:col-span-2">
+          <h2 className="text-xl font-semibold mb-4">Screen Time (Work vs. Entertainment)</h2>
+          <ResponsiveBar
+            data={screenTimeBarData}
+            theme={nivoDarkTheme}
+            keys={['Work', 'Entertainment']}
+            indexBy="date"
+            margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+            padding={0.3}
+            valueScale={{ type: 'linear' }}
+            indexScale={{ type: 'band', round: true }}
+            colors={{ scheme: 'set2' }}
+            groupMode="stacked"
+            borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+            axisBottom={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: 'Date',
+              legendPosition: 'middle',
+              legendOffset: 32,
+            }}
+            axisLeft={{
+              tickSize: 5,
+              tickPadding: 5,
+              tickRotation: 0,
+              legend: 'Hours',
+              legendPosition: 'middle',
+              legendOffset: -40,
+            }}
+            labelSkipWidth={12}
+            labelSkipHeight={12}
+            labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+            animate={true}
+            legends={[{
+              dataFrom: 'keys',
+              anchor: 'bottom-right',
+              direction: 'column',
+              justify: false,
+              translateX: 120,
+              translateY: 0,
+              itemsSpacing: 2,
+              itemWidth: 100,
+              itemHeight: 20,
+              itemDirection: 'left-to-right',
+              itemOpacity: 0.85,
+              symbolSize: 20,
+            }]}
+          />
         </div>
       </div>
     </div>
