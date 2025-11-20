@@ -34,7 +34,7 @@ export default function PageTransition({
 
     setTimeout(() => {
       router.push(targetUrl);
-    }, duration - 200);
+    }, duration - 400);
   };
 
   const wrappedElement = isValidElement(children)
@@ -53,7 +53,7 @@ export default function PageTransition({
           backgroundColor: circleColor,
           transitionDuration: `${duration}ms`,
           ...(reveal
-            ? { width: "2000px", height: "2000px", backdropFilter: `blur(${blurIntensity}px)` }
+            ? { width: "2800px", height: "2800px", backdropFilter: `blur(${blurIntensity}px)` }
             : {}),
         }}
       ></div>

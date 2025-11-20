@@ -8,6 +8,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useUser } from "@supabase/auth-helpers-react";
 import { User as UserIcon, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import PageTransition from "../pagetransitions/PageTransition";
 
 // ... (interface, state, hooks, and functions remain the same) ...
 interface Profile {
@@ -148,9 +149,9 @@ export default function Navbar() {
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
             </button>
-            <Link href="/">
+            <PageTransition targetUrl="/" circleColor="rgba(0, 0, 0, 0.18)" blurIntensity={5} duration = {1000}>
               <span className="text-xl font-bold cursor-pointer">Horizon</span>
-            </Link>
+            </PageTransition>
           </div>
 
           {/* Desktop Menu */}

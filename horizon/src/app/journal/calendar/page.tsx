@@ -11,6 +11,7 @@ import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { MutatingDots } from 'react-loader-spinner';
+import Face from '@/app/components/ui/face';
 
 // --- INTERFACE (No changes) ---
 interface JournalEntry {
@@ -224,7 +225,18 @@ export default function JournalHistoryPage() {
         <LayoutGroup>
             {/* Use theme variables */}
             <div className="min-h-screen bg-background text-foreground flex flex-col">
-
+        <div className="fixed transition-all top-20 right-6 group hidden md:block">
+                        <Face
+                            size={60}
+                            color={4}
+                            shadow={2}
+                            mouthWidth={20}
+                            mouthHeight={12}
+                        />
+                        <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
+                            Don&apos;t touch me!
+                        </span>
+                    </div>
                 <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
                     Journal History
                 </h1>

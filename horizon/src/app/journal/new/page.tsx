@@ -5,12 +5,16 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { format } from 'date-fns';
-import { toast } from 'react-hot-toast';
-import { TextHoverEffect } from '@/app/components/ui/text-hover';
+import { toast, Toaster } from 'react-hot-toast';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
 import FrostGlassScrollButton from '@/app/components/ui/FrostGlassScrollButton';
 import { MutatingDots } from 'react-loader-spinner';
+import Noise from '@/app/components/ui/noise';
+import RotatingText from '@/components/RotatingText';
+import { motion } from 'framer-motion';
+import Face from '@/app/components/ui/face';
+// or whatever source you use for the motion component
 
 // Interface for the journal entry data
 interface JournalEntry {
@@ -40,10 +44,10 @@ interface JournalEntry {
 // Constants
 const exerciseOptions = ['Running', 'Gym', 'Cycling', 'Freeform', 'Other'];
 const stepTitles = [
-    'Step 1: Mental Check-in',
-    'Step 2: Health & Activity',
-    'Step 3: Productivity & Events',
-    'Step 4: Daily Reflection',
+    ' Mental Check-in',
+    ' Health & Activity',
+    ' Productivity & Events',
+    ' Daily Reflection',
 ];
 
 export default function JournalPage() {
@@ -202,42 +206,77 @@ export default function JournalPage() {
     if (!userId) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
-                    <MutatingDots
-                        visible={true}
-                        height="100"
-                        width="100"
-                        color="#ff0000ff"
-                        secondaryColor="#4fa94d"
-                        radius="12.5"
-                        ariaLabel="mutating-dots-loading"
-                        wrapperStyle={{}}
-                        wrapperClass=""
-                    />
+                <MutatingDots
+                    visible={true}
+                    height="100"
+                    width="100"
+                    color="#ff0000ff"
+                    secondaryColor="#4fa94d"
+                    radius="12.5"
+                    ariaLabel="mutating-dots-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                />
             </div>
         );
     }
 
     return (
         <div className="h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center">
-
-
+            <Toaster position="top-center" reverseOrder={false} />
+            <Noise
+                patternSize={500}
+                patternScaleX={1}
+                patternScaleY={1}
+                patternRefreshInterval={10}
+                patternAlpha={10}
+            />
             {/* Header */}
-            <h1 className="w-full flex justify-center mt-10">
-                <div className="w-full max-w-3xl">
-                    <TextHoverEffect text="MARK YOUR DAY!" />
-                </div>
-            </h1>
+            <div className="fixed transition-all top-20 right-6 group hidden md:block">
+                <Face
+                    size={60}
+                    color={4}
+                    shadow={2}
+                    mouthWidth={20}
+                    mouthHeight={12}
+                />
+                <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
+                    Don&apos;t touch me!
+                </span>
+            </div>
+            <motion.h1
+                layout
+                transition={{ duration: 0.3 }}
+                className="flex flex-wrap items-center justify-center mt-10 mb-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center"
+            >
+                Capture Your
+                <RotatingText
+                    texts={['Journey', 'Moments', 'Feelings!', 'Thoughts',]}
+                    mainClassName="px-1 sm:px-2 md:px-3 bg-white text-black overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg ml-2 sm:ml-3 md:ml-4"
+                    staggerFrom={"last"}
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-120%" }}
+                    staggerDuration={0.025}
+                    splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+
+                    rotationInterval={1700}
+                />
+            </motion.h1>
+
+
 
             {/* Card Container */}
-            <div className="w-full max-w-4xl bg-card p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border">
+            <div className="w-full max-w-4xl bg-card p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border animate-candle-glow">
+
                 {/* Stepper */}
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-center text-blue-600 dark:text-blue-400">
+                    <h2 className="text-2xl font-bold text-center text-blue-200 dark:text-blue-200">
                         {stepTitles[currentStep - 1]}
                     </h2>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-4">
                         <div
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                            className="bg-blue-200 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                         ></div>
                     </div>
@@ -278,24 +317,24 @@ export default function JournalPage() {
 
                             <div>
                                 <label className="block font-semibold mb-1">
-                                    Overthinking Status /5
+                                    Overthinking Status
                                 </label>
                                 <input
                                     type="range"
                                     min={0}
-                                    max={5}
+                                    max={10}
                                     value={entry.overthinking ?? 0}
                                     onChange={(e) =>
                                         handleChange('overthinking', +e.target.value)
                                     }
-                                    className="w-full"
+                                    className="w-full glow-slider"
                                 />
                                 <span className="ml-2">{entry.overthinking ?? 0}</span>
                             </div>
 
                             <div>
                                 <label className="block font-semibold mb-1">
-                                    Stress Level /10
+                                    Stress Level
                                 </label>
                                 <input
                                     type="range"
@@ -305,7 +344,7 @@ export default function JournalPage() {
                                     onChange={(e) =>
                                         handleChange('stress_level', +e.target.value)
                                     }
-                                    className="w-full"
+                                    className="w-full glow-slider"
                                 />
                                 <span className="ml-2">{entry.stress_level ?? 0}</span>
                             </div>
@@ -492,7 +531,7 @@ export default function JournalPage() {
                                         onChange={(e) =>
                                             handleChange('productivity', +e.target.value)
                                         }
-                                        className="w-full"
+                                        className="w-full glow-slider"
                                     />
                                     <span className="ml-2">{entry.productivity ?? 5}</span>
                                 </div>
@@ -648,7 +687,7 @@ export default function JournalPage() {
                     <button
                         onClick={prevStep}
                         disabled={currentStep === 1}
-                        className="px-6 py-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-2  bg-black/50 hover:bg-black rounded font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Previous
                     </button>
@@ -665,7 +704,7 @@ export default function JournalPage() {
                     {currentStep < totalSteps && (
                         <button
                             onClick={nextStep}
-                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-semibold transition"
+                            className="px-6 py-2 bg-black/50 hover:bg-black text-white rounded font-semibold transition"
                         >
                             Next
                         </button>
@@ -687,5 +726,6 @@ export default function JournalPage() {
                 </div>
             </div>
         </div>
+
     );
 }
