@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/navigation";
+import Lanyard from "../components/Lanyard";
 
 export default function AuthBox() {
   const supabase = useSupabaseClient();
@@ -53,7 +54,10 @@ export default function AuthBox() {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
+      <div className="absolute inset-0 z-0 pointer-events-none ml-250 ">
+        <Lanyard position={[0, 0, 15]} gravity={[0, -50, 0]} />
+      </div>
+      <div className="relative z-10 bg-white p-8 rounded-xl shadow-md w-96">
         <div className="flex justify-between items-center mb-10">
           <h2 className="text-2xl text-black font-bold">{isLogin ? "Login" : "Sign Up"}</h2>
           <button
