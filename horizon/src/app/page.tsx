@@ -38,6 +38,9 @@ export default function MentalHealthLanding() {
     width: 20,
     height: 10,
   });
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hoveredBar, setHoveredBar] = useState<'left' | 'right' | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const circleRef = useRef<HTMLDivElement | null>(null);
   const mouthTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -62,6 +65,30 @@ export default function MentalHealthLanding() {
     mouthTimeoutRef.current = setTimeout(() => {
       setMouthSize({ width, height });
     }, 500);
+  };
+  useEffect(() => {
+    // Make sure 'ambient.mp3' is in your public folder
+    audioRef.current = new Audio('/controlla.mp3');
+    audioRef.current.loop = true;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) audioRef.current.pause();
+    else audioRef.current.play().catch((e) => console.error(e));
+    setIsPlaying(!isPlaying);
+  };
+
+  const getBarColor = (position: 'left' | 'right') => {
+    if (isPlaying) return "#000000"; // Dark (Black) when playing
+    if (hoveredBar === position) return "#00000090"; // Dark Grey on hover
+    return "#00000020"; // Light/Faint when muted
   };
 
   return (
@@ -119,71 +146,103 @@ export default function MentalHealthLanding() {
       </h1>
 
       {/* Tagline */}
+      {/* Tagline with Interactive Audio Bars */}
       <div className="flex items-center justify-center text-xl sm:text-2xl font-medium mb-12 text-center text-gray-700 gap-2">
-        <Bars
-          height="20"
-          width="20"
-          color="#00000050"
-          ariaLabel="bars-loading"
-          wrapperClass=""
-          visible={true}
-        />
+        
+        {/* Left Bar */}
+        <button 
+          onClick={toggleAudio}
+          onMouseEnter={() => setHoveredBar('left')}
+          onMouseLeave={() => setHoveredBar(null)}
+          className="cursor-pointer p-1 rounded-md hover:bg-gray-100 transition-colors"
+        >
+          <Bars
+            height="20"
+            width="20"
+            color={getBarColor('left')}
+            ariaLabel="bars-loading"
+            visible={true}
+          />
+        </button>
+
         See Your Mind Clearly.
-        <Bars
-          height="20"
-          width="20"
-          color="#00000050"
-          ariaLabel="bars-loading"
-          wrapperClass=""
-          visible={true}
-        />
+        
+        {/* Right Bar */}
+        <button 
+          onClick={toggleAudio}
+          onMouseEnter={() => setHoveredBar('right')}
+          onMouseLeave={() => setHoveredBar(null)}
+          className="cursor-pointer p-1 rounded-md hover:bg-gray-100 transition-colors"
+        >
+          <Bars
+            height="20"
+            width="20"
+            color={getBarColor('right')}
+            ariaLabel="bars-loading"
+            visible={true}
+          />
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="flex flex-wrap justify-center gap-6 mb-12">
+      {/* Stats Container */}
+      {/* Stats Container - Adjusted gap for mobile */}
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mb-12">
         {stats.map((stat, idx) => {
           const displayValue = formatNumber(stat.value);
           const suffix = isBillion(stat.value) ? 'B+' : 'M+';
 
-          // For mobile: 2 per row except last one centered
-          let widthClass = 'w-40 sm:w-48 md:w-52 lg:w-56';
-          if (idx === stats.length - 1) widthClass += ' mx-auto'; // last item centered
+          // SIZE CALCULATION:
+          // Mobile: w-28 (112px) -> approx 2/3 of the original w-40
+          // Tablet/Desktop: Scales back up to original sizes
+          let widthClass = 'w-28 sm:w-48 md:w-52 lg:w-56';
+
+          // Center the last item if it wraps alone
+          if (idx === stats.length - 1) widthClass += ' mx-auto';
 
           return (
             <div
               key={idx}
-              className={`bg-white text-black ${widthClass} h-40 sm:h-48 md:h-52 lg:h-56
-       flex flex-col items-center justify-center rounded-full
-       shadow-[0_20px_40px_rgba(0,0,0,0.25)]
-       hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
-       transition-colors duration-700 ease-in-out
-       transition-shadow`}
+              // HEIGHT CALCULATION: h-28 for mobile matches width
+              className={`bg-white text-black ${widthClass} h-28 sm:h-48 md:h-52 lg:h-56
+          flex flex-col items-center justify-center rounded-full
+          shadow-[0_20px_40px_rgba(0,0,0,0.25)]
+          hover:shadow-[0_25px_60px_rgba(255,0,0,0.6)]
+          transition-colors duration-700 ease-in-out
+          transition-shadow`}
               onMouseEnter={() => { handleMouseEnter(30, -10); setRingColor("#ff7878ff"); }}
               onMouseLeave={() => { handleMouseLeave(20, 10); setRingColor("#00000076"); }}
             >
-              <div className="flex items-baseline justify-center text-3xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
+              {/* TEXT SIZE: Reduced to text-xl on mobile so it fits in the smaller circle */}
+              <div className="flex items-baseline justify-center text-xl sm:text-4xl md:text-5xl font-bold ease-in-out transition-colors">
                 <CountUp
                   from={0}
                   to={displayValue}
                   duration={2}
                   separator=","
-                  className="text-3xl sm:text-4xl md:text-5xl font-bold "
+                  className="text-xl sm:text-4xl md:text-5xl font-bold" // Matches parent text size
                   onStart={() => { }}
                   onEnd={() => { }}
                 />
                 <span className="ml-1">{suffix}</span>
               </div>
-              <p className="mt-2 font-medium text-center text-sm sm:text-base">
+
+              {/* INFO TEXT: Reduced to text-[10px] on mobile */}
+              <p className="mt-1 sm:mt-2 font-medium text-center text-[10px] sm:text-base leading-tight">
                 {stat.info}
               </p>
-              <DNA
-                visible={true}
-                height="50"
-                width="40"
-                ariaLabel="dna-loading"
-                wrapperStyle={{}}
-                wrapperClass="dna-wrapper"
-              />
+
+              {/* SPINNER: Hidden on very small mobile to save space, or you can reduce height/width props */}
+              <div className="scale-75 sm:scale-100 mt-1 sm:mt-0">
+                <DNA
+                  visible={true}
+                  height="40" // Slightly smaller height for mobile
+                  width="40"
+                  ariaLabel="dna-loading"
+                  wrapperStyle={{}}
+                  wrapperClass="dna-wrapper"
+                />
+              </div>
             </div>
           );
         })}
