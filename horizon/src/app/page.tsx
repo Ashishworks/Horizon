@@ -88,7 +88,7 @@ export default function MentalHealthLanding() {
   const getBarColor = (position: 'left' | 'right') => {
     if (isPlaying) return "#000000"; // Dark (Black) when playing
     if (hoveredBar === position) return "#00000090"; // Dark Grey on hover
-    return "#00000020"; // Light/Faint when muted
+    return "#00000050"; // Light/Faint when muted
   };
 
   return (
