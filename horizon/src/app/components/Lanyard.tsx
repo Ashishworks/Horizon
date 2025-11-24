@@ -248,14 +248,21 @@ function Band({ maxSpeed = 50, minSpeed = 0 }) {
                       <Text fontSize={0.1} color="white" position={[-0.70, 2, 0]} anchorX="center" anchorY="middle">
                         DEVELOPER&apos;S NOTE
                       </Text>
+                      <Text fontSize={0.08} color="#888888" position={[-0.70, 1.2, 0]} anchorX="center" anchorY="middle">
+                        for exploring the website
+                      </Text>
                       <Text fontSize={0.1} color="#cccccc" position={[-0.70, 1, 0]} anchorX="center" anchorY="middle">
-                        Use id: demo@gmail.com
+                        Id: demo@gmail.com
                       </Text>
                       <Text fontSize={0.1} color="#cccccc" position={[-0.70, 0.8, 0]} anchorX="center" anchorY="middle">
                         Pass: easypass
                       </Text>
-                      <Text fontSize={0.08} color="#888888" position={[-0.70, 0.3, 0]} anchorX="center" anchorY="middle">
-                        (for exploring the website)
+                      
+                      <Text fontSize={0.06} color="#cccccc" position={[-0.70, 0.1, 0]} anchorX="center" anchorY="middle">
+                        Dashboard and light mode 
+                      </Text>
+                      <Text fontSize={0.06} color="#cccccc" position={[-0.70, 0.01, 0]} anchorX="center" anchorY="middle">
+                       are under development
                       </Text>
                     </group>
                   </group>
