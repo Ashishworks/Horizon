@@ -222,15 +222,15 @@ export default function JournalPage() {
     }
 
     return (
-        <div className="h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center">
+        <div className="relative z-0 h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center overflow-hidden">
+
+
+        {/* Background Noise Layer */}
+        <div className="fixed inset-0 -z-10 opacity-[0.15] pointer-events-none">
+            <Noise patternAlpha={60} />
+        </div>
             <Toaster position="top-center" reverseOrder={false} />
-            <Noise
-                patternSize={500}
-                patternScaleX={1}
-                patternScaleY={1}
-                patternRefreshInterval={10}
-                patternAlpha={10}
-            />
+            
             {/* Header */}
             <div className="fixed transition-all top-20 right-6 group hidden md:block">
                 <Face
