@@ -18,6 +18,7 @@ import ExerciseMoodComparison from './elements/ExerciseMoodComparison';
 import StreakCounter from './elements/StreakCounter';
 import TimeRangeSelector from './elements/TimeRangeSelector';
 import ECGLine from './ui/ECGLine';
+import Face from '../components/ui/face';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -195,10 +196,10 @@ export default function DashboardPage() {
 
       {/* --- ROW 1: At-a-Glance --- */}
       {/* ================= ROW 2: LIFESTYLE ANALYTICS ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
+      <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-30 mb-8">
 
         {/* Weekly Activity */}
-        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10 ">
+        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
           <h2 className="text-lg font-semibold mb-2 text-center">
             This Week&apos;s Activity
           </h2>
@@ -217,18 +218,15 @@ export default function DashboardPage() {
             <ResponsivePie
               data={exercisePieData}
               theme={nivoDarkTheme}
-              margin={{ top: 20, right: 140, bottom: 20, left: 20 }} // 👈 space for legend
+              margin={{ top: 20, right: 140, bottom: 20, left: 20 }}
               innerRadius={0.55}
               padAngle={1.2}
               cornerRadius={3}
               activeOuterRadiusOffset={10}
               borderWidth={1}
               borderColor={{ from: 'color', modifiers: [['darker', 99]] }}
-
               arcLinkLabelsSkipAngle={10}
               arcLabelsSkipAngle={10}
-              arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
-
               legends={[
                 {
                   anchor: 'right',
@@ -237,16 +235,20 @@ export default function DashboardPage() {
                   itemWidth: 80,
                   itemHeight: 18,
                   symbolSize: 12,
-                  symbolShape: 'circle',
                 },
               ]}
               animate
             />
           </div>
+        </div>
 
+        {/* Center Face */}
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 ">
+          <Face size={80} color={4} shadow={2} mouthHeight={18} mouthWidth={25} />
         </div>
 
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
