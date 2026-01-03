@@ -179,7 +179,7 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center mb-8 gap-4 mt-16 ">
         {/* Left */}
         <h1 className="text-3xl md:text-5xl font-bold">
-          Your Journal Dashboard
+          Dashboard Reflection
         </h1>
         <div className="mx-2">
           <ECGLine />
@@ -238,12 +238,13 @@ export default function DashboardPage() {
                 },
               ]}
               animate
+              colors={['#3B0764', '#5B21B6','#7C3AED']}
             />
           </div>
         </div>
 
         {/* Center Face */}
-        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 ">
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 opacity-10">
           <Face size={80} color={4} shadow={2} mouthHeight={18} mouthWidth={25} />
         </div>
 
