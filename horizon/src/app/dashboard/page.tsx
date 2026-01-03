@@ -9,6 +9,15 @@ import { ResponsiveBar } from '@nivo/bar';
 import { MutatingDots } from 'react-loader-spinner';
 import { format, parseISO } from 'date-fns';
 import WeeklyActivityRing from './elements/WeeklyActivityRing';
+import AverageMoodCard from './elements/AverageMoodCard';
+import StressTrendIndicator from './elements/StressTrendIndicator';
+import SleepConsistencyRing from './elements/SleepConsistencyRing';
+import RiskLevelBadge from './elements/RiskLevelBadge';
+import InsightOfTheWeek from './elements/InsightOfTheWeek';
+import ExerciseMoodComparison from './elements/ExerciseMoodComparison';
+import StreakCounter from './elements/StreakCounter';
+import TimeRangeSelector from './elements/TimeRangeSelector';
+import ECGLine from './ui/ECGLine';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -41,6 +50,7 @@ interface JournalEntry {
 export default function DashboardPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState<7 | 30 | 90>(7);
   // --- 2. INITIALIZED SUPABASE AND ROUTER ---
   const supabase = createClientComponentClient();
   const router = useRouter();
@@ -164,33 +174,116 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-4 md:p-10 bg-background text-foreground min-h-screen ">
-      <h1 className="text-3xl md:text-5xl font-bold mb-8 mt-10">Your Journal Dashboard</h1>
+    <div className="p-4 md:p-10 bg-background text-foreground min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center mb-8 gap-4 mt-16 ">
+        {/* Left */}
+        <h1 className="text-3xl md:text-5xl font-bold">
+          Your Journal Dashboard
+        </h1>
+        <div className="mx-2">
+          <ECGLine />
+        </div>
+
+        {/* Right */}
+        <div className="flex items-center gap-4 md:ml-auto">
+          <RiskLevelBadge />
+          <TimeRangeSelector value={range} onChange={setRange} />
+        </div>
+      </div>
+
+
 
       {/* --- ROW 1: At-a-Glance --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
+      {/* ================= ROW 2: LIFESTYLE ANALYTICS ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-8">
+
+        {/* Weekly Activity */}
+        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10 ">
+          <h2 className="text-lg font-semibold mb-2 text-center">
             This Week&apos;s Activity
           </h2>
-          <WeeklyActivityRing />
-        </div>
-        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">Latest Mood</h2>
-          <div className="flex items-center justify-center h-full">
-            <p className="text-7xl font-bold text-blue-400">
-              {/* Use optional chaining and nullish coalescing for safety */}
-              {`${entries[entries.length - 1]?.mood ?? 'N/A'}`}/10
-            </p>
+          <div className="flex-1">
+            <WeeklyActivityRing />
           </div>
         </div>
-        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[300px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">Latest Stress</h2>
-          <div className="flex items-center justify-center h-full">
-            <p className="text-7xl font-bold text-red-400">
-              {`${entries[entries.length - 1]?.stress_level ?? 'N/A'}`}/10
-            </p>
+
+        {/* Exercise Breakdown */}
+        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
+          <h2 className="text-lg font-semibold mb-2 text-center">
+            Exercise Breakdown
+          </h2>
+
+          <div className="flex-1">
+            <ResponsivePie
+              data={exercisePieData}
+              theme={nivoDarkTheme}
+              margin={{ top: 20, right: 140, bottom: 20, left: 20 }} // 👈 space for legend
+              innerRadius={0.55}
+              padAngle={1.2}
+              cornerRadius={3}
+              activeOuterRadiusOffset={10}
+              borderWidth={1}
+              borderColor={{ from: 'color', modifiers: [['darker', 99]] }}
+
+              arcLinkLabelsSkipAngle={10}
+              arcLabelsSkipAngle={10}
+              arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+
+              legends={[
+                {
+                  anchor: 'right',
+                  direction: 'column',
+                  translateX: 40,
+                  itemWidth: 80,
+                  itemHeight: 18,
+                  symbolSize: 12,
+                  symbolShape: 'circle',
+                },
+              ]}
+              animate
+            />
           </div>
+
+        </div>
+
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">
+            Average Mood
+          </h2>
+          <AverageMoodCard />
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">
+            Stress Trend
+          </h2>
+          <StressTrendIndicator />
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">
+            Sleep Consistency
+          </h2>
+          <SleepConsistencyRing />
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-2 text-center">
+            Insight of the Week
+          </h2>
+          <InsightOfTheWeek />
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            Exercise vs Mood
+          </h2>
+          <ExerciseMoodComparison />
+        </div>
+        <div className="bg-card p-6 rounded-xl border border-border h-[300px]">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            Exercise vs Mood
+          </h2>
+          <ExerciseMoodComparison />
         </div>
       </div>
 
@@ -244,41 +337,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px]">
-          <h2 className="text-xl font-semibold mb-4">Exercise Breakdown</h2>
-          <ResponsivePie
-            data={exercisePieData}
-            theme={nivoDarkTheme}
-            margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-            innerRadius={0.5}
-            padAngle={0.7}
-            cornerRadius={3}
-            activeOuterRadiusOffset={8}
-            borderWidth={1}
-            borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-            arcLinkLabelsSkipAngle={10}
-            arcLinkLabelsTextColor="#a1a1aa"
-            arcLinkLabelsThickness={2}
-            arcLinkLabelsColor={{ from: 'color' }}
-            arcLabelsSkipAngle={10}
-            arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
-            animate={true}
-            legends={[{
-              anchor: 'bottom',
-              direction: 'row',
-              justify: false,
-              translateX: 0,
-              translateY: 56,
-              itemsSpacing: 0,
-              itemWidth: 100,
-              itemHeight: 18,
-              itemDirection: 'left-to-right',
-              itemOpacity: 1,
-              symbolSize: 18,
-              symbolShape: 'circle',
-            }]}
-          />
-        </div>
+
 
         <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px] lg:col-span-2">
           <h2 className="text-xl font-semibold mb-4">Screen Time (Work vs. Entertainment)</h2>
