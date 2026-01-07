@@ -57,12 +57,12 @@ export default function AuthBox() {
     <div className="relative min-h-screen bg-gray-100">
       {/* Top-right image */}
       <Image
-        src="/note.png"
+        src="/note3.png"
         alt="Sticky Note"
-        width={300}
-        height={300}
+        width={250}
+        height={250}
         priority
-        className="absolute top-12 right-6 rotate-3"
+        className="absolute top-18 right-6 -rotate-4"
       />
 
       {/* Centered login/signup */}
