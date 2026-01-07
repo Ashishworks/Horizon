@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { MutatingDots } from 'react-loader-spinner';
 import Face from '@/app/components/ui/face';
+import Computer from '@/app/components/lottie/computer';
 
 // --- INTERFACE (No changes) ---
 interface JournalEntry {
@@ -225,18 +226,18 @@ export default function JournalHistoryPage() {
         <LayoutGroup>
             {/* Use theme variables */}
             <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <div className="fixed transition-all top-20 right-6 group hidden md:block">
-                        <Face
-                            size={60}
-                            color={4}
-                            shadow={2}
-                            mouthWidth={20}
-                            mouthHeight={12}
-                        />
-                        <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
-                            Don&apos;t touch me!
-                        </span>
-                    </div>
+                <div className="fixed transition-all top-20 right-6 group hidden md:block">
+                    <Face
+                        size={60}
+                        color={4}
+                        shadow={2}
+                        mouthWidth={20}
+                        mouthHeight={12}
+                    />
+                    <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
+                        Don&apos;t touch me!
+                    </span>
+                </div>
                 <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
                     Journal History
                 </h1>
@@ -268,6 +269,16 @@ export default function JournalHistoryPage() {
                                     fixedWeeks
                                 />
                             </motion.div>
+                            {selectedDate && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    className="mt-4"
+                                >
+                                    <Computer size={350}/>
+                                </motion.div>
+                            )}
                         </div>
                     </motion.div>
 
