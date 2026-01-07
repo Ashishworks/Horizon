@@ -65,19 +65,45 @@ export default function DashboardPage() {
   const hasEnoughData = filteredEntries.length >= 2;
   const nivoDarkTheme = useMemo(() => ({
     axis: {
-      ticks: { text: { fill: '#a1a1aa' } },
-      legend: { text: { fill: '#f4f4f5' } },
+      ticks: {
+        text: { fill: '#a1a1aa' },
+        line: {
+          stroke: '#3f3f46',
+          strokeWidth: 1,
+        },
+      },
+      legend: {
+        text: { fill: '#f4f4f5' },
+      },
+      domain: {
+        line: {
+          stroke: '#3f3f46',
+        },
+      },
     },
+
+    grid: {
+      line: {
+        stroke: '#3f3f46',
+        strokeWidth: 1,
+        strokeOpacity: 0.25, // 🔥 lower opacity here
+      },
+    },
+
     legends: {
       text: { fill: '#f4f4f5' },
     },
+
     tooltip: {
       container: {
         background: '#27272a',
         color: '#f4f4f5',
+        borderRadius: 8,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
       },
     },
   }), []);
+
 
   // --- 2. INITIALIZED SUPABASE AND ROUTER ---
   const supabase = createClientComponentClient();
@@ -293,7 +319,7 @@ export default function DashboardPage() {
             />
           </div>
         </div>
-      
+
         {/* Center Face */}
         {/* <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none opacity-5">
           <Face size={80} color={4} shadow={2} mouthHeight={18} mouthWidth={25} />
@@ -489,113 +515,241 @@ export default function DashboardPage() {
       </div>
 
       {/* --- INSIGHT ROW: Best / Worst / Sleep --- */}
-      
+
 
 
       {/* --- ROW 2 & 3: Main Chart Grid --- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-card text-card-foreground p-8 rounded-xl shadow border border-border h-[400px] md:h-[500px]">
+
+        {/* Mood & Stress */}
+        <div className="bg-card p-8 rounded-xl border border-border h-[400px] md:h-[500px]">
+
           <h2 className="text-xl font-semibold mb-4">Mood & Stress Over Time</h2>
           {hasEnoughData ? (
-            <ResponsiveLine
-              data={moodStressData}
-              theme={nivoDarkTheme}
-              margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-              xScale={{ type: 'point' }}
-              yScale={{ type: 'linear', min: 0, max: 10, stacked: false }}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Date',
-                legendOffset: 36,
-                legendPosition: 'middle',
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Level (0-10)',
-                legendOffset: -40,
-                legendPosition: 'middle',
-              }}
-              colors={{ scheme: 'set1' }}
-              pointSize={10}
-              pointColor={{ theme: 'background' }}
-              pointBorderWidth={2}
-              pointBorderColor={{ from: 'serieColor' }}
-              useMesh={true}
-              animate={true}
-              legends={[{
-                anchor: 'bottom-right',
-                direction: 'column',
-                justify: false,
-                translateX: 100,
-                translateY: 0,
-                itemsSpacing: 0,
-                itemDirection: 'left-to-right',
-                itemWidth: 80,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: 'circle',
-              }]}
-            />
+            <div className="h-full">
+              <ResponsiveLine
+                data={moodStressData}
+
+                /* ===== THEME ===== */
+                theme={nivoDarkTheme}
+
+                /* ===== LAYOUT ===== */
+                margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
+
+
+
+
+
+                /* ===== SCALES ===== */
+                xScale={{ type: 'point' }}
+                yScale={{
+                  type: 'linear',
+                  min: 0,
+                  max: 10,
+                  stacked: false,
+                  reverse: false,
+                }}
+
+                /* ===== AXES ===== */
+                axisBottom={{
+                  tickSize: 5,
+                  tickPadding: 6,
+                  tickRotation: 0,
+                  legend: 'Date',
+                  legendOffset: 36,
+                  legendPosition: 'middle',
+                }}
+                axisLeft={{
+                  tickSize: 5,
+                  tickPadding: 6,
+                  tickRotation: 0,
+                  legend: 'Level (0–10)',
+                  legendOffset: -45,
+                  legendPosition: 'middle',
+                }}
+
+                /* ===== GRID ===== */
+                enableGridX={false}
+                enableGridY={true}
+
+                /* ===== LINE STYLE ===== */
+                curve="monotoneX"
+                lineWidth={3}
+
+                /* ===== COLORS (SEMANTIC) ===== */
+                colors={(d) =>
+                  d.id === 'Mood' ? '#22c55e' : '#ef4444'
+                }
+
+                /* ===== POINTS ===== */
+                pointSize={6}
+                pointColor={{ theme: 'background' }}
+                pointBorderWidth={2}
+                pointBorderColor={{ from: 'serieColor' }}
+                pointLabelYOffset={-12}
+
+                /* ===== INTERACTION ===== */
+                useMesh={true}
+                enableSlices="x"
+                sliceTooltip={({ slice }) => (
+                  <div className="bg-background border border-border rounded-md p-2 text-xs">
+                    {slice.points.map((point) => (
+                      <div key={point.id} className="flex gap-2 items-center">
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: point.seriesColor }}
+                        />
+                        <span className="text-muted-foreground">
+                          {point.seriesId}:
+                        </span>
+                        <span className="font-medium">{point.data.y}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+
+                /* ===== LEGEND ===== */
+                legends={[
+                  {
+                    anchor: 'top-right',
+                    direction: 'column',
+                    justify: false,
+                    translateX: -20,   // ⬅ pull inside
+                    translateY: 20,    // ⬇ push down
+                    itemsSpacing: 6,
+                    itemWidth: 80,
+                    itemHeight: 18,
+                    itemDirection: 'left-to-right',
+                    itemOpacity: 0.85,
+                    symbolSize: 10,
+                    symbolShape: 'square',
+                  },
+                ]}
+
+
+                /* ===== ANIMATION ===== */
+                animate={true}
+                motionConfig="gentle"
+              /></div>
+
           ) : (
             <p className="text-center text-muted-foreground mt-10">
               Add more entries to see trends
             </p>
           )}
         </div>
-        <div className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border h-[400px] md:h-[500px] lg:col-span-2">
+        {/* Screen Time */}
+        <div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
+
+
           <h2 className="text-xl font-semibold mb-4">Screen Time (Work vs. Entertainment)</h2>
           <ResponsiveBar
             data={screenTimeBarData}
+
+            /* ===== THEME ===== */
             theme={nivoDarkTheme}
+
+            /* ===== DATA ===== */
             keys={['Work', 'Entertainment']}
             indexBy="date"
-            margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-            padding={0.3}
+
+            /* ===== LAYOUT ===== */
+            margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
+
+
+
+            padding={0.4}
+            groupMode="stacked"
+
+            /* ===== SCALES ===== */
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
-            colors={{ scheme: 'set2' }}
-            groupMode="stacked"
-            borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+
+            /* ===== COLORS (SEMANTIC) ===== */
+            colors={({ id }) =>
+              id === 'Work' ? '#3b82f6' : '#f97316'
+            }
+
+            /* ===== AXES ===== */
             axisBottom={{
               tickSize: 5,
-              tickPadding: 5,
+              tickPadding: 6,
               tickRotation: 0,
               legend: 'Date',
               legendPosition: 'middle',
-              legendOffset: 32,
+              legendOffset: 36,
             }}
             axisLeft={{
               tickSize: 5,
-              tickPadding: 5,
+              tickPadding: 6,
               tickRotation: 0,
               legend: 'Hours',
               legendPosition: 'middle',
-              legendOffset: -40,
+              legendOffset: -45,
             }}
-            labelSkipWidth={12}
-            labelSkipHeight={12}
-            labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+
+            /* ===== GRID ===== */
+            enableGridX={false}
+            enableGridY={true}
+
+            /* ===== BAR STYLE ===== */
+            borderRadius={6}
+            borderColor={{
+              from: 'color',
+              modifiers: [['darker', 1.3]],
+            }}
+
+            /* ===== LABELS ===== */
+            enableLabel={false}
+
+            /* ===== INTERACTION ===== */
+            enableTotals={true}
+            totalsOffset={10}
+
+            tooltip={({ id, value, color, indexValue }) => (
+              <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-md">
+                <div className="mb-1 text-[11px] text-muted-foreground text-center">
+                  {indexValue}
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="capitalize text-muted-foreground">
+                      {id}
+                    </span>
+                  </div>
+                  <span className="font-semibold">{value}h</span>
+                </div>
+              </div>
+            )}
+
+            /* ===== LEGEND ===== */
+            legends={[
+              {
+                dataFrom: 'keys',
+                anchor: 'top-right',
+                direction: 'column',
+                translateX: -20,  // ⬅ inside
+                translateY: 20,   // ⬇ below top
+                itemWidth: 90,
+                itemHeight: 18,
+                itemsSpacing: 6,
+                symbolSize: 10,
+                itemOpacity: 0.85,
+              },
+            ]}
+
+
+            /* ===== ANIMATION ===== */
             animate={true}
-            legends={[{
-              dataFrom: 'keys',
-              anchor: 'bottom-right',
-              direction: 'column',
-              justify: false,
-              translateX: 120,
-              translateY: 0,
-              itemsSpacing: 2,
-              itemWidth: 100,
-              itemHeight: 20,
-              itemDirection: 'left-to-right',
-              itemOpacity: 0.85,
-              symbolSize: 20,
-            }]}
+            motionConfig="gentle"
           />
+
         </div>
       </div>
     </div>

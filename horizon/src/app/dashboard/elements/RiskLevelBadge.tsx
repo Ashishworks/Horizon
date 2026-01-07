@@ -26,7 +26,7 @@ export default function RiskLevelBadge() {
 
       let score = 0;
 
-      /* ---------------- Last 7 days mental signals ---------------- */
+      /* -------- Last 7 days mental signals -------- */
       const fromDate = format(subDays(new Date(), 6), 'yyyy-MM-dd');
 
       const { data: recent, error } = await supabase
@@ -39,9 +39,11 @@ export default function RiskLevelBadge() {
         const avgMood =
           recent.reduce((s, e) => s + (e.mood ?? 0), 0) / recent.length;
         const avgStress =
-          recent.reduce((s, e) => s + (e.stress_level ?? 0), 0) / recent.length;
+          recent.reduce((s, e) => s + (e.stress_level ?? 0), 0) /
+          recent.length;
         const avgSleep =
-          recent.reduce((s, e) => s + (e.sleep_hours ?? 0), 0) / recent.length;
+          recent.reduce((s, e) => s + (e.sleep_hours ?? 0), 0) /
+          recent.length;
 
         const hasNegativeThoughts = recent.some(
           (e) => e.negative_thoughts === 'Yes'
@@ -53,7 +55,7 @@ export default function RiskLevelBadge() {
         if (avgSleep < 6) score += 1;
       }
 
-      /* ---------------- Weekly consistency ---------------- */
+      /* -------- Weekly consistency -------- */
       const start = startOfWeek(new Date(), { weekStartsOn: 1 });
       const end = endOfWeek(new Date(), { weekStartsOn: 1 });
 
@@ -66,7 +68,7 @@ export default function RiskLevelBadge() {
 
       if ((count ?? 0) < 3) score += 1;
 
-      /* ---------------- Final risk ---------------- */
+      /* -------- Final risk -------- */
       if (score >= 5) setRisk('High');
       else if (score >= 3) setRisk('Medium');
       else setRisk('Low');
@@ -77,14 +79,16 @@ export default function RiskLevelBadge() {
     computeRisk();
   }, [supabase]);
 
+  /* -------- Loading -------- */
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <MutatingDots visible height="80" width="80" color="#ff0000ff" />
+        <MutatingDots visible height="80" width="80" color="#22c55e" />
       </div>
     );
   }
 
+  /* -------- No data -------- */
   if (!risk) {
     return (
       <p className="text-muted-foreground text-center">
@@ -93,33 +97,58 @@ export default function RiskLevelBadge() {
     );
   }
 
+  /* -------- UI config -------- */
   const config = {
     Low: {
-      color: 'bg-green-500/20 text-green-400 border-green-500/10',
       label: 'Low Risk',
       desc: 'Stable mental patterns',
+      styles: `
+        border-green-400/40
+        text-green-300
+        bg-green-400/15
+        shadow-[0_0_25px_rgba(34,197,94,0.25)]
+      `,
     },
     Medium: {
-      color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40',
       label: 'Medium Risk',
       desc: 'Some warning signals detected',
+      styles: `
+        border-yellow-400/40
+        text-yellow-300
+        bg-yellow-400/15
+        shadow-[0_0_25px_rgba(250,204,21,0.25)]
+      `,
     },
     High: {
-      color: 'bg-red-500/20 text-red-400 border-red-500/40',
       label: 'High Risk',
       desc: 'Sustained stress or low mood',
+      styles: `
+        border-red-400/40
+        text-red-300
+        bg-red-400/15
+        shadow-[0_0_30px_rgba(239,68,68,0.35)]
+      `,
     },
   };
 
-  const { color, label, desc } = config[risk];
+  const { label, desc, styles } = config[risk];
 
+  /* -------- Glass Badge -------- */
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center h-full gap-3">
       <div
-        className={`px-4 py-2 rounded-full border text-lg font-semibold ${color}`}
+        className={`
+          px-6 py-2 rounded-full
+          border backdrop-blur-xl
+          bg-white/5
+          font-semibold text-lg
+          transition-all duration-300
+          ${styles}
+        `}
       >
         {label}
       </div>
+
       
     </div>
   );

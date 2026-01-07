@@ -35,11 +35,12 @@ const ECGLine: React.FC<ECGLineProps> = ({ speed = 3 }) => {
           L460 50
           L600 50
         "
-        stroke="#00ff88"
+        stroke="#22c55e"
         strokeWidth={1}
         strokeLinecap="round"
         strokeLinejoin="round"
         className="ecg-line"
+        stdDeviation={3}
         style={{ animationDuration: `${speed}s` }}
       />
     </svg>
