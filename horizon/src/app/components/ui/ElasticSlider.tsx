@@ -66,6 +66,7 @@ function Slider({
   stepSize,
   leftIcon,
   rightIcon,
+  onValueChange,
 }: SliderProps) {
   const [value, setValue] = useState(defaultValue);
   const sliderRef = useRef<HTMLDivElement | null>(null);
@@ -98,17 +99,20 @@ function Slider({
   });
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.buttons > 0 && sliderRef.current) {
-      const { left, width } = sliderRef.current.getBoundingClientRect();
-      let newValue = startingValue + ((e.clientX - left) / width) * (maxValue - startingValue);
+  if (e.buttons > 0 && sliderRef.current) {
+    const { left, width } = sliderRef.current.getBoundingClientRect();
+    let newValue =
+      startingValue + ((e.clientX - left) / width) * (maxValue - startingValue);
 
-      if (isStepped) newValue = Math.round(newValue / stepSize) * stepSize;
-      newValue = Math.min(Math.max(newValue, startingValue), maxValue);
+    if (isStepped) newValue = Math.round(newValue / stepSize) * stepSize;
+    newValue = Math.min(Math.max(newValue, startingValue), maxValue);
 
-      setValue(newValue);
-      clientX.jump(e.clientX);
-    }
-  };
+    setValue(newValue);
+    onValueChange?.(newValue); // ✅ THIS IS THE KEY LINE
+    clientX.jump(e.clientX);
+  }
+};
+
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     handlePointerMove(e);
