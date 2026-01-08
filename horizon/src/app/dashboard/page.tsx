@@ -22,6 +22,7 @@ import Face from '../components/ui/face';
 import SleepingEmoji from '../components/lottie/sleeping';
 import Unwell from '../components/lottie/unwell';
 import Smoothymon from '../components/lottie/Smoothymon';
+import MoodOverviewHorizontal from './elements/MoodOverviewHorizontal';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -367,7 +368,7 @@ export default function DashboardPage() {
         </div>
 
 
-{/* Sleep Consistency (1/2) */}
+        {/* Sleep Consistency (1/2) */}
         <div className="bg-card p-6 rounded-xl border border-border min-h-[150px] md:col-span-2">
 
           {/* Row 1: Title */}
@@ -418,7 +419,7 @@ export default function DashboardPage() {
           <h2 className="text-xl font-semibold mb-4 text-center bg-gradient-to-br from-red-500/10 to-transparent rounded-xl">
             Worst Day
           </h2>
-              
+
           {/* Row 2: Centered content */}
           <div className="flex-1 flex items-center">
             <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 w-full">
@@ -450,7 +451,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      
+
 
       </div>
       {/* --- ROW 2 & 3: Main Chart Grid --- */}
@@ -687,69 +688,12 @@ export default function DashboardPage() {
 
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 mt-8">
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
-            Average Mood
-          </h2>
-          <AverageMoodCard />
-        </div>
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
-            Stress Trend
-          </h2>
-          <StressTrendIndicator />
-        </div>
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
-            Sleep Consistency
-          </h2>
-          <SleepConsistencyRing />
-        </div>
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
-            Insight of the Week
-          </h2>
-          <InsightOfTheWeek />
-        </div>
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-4 text-center">
-            Exercise vs Mood
-          </h2>
-          <ExerciseMoodComparison />
-        </div>
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[280px]">
-          <h2 className="text-xl font-semibold mb-2 text-center">
-            Mood Volatility
-          </h2>
 
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-5xl font-bold">{moodVolatility}</p>
-            <p className="text-sm text-muted-foreground mt-2 text-center">
-              Lower value means more emotional stability
-            </p>
-            <p className={`mt-2 text-sm font-medium ${Number(moodVolatility) <= 2
-              ? 'text-green-500'
-              : Number(moodVolatility) <= 4
-                ? 'text-yellow-500'
-                : 'text-red-500'
-              }`}>
-              {Number(moodVolatility) <= 2
-                ? 'Stable'
-                : Number(moodVolatility) <= 4
-                  ? 'Moderate fluctuations'
-                  : 'High mood swings'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* --- INSIGHT ROW: Best / Worst / Sleep --- */}
-
-
-
-      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
+  <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-2">
+    <MoodOverviewHorizontal />
+  </div>
+</div>
     </div>
   );
 }
