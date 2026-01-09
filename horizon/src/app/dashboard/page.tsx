@@ -25,6 +25,9 @@ import Smoothymon from '../components/lottie/Smoothymon';
 import MoodOverviewHorizontal from './elements/MoodOverviewHorizontal';
 import WeeklyActivityRingSkeleton from './skeletons/WeeklyActivityRingSkeleton';
 import DashboardSkeleton from './skeletons/DashboardSkeleton';
+import RootCauseInsightCard from './elements/RootCauseInsightCard';
+import SecondaryImpactInsight from './elements/SecondaryImpactInsight';
+import GentleSuggestionCard from './elements/GentleSuggestionCard';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -478,11 +481,6 @@ export default function DashboardPage() {
 
                 /* ===== LAYOUT ===== */
                 margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
-
-
-
-
-
                 /* ===== SCALES ===== */
                 xScale={{ type: 'point' }}
                 yScale={{
@@ -526,7 +524,6 @@ export default function DashboardPage() {
                     : 'var(--color-chart-2)'
 
                 }
-
 
                 /* ===== POINTS ===== */
                 pointSize={6}
@@ -607,9 +604,6 @@ export default function DashboardPage() {
 
             /* ===== LAYOUT ===== */
             margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
-
-
-
             padding={0.4}
             groupMode="stacked"
 
@@ -704,11 +698,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-3">
           <MoodOverviewHorizontal />
+          
         </div>
+        <RootCauseInsightCard entries={filteredEntries} />
+        <SecondaryImpactInsight entries={filteredEntries} />
+        <GentleSuggestionCard entries={filteredEntries} />
       </div>
+      
+
     </div>
   );
 }
