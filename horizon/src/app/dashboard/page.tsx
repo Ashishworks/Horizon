@@ -62,11 +62,18 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<7 | 30 | 90>(7);
   const filteredEntries = useMemo(() => {
-    const sorted = [...entries].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    return sorted.slice(-range);
+    if (!entries.length) return [];
+
+    const now = new Date();
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - range + 1);
+
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= cutoff && entryDate <= now;
+    });
   }, [entries, range]);
+
 
   const hasEnoughData = filteredEntries.length >= 2;
   const nivoDarkTheme = useMemo(() => ({
@@ -265,8 +272,16 @@ export default function DashboardPage() {
         {/* Right */}
         <div className="flex items-center gap-4 md:ml-auto">
           <RiskLevelBadge />
-          <TimeRangeSelector value={range} onChange={setRange} />
+
+          <div className="flex flex-col items-center">
+            <TimeRangeSelector value={range} onChange={setRange} />
+            <p className="text-xs text-muted-foreground mt-1">
+              Last {range} days • {filteredEntries.length} entries found
+            </p>
+          </div>
         </div>
+
+
       </div>
       {/* --- ROW 1: At-a-Glance --- */}
       {/* ================= ROW 2: LIFESTYLE ANALYTICS ================= */}
@@ -701,13 +716,13 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
         <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-3">
           <MoodOverviewHorizontal />
-          
+
         </div>
         <RootCauseInsightCard entries={filteredEntries} />
         <SecondaryImpactInsight entries={filteredEntries} />
         <GentleSuggestionCard entries={filteredEntries} />
       </div>
-      
+
 
     </div>
   );

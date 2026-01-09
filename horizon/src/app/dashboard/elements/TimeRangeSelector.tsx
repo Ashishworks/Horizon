@@ -45,10 +45,9 @@ border border-primary/40
           className={`
             relative z-10 w-20 py-1.5 text-sm font-medium
             transition-colors
-            ${
-              value === d
-  ? 'text-primary font-semibold'
-  : 'text-muted-foreground hover:text-primary'
+            ${value === d
+              ? 'text-primary font-semibold'
+              : 'text-muted-foreground hover:text-primary'
             }
           `}
         >
