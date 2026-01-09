@@ -8,7 +8,7 @@ import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
 import { MutatingDots } from 'react-loader-spinner';
 import { format, parseISO } from 'date-fns';
-import WeeklyActivityRing from './elements/WeeklyActivityRing';
+import WeeklyActivityRing from './elements/ActivityRing';
 import AverageMoodCard from './elements/AverageMoodCard';
 import StressTrendIndicator from './elements/StressTrendIndicator';
 import SleepConsistencyRing from './elements/SleepConsistencyRing';
@@ -28,6 +28,7 @@ import DashboardSkeleton from './skeletons/DashboardSkeleton';
 import RootCauseInsightCard from './elements/RootCauseInsightCard';
 import SecondaryImpactInsight from './elements/SecondaryImpactInsight';
 import GentleSuggestionCard from './elements/GentleSuggestionCard';
+import ActivityRing from './elements/ActivityRing';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -290,11 +291,15 @@ export default function DashboardPage() {
         {/* Weekly Activity */}
         <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
           <h2 className="text-lg font-semibold mb-2 text-center">
-            This Week&apos;s Activity
-          </h2>
-          <div className="flex-1">
-            <WeeklyActivityRing />
+  {range === 7
+    ? "Last 7 days Activty"
+    : range === 30
+    ? "Last 30 days Activity"
+    : "Last 3 Months Activity"}
+</h2>
 
+          <div className="flex-1">
+            <ActivityRing entries={filteredEntries} range={range} />
           </div>
         </div>
 
