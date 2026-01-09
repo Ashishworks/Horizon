@@ -74,48 +74,42 @@ export default function MoodOverviewHorizontal() {
     averageMood === null
       ? 'text-muted-foreground'
       : averageMood >= 7
-      ? 'text-green-400'
-      : averageMood >= 4
-      ? 'text-yellow-400'
-      : 'text-red-400';
+        ? 'text-green-400'
+        : averageMood >= 4
+          ? 'text-yellow-400'
+          : 'text-red-400';
 
   const volatilityLabel =
     Number(moodVolatility) <= 2
       ? { text: 'Stable', color: 'text-green-500' }
       : Number(moodVolatility) <= 4
-      ? { text: 'Moderate fluctuations', color: 'text-yellow-500' }
-      : { text: 'High mood swings', color: 'text-red-500' };
+        ? { text: 'Moderate fluctuations', color: 'text-yellow-500' }
+        : { text: 'High mood swings', color: 'text-red-500' };
 
-  /* ================== LOADING ================== */
+  return (
+    <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 h-full items-center">
 
- 
+      {/* ===== Average Mood ===== */}
+      <div className="flex items-center justify-center gap-6 w-full">
+        <p className="text-2xl md:text-4xl font-semibold text-muted-foreground">
+          Average Mood
+        </p>
 
-  /* ================== UI ================== */
-
- return (
-  <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 h-full items-center">
-
-    {/* ===== Average Mood ===== */}
-    <div className="flex items-center justify-center gap-6 w-full">
-  <p className="text-2xl md:text-4xl font-semibold text-muted-foreground">
-    Average Mood
-  </p>
-
-  <p className={`text-6xl font-bold ${moodColor}`}>
-    {averageMood ?? '—'}
-  </p>
-</div>
+        <p className={`text-6xl font-bold ${moodColor}`}>
+          {averageMood ?? '—'}
+        </p>
+      </div>
 
 
-    {/* ===== Divider ===== */}
-    <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-border" />
+      {/* ===== Divider ===== */}
+      <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-border" />
 
-    {/* ===== Mood Volatility (Number Line) ===== */}
-    <div className="flex flex-col justify-center">
-      <MoodVolatilityLine value={Number(moodVolatility)} />
+      {/* ===== Mood Volatility (Number Line) ===== */}
+      <div className="flex flex-col justify-center">
+        <MoodVolatilityLine value={Number(moodVolatility)} />
+      </div>
+
     </div>
-
-  </div>
-);
+  );
 
 }

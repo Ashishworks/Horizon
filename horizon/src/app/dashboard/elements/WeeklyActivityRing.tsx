@@ -64,46 +64,47 @@ export default function WeeklyActivityRing() {
   ];
 
   const CenteredMetric = ({
-    centerX,
-    centerY,
-  }: {
-    centerX: number;
-    centerY: number;
-  }) => (
-    <text
+  centerX,
+  centerY,
+}: {
+  centerX: number;
+  centerY: number;
+}) => (
+  <text
+    x={centerX}
+    y={centerY}
+    textAnchor="middle"
+    dominantBaseline="central"
+    style={{
+      fontSize: '2.25rem',
+      fontWeight: 700,
+      fill: 'var(--color-foreground)',
+    }}
+  >
+    {completed}
+    <tspan
       x={centerX}
-      y={centerY}
-      textAnchor="middle"
-      dominantBaseline="central"
+      dy="1.7em"
       style={{
-        fontSize: '2.25rem',
-        fontWeight: 700,
-        fill: '#f4f4f5',
+        fontSize: '1.125rem',
+        fontWeight: 400,
+        fill: 'var(--color-muted-foreground)',
       }}
     >
-      {completed}
-      <tspan
-        x={centerX}
-        dy="1.7em"
-        style={{
-          fontSize: '1.125rem',
-          fontWeight: 400,
-          fill: '#a1a1aa',
-        }}
-      >
-        / 7 Days
-      </tspan>
-    </text>
-  );
+      / 7 Days
+    </tspan>
+  </text>
+);
 
- if (loading) {
-  return (
-    <div className="flex items-center justify-center h-[260px] gap-22">
-      <WeeklyActivityRingSkeleton />
-      <StreakCounterSkeleton />
-    </div>
-  );
-}
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[260px] gap-8">
+        <WeeklyActivityRingSkeleton />
+        <StreakCounterSkeleton />
+      </div>
+    );
+  }
 
 
   return (
@@ -119,9 +120,10 @@ export default function WeeklyActivityRing() {
           cornerRadius={2}
           activeOuterRadiusOffset={8}
           colors={[
-            'hsl(160, 70%, 50%)',
-            '#3f3f46',
+            'var(--color-chart-1)',
+            'var(--color-border)',
           ]}
+
           enableArcLinkLabels={false}
           arcLabelsComponent={({ datum }: { datum: ComputedDatum<MyPieDatum> }) => {
             if (datum.id !== 'completed' || datum.value === 0) return null;
@@ -135,7 +137,7 @@ export default function WeeklyActivityRing() {
             return (
               <g transform={`translate(${arc.centroid[0]},${arc.centroid[1]})`}>
                 <text
-                  fill={datum.color}
+                  fill="var(--color-foreground)"
                   textAnchor="middle"
                   dominantBaseline="central"
                   style={{ fontSize: 14, fontWeight: 600 }}

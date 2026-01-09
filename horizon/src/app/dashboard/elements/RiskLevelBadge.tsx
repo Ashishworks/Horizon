@@ -9,20 +9,21 @@ type RiskLevel = 'Low' | 'Medium' | 'High' | null;
 
 export default function RiskLevelBadge() {
   function RiskLevelBadgeSkeleton() {
-  return (
-    <div className="flex items-center justify-center h-full animate-pulse">
-      <div
-        className="
+    return (
+      <div className="flex items-center justify-center h-full animate-pulse">
+        <div
+          className="
           h-12 w-44
           rounded-full
-          border border-green-400/30
-          bg-yellow-400/10
-          shadow-[0_0_25px_rgba(250,204,21,0.25)]
+          border border-border
+bg-muted
+dark:shadow-[0_0_25px_rgba(250,204,21,0.25)]
+
         "
-      />
-    </div>
-  );
-}
+        />
+      </div>
+    );
+  }
 
   const [risk, setRisk] = useState<RiskLevel>(null);
   const [loading, setLoading] = useState(true);
@@ -97,8 +98,8 @@ export default function RiskLevelBadge() {
 
   /* -------- Loading -------- */
   if (loading) {
-  return <RiskLevelBadgeSkeleton />;
-}
+    return <RiskLevelBadgeSkeleton />;
+  }
 
 
   /* -------- No data -------- */
@@ -111,58 +112,68 @@ export default function RiskLevelBadge() {
   }
 
   /* -------- UI config -------- */
-  const config = {
-    Low: {
-      label: 'Low Risk',
-      desc: 'Stable mental patterns',
-      styles: `
-        border-green-400/40
-        text-green-300
-        bg-green-400/15
-        shadow-[0_0_25px_rgba(34,197,94,0.25)]
-      `,
-    },
-    Medium: {
-      label: 'Medium Risk',
-      desc: 'Some warning signals detected',
-      styles: `
-        border-yellow-400/40
-        text-yellow-300
-        bg-yellow-400/15
-        shadow-[0_0_25px_rgba(250,204,21,0.25)]
-      `,
-    },
-    High: {
-      label: 'High Risk',
-      desc: 'Sustained stress or low mood',
-      styles: `
-        border-red-400/40
-        text-red-300
-        bg-red-400/15
-        shadow-[0_0_30px_rgba(239,68,68,0.35)]
-      `,
-    },
-  };
+ const config = {
+  Low: {
+    label: 'Low Risk',
+    desc: 'Stable mental patterns',
+    styles: `
+      border-green-500/40
+      text-green-600 dark:text-green-300
+      bg-green-500/10
+      dark:shadow-[0_0_25px_rgba(34,197,94,0.25)]
+    `,
+  },
+  Medium: {
+    label: 'Medium Risk',
+    desc: 'Some warning signals detected',
+    styles: `
+      border-yellow-500/40
+      text-yellow-600 dark:text-yellow-300
+      bg-yellow-500/10
+      dark:shadow-[0_0_25px_rgba(250,204,21,0.25)]
+    `,
+  },
+  High: {
+    label: 'High Risk',
+    desc: 'Sustained stress or low mood',
+    styles: `
+      border-red-500/40
+      text-red-600 dark:text-red-300
+      bg-red-500/10
+      dark:shadow-[0_0_30px_rgba(239,68,68,0.35)]
+    `,
+  },
+};
+
 
   const { label, desc, styles } = config[risk];
 
   /* -------- Glass Badge -------- */
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-3">
-      <div
-        className={`
-          px-6 py-2 rounded-full
-          border backdrop-blur-xl
-          bg-white/5
-          font-semibold text-lg
-          transition-all duration-300
-          ${styles}
-        `}
-      >
-        {label}
-      </div>
+    <div className="flex flex-col items-center justify-center h-full gap-3 perspective-[800px]">
+  <div
+    className={`
+      relative
+      px-5 py-1.5 rounded-full
+      border backdrop-blur-xl
+      bg-card/70
+      font-semibold text-base
+      transition-all duration-300 ease-out
+      transform-gpu
+      hover:-translate-y-1 hover:scale-[1.03]
+      active:translate-y-0 active:scale-[0.98]
+      hover:shadow-lg
+      dark:hover:shadow-[0_0_40px_rgba(0,0,0,0.6)]
+      ${styles}
+    `}
+  >
+    {/* inner glass highlight */}
+    <span className="pointer-events-none absolute inset-0 rounded-full bg-white/5 dark:bg-white/10" />
 
-      
-    </div>
+    {/* content */}
+    <span className="relative z-10">{label}</span>
+  </div>
+</div>
+
   );
 }

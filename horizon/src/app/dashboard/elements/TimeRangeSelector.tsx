@@ -16,9 +16,10 @@ export default function TimeRangeSelector({
     <div
       className="
         relative flex w-fit p-1 rounded-4xl
-        border border-green-500/60
-        bg-white/5 backdrop-blur-md
-        shadow-[0_0_20px_rgba(34,197,94,0.15)]
+        border border-border
+bg-card/60 backdrop-blur-md
+shadow-md dark:shadow-[0_0_20px_rgba(34,197,94,0.15)]
+
       "
     >
       {/* Glass slider */}
@@ -26,7 +27,9 @@ export default function TimeRangeSelector({
         className="
           absolute top-1 left-1
           h-[calc(100%-0.5rem)] w-20 rounded-4xl
-          bg-green-500/10
+          bg-primary/15
+border border-primary/40
+
           backdrop-blur-xl
           border border-green-400/50
           shadow-inner
@@ -44,8 +47,8 @@ export default function TimeRangeSelector({
             transition-colors
             ${
               value === d
-                ? 'text-green-200'
-                : 'text-muted-foreground hover:text-green-300'
+  ? 'text-primary font-semibold'
+  : 'text-muted-foreground hover:text-primary'
             }
           `}
         >

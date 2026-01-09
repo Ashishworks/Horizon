@@ -87,11 +87,12 @@ export default function DashboardPage() {
 
     grid: {
       line: {
-        stroke: '#3f3f46',
+        stroke: 'var(--color-border)',
         strokeWidth: 1,
-        strokeOpacity: 0.25, // 🔥 lower opacity here
+        strokeOpacity: 0.4,
       },
     },
+
 
     legends: {
       text: { fill: '#f4f4f5' },
@@ -234,7 +235,7 @@ export default function DashboardPage() {
   }, [filteredEntries]);
 
   // --- 5. ADDED LOADING & EMPTY STATES ---
- if (loading) return <DashboardSkeleton />;
+  if (loading) return <DashboardSkeleton />;
 
   if (entries.length === 0) {
     return (
@@ -274,7 +275,7 @@ export default function DashboardPage() {
             This Week&apos;s Activity
           </h2>
           <div className="flex-1">
-            {loading ? <WeeklyActivityRingSkeleton /> : <WeeklyActivityRing />}
+            <WeeklyActivityRing />
 
           </div>
         </div>
@@ -294,9 +295,14 @@ export default function DashboardPage() {
               cornerRadius={3}
               activeOuterRadiusOffset={10}
               borderWidth={1}
-              borderColor={{ from: 'color', modifiers: [['darker', 99]] }}
+              borderColor={{ from: 'color', modifiers: [['darker', 1.2]] }}
+
               arcLinkLabelsSkipAngle={10}
               arcLabelsSkipAngle={10}
+              arcLinkLabelsTextColor="var(--color-foreground)"
+              arcLinkLabelsColor="var(--color-foreground)"
+              arcLinkLabelsThickness={0.2}
+
               legends={[
                 {
                   anchor: 'right',
@@ -305,10 +311,18 @@ export default function DashboardPage() {
                   itemWidth: 80,
                   itemHeight: 18,
                   symbolSize: 12,
+                  itemTextColor: 'var(--color-foreground)',
                 },
               ]}
               animate
-              colors={['#4b0a7cff', '#5B21B6', '#7C3AED', '#9260e6ff', '#b99ee8ff']}
+              colors={[
+                'var(--color-chart-1)',
+                'var(--color-chart-2)',
+                'var(--color-chart-3)',
+                'var(--color-chart-4)',
+                'var(--color-chart-5)',
+              ]}
+
             />
           </div>
         </div>
@@ -456,6 +470,7 @@ export default function DashboardPage() {
           {hasEnoughData ? (
             <div className="h-full">
               <ResponsiveLine
+
                 data={moodStressData}
 
                 /* ===== THEME ===== */
@@ -502,19 +517,27 @@ export default function DashboardPage() {
 
                 /* ===== LINE STYLE ===== */
                 curve="monotoneX"
-                lineWidth={3}
+
 
                 /* ===== COLORS (SEMANTIC) ===== */
                 colors={(d) =>
-                  d.id === 'Mood' ? '#22c55e' : '#ef4444'
+                  d.id === 'Mood'
+                    ? 'var(--color-chart-1)'
+                    : 'var(--color-chart-2)'
+
                 }
+
 
                 /* ===== POINTS ===== */
                 pointSize={6}
-                pointColor={{ theme: 'background' }}
-                pointBorderWidth={2}
+                pointColor="white"
+                pointBorderWidth={3}
                 pointBorderColor={{ from: 'serieColor' }}
                 pointLabelYOffset={-12}
+                enableArea={true}
+                areaOpacity={0.08}
+                areaBlendMode="normal"
+
 
                 /* ===== INTERACTION ===== */
                 useMesh={true}
@@ -682,10 +705,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-8">
-  <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-2">
-    <MoodOverviewHorizontal />
-  </div>
-</div>
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-2">
+          <MoodOverviewHorizontal />
+        </div>
+      </div>
     </div>
   );
 }
