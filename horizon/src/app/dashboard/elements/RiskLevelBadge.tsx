@@ -8,6 +8,22 @@ import { subDays, format, startOfWeek, endOfWeek } from 'date-fns';
 type RiskLevel = 'Low' | 'Medium' | 'High' | null;
 
 export default function RiskLevelBadge() {
+  function RiskLevelBadgeSkeleton() {
+  return (
+    <div className="flex items-center justify-center h-full animate-pulse">
+      <div
+        className="
+          h-12 w-44
+          rounded-full
+          border border-green-400/30
+          bg-yellow-400/10
+          shadow-[0_0_25px_rgba(250,204,21,0.25)]
+        "
+      />
+    </div>
+  );
+}
+
   const [risk, setRisk] = useState<RiskLevel>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,12 +97,9 @@ export default function RiskLevelBadge() {
 
   /* -------- Loading -------- */
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <MutatingDots visible height="80" width="80" color="#22c55e" />
-      </div>
-    );
-  }
+  return <RiskLevelBadgeSkeleton />;
+}
+
 
   /* -------- No data -------- */
   if (!risk) {

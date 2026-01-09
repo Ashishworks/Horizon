@@ -6,6 +6,8 @@ import { ResponsivePie, type ComputedDatum } from '@nivo/pie';
 import { MutatingDots } from 'react-loader-spinner';
 import { startOfWeek, endOfWeek, format } from 'date-fns';
 import StreakCounter from './StreakCounter';
+import WeeklyActivityRingSkeleton from '../skeletons/WeeklyActivityRingSkeleton';
+import StreakCounterSkeleton from '../skeletons/StreakCounterSkeleton';
 
 type MyPieDatum = {
   id: string;
@@ -94,13 +96,15 @@ export default function WeeklyActivityRing() {
     </text>
   );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[260px]">
-        <MutatingDots visible height="80" width="80" color="#ff0000ff" />
-      </div>
-    );
-  }
+ if (loading) {
+  return (
+    <div className="flex items-center justify-center h-[260px] gap-22">
+      <WeeklyActivityRingSkeleton />
+      <StreakCounterSkeleton />
+    </div>
+  );
+}
+
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-6 w-full">

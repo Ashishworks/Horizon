@@ -6,6 +6,7 @@ import { MutatingDots } from 'react-loader-spinner';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import FireFlames from '../ui/fireEmoji';
 import TrophyAward from '../ui/trophyEmoji';
+import StreakCounterSkeleton from '../skeletons/StreakCounterSkeleton';
 
 export default function StreakCounter() {
   const [currentStreak, setCurrentStreak] = useState<number>(0);
@@ -73,9 +74,7 @@ export default function StreakCounter() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <MutatingDots visible height="80" width="80" color="#ff0000ff" />
-      </div>
+      <StreakCounterSkeleton/>
     );
   }
 

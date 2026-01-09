@@ -88,13 +88,7 @@ export default function MoodOverviewHorizontal() {
 
   /* ================== LOADING ================== */
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <MutatingDots visible height="80" width="80" color="#ff0000ff" />
-      </div>
-    );
-  }
+ 
 
   /* ================== UI ================== */
 

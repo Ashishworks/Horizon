@@ -23,6 +23,8 @@ import SleepingEmoji from '../components/lottie/sleeping';
 import Unwell from '../components/lottie/unwell';
 import Smoothymon from '../components/lottie/Smoothymon';
 import MoodOverviewHorizontal from './elements/MoodOverviewHorizontal';
+import WeeklyActivityRingSkeleton from './skeletons/WeeklyActivityRingSkeleton';
+import DashboardSkeleton from './skeletons/DashboardSkeleton';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -232,19 +234,8 @@ export default function DashboardPage() {
   }, [filteredEntries]);
 
   // --- 5. ADDED LOADING & EMPTY STATES ---
-  if (loading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
-        <MutatingDots
-          visible={true}
-          height="100"
-          width="100"
-          color="#ff0000ff"
-          secondaryColor="#4fa94d"
-        />
-      </div>
-    );
-  }
+ if (loading) return <DashboardSkeleton />;
+
   if (entries.length === 0) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-background text-foreground">
@@ -283,7 +274,8 @@ export default function DashboardPage() {
             This Week&apos;s Activity
           </h2>
           <div className="flex-1">
-            <WeeklyActivityRing />
+            {loading ? <WeeklyActivityRingSkeleton /> : <WeeklyActivityRing />}
+
           </div>
         </div>
 
