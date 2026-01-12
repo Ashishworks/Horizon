@@ -23,7 +23,7 @@ It also generates professional reports that can help psychiatrists/therapists un
 
 ### Structured Tracking (Optional Fields)
 Each journal entry can include additional structured fields:
-- Happiness score (-10 to 10)
+- Happiness score
 - Confidence level
 - Sleep hours and sleep quality
 - Physical problems/symptoms
@@ -49,7 +49,7 @@ This survey has two purposes:
 
 2. Community Survey Insights (For General Users)
 Horizon can show anonymous aggregated insights, like:
-- Average happiness range of users
+- Average happiness trends
 - Common sleep patterns
 - Frequent physical problems
 - Common mental health concerns
@@ -84,7 +84,7 @@ Each journal entry can store:
 - text (journal content)
 - sentiment (label and score)
 - conditionPrediction (AI result)
-- happinessScore (-10 to 10)
+- happinessScore
 - confidence
 - sleepHours
 - sleepQuality
@@ -98,9 +98,10 @@ Each journal entry can store:
 ## Tech Stack
 
 - Frontend: Next.js, React, Tailwind CSS
-- Backend: Node.js APIs (Next.js API routes / Node backend)
+- Backend: Node.js APIs (Next.js API routes)
 - AI/NLP: Sentiment analysis and condition prediction model/API
-- Database: Add your DB here (MongoDB / Supabase / Firebase / PostgreSQL etc.)
+- Database: Supabase
+- Auth (optional): Supabase Auth
 
 ---
 
@@ -109,7 +110,7 @@ Each journal entry can store:
 - Downloadable report export (PDF)
 - Nearby doctor suggestions (location-based)
 - Advanced analytics dashboard
-- Authentication and multi-user support
+- Multi-user support with authentication
 
 ---
 
