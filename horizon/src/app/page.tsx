@@ -23,7 +23,7 @@ const formatNumber = (num: number) => {
 const isBillion = (num: number) => num >= 1_000_000_000;
 
 const stats: Stat[] = [
-  { label: 'Prevalence', value: 1_100_000_000, info: 'Global mental health' },
+  { label: 'Prevalence', value: 1_100_000_000, info: 'Global mental health problems' },
   { label: 'Depression', value: 332_000_000, info: 'Global depression rate' },
   { label: 'Suicide', value: 727_000, info: 'Global suicide deaths' },
   { label: 'Economic Impact', value: 1_000_000, info: 'Lost productivity' },
