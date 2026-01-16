@@ -291,12 +291,12 @@ export default function DashboardPage() {
         {/* Weekly Activity */}
         <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
           <h2 className="text-lg font-semibold mb-2 text-center">
-  {range === 7
-    ? "Last 7 days Activty"
-    : range === 30
-    ? "Last 30 days Activity"
-    : "Last 3 Months Activity"}
-</h2>
+            {range === 7
+              ? "Last 7 days Activty"
+              : range === 30
+                ? "Last 30 days Activity"
+                : "Last 3 Months Activity"}
+          </h2>
 
           <div className="flex-1">
             <ActivityRing entries={filteredEntries} range={range} />
@@ -308,47 +308,54 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold mb-2 text-center">
             Exercise Breakdown
           </h2>
+
           <div className="flex-1">
-            <ResponsivePie
-              data={exercisePieData}
-              theme={nivoDarkTheme}
-              margin={{ top: 20, right: 140, bottom: 20, left: 20 }}
-              innerRadius={0.55}
-              padAngle={1.2}
-              cornerRadius={3}
-              activeOuterRadiusOffset={10}
-              borderWidth={1}
-              borderColor={{ from: 'color', modifiers: [['darker', 1.2]] }}
+            {(!exercisePieData || exercisePieData.length === 0) ? (
+              <p className="text-muted-foreground text-center mt-24">
+                Do some exercise to see breakdown
+              </p>
+            ) : (
+              <ResponsivePie
+                data={exercisePieData}
+                theme={nivoDarkTheme}
+                margin={{ top: 20, right: 140, bottom: 20, left: 20 }}
+                innerRadius={0.55}
+                padAngle={1.2}
+                cornerRadius={3}
+                activeOuterRadiusOffset={10}
+                borderWidth={1}
+                borderColor={{ from: 'color', modifiers: [['darker', 1.2]] }}
 
-              arcLinkLabelsSkipAngle={10}
-              arcLabelsSkipAngle={10}
-              arcLinkLabelsTextColor="var(--color-foreground)"
-              arcLinkLabelsColor="var(--color-foreground)"
-              arcLinkLabelsThickness={0.2}
+                arcLinkLabelsSkipAngle={10}
+                arcLabelsSkipAngle={10}
+                arcLinkLabelsTextColor="var(--color-foreground)"
+                arcLinkLabelsColor="var(--color-foreground)"
+                arcLinkLabelsThickness={0.2}
 
-              legends={[
-                {
-                  anchor: 'right',
-                  direction: 'column',
-                  translateX: 40,
-                  itemWidth: 80,
-                  itemHeight: 18,
-                  symbolSize: 12,
-                  itemTextColor: 'var(--color-foreground)',
-                },
-              ]}
-              animate
-              colors={[
-                'var(--color-chart-1)',
-                'var(--color-chart-2)',
-                'var(--color-chart-3)',
-                'var(--color-chart-4)',
-                'var(--color-chart-5)',
-              ]}
-
-            />
+                legends={[
+                  {
+                    anchor: 'right',
+                    direction: 'column',
+                    translateX: 40,
+                    itemWidth: 80,
+                    itemHeight: 18,
+                    symbolSize: 12,
+                    itemTextColor: 'var(--color-foreground)',
+                  },
+                ]}
+                animate
+                colors={[
+                  'var(--color-chart-1)',
+                  'var(--color-chart-2)',
+                  'var(--color-chart-3)',
+                  'var(--color-chart-4)',
+                  'var(--color-chart-5)',
+                ]}
+              />
+            )}
           </div>
         </div>
+
 
         {/* Center Face */}
         {/* <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none opacity-5">
@@ -493,14 +500,14 @@ export default function DashboardPage() {
           {hasEnoughData ? (
             <div className="h-full">
               <ResponsiveLine
-
                 data={moodStressData}
 
                 /* ===== THEME ===== */
                 theme={nivoDarkTheme}
 
                 /* ===== LAYOUT ===== */
-                margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
+                margin={{ top: 90, right: 40, bottom: 80, left: 60 }}   // ✅ more top space
+
                 /* ===== SCALES ===== */
                 xScale={{ type: 'point' }}
                 yScale={{
@@ -536,13 +543,11 @@ export default function DashboardPage() {
                 /* ===== LINE STYLE ===== */
                 curve="monotoneX"
 
-
                 /* ===== COLORS (SEMANTIC) ===== */
                 colors={(d) =>
                   d.id === 'Mood'
                     ? 'var(--color-chart-1)'
                     : 'var(--color-chart-2)'
-
                 }
 
                 /* ===== POINTS ===== */
@@ -554,7 +559,6 @@ export default function DashboardPage() {
                 enableArea={true}
                 areaOpacity={0.08}
                 areaBlendMode="normal"
-
 
                 /* ===== INTERACTION ===== */
                 useMesh={true}
@@ -576,15 +580,14 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-
                 /* ===== LEGEND ===== */
                 legends={[
                   {
-                    anchor: 'top-right',
-                    direction: 'column',
+                    anchor: 'top',          // ✅ upper
+                    direction: 'row',       // ✅ horizontal (same clean style)
                     justify: false,
-                    translateX: -20,   // ⬅ pull inside
-                    translateY: 20,    // ⬇ push down
+                    translateX: 0,
+                    translateY: -55,        // ✅ outside chart
                     itemsSpacing: 6,
                     itemWidth: 80,
                     itemHeight: 18,
@@ -595,11 +598,11 @@ export default function DashboardPage() {
                   },
                 ]}
 
-
                 /* ===== ANIMATION ===== */
                 animate={true}
                 motionConfig="gentle"
-              /></div>
+              />
+            </div>
 
           ) : (
             <p className="text-center text-muted-foreground mt-10">
@@ -608,114 +611,99 @@ export default function DashboardPage() {
           )}
         </div>
         {/* Screen Time */}
-        <div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
+        {/* Screen Time */}
+<div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
+  <h2 className="text-xl font-semibold mb-4">
+    Screen Time (Work vs. Entertainment)
+  </h2>
 
+  {screenTimeBarData?.length ? (
+    <ResponsiveBar
+      data={screenTimeBarData}
+      theme={nivoDarkTheme}
+      keys={['Work', 'Entertainment']}
+      indexBy="date"
+      margin={{ top: 90, right: 40, bottom: 80, left: 60 }}
+      padding={0.4}
+      groupMode="stacked"
+      valueScale={{ type: 'linear' }}
+      indexScale={{ type: 'band', round: true }}
+      colors={({ id }) => (id === 'Work' ? '#3b82f6' : '#f97316')}
 
-          <h2 className="text-xl font-semibold mb-4">Screen Time (Work vs. Entertainment)</h2>
-          <ResponsiveBar
-            data={screenTimeBarData}
+      axisBottom={{
+        tickSize: 5,
+        tickPadding: 6,
+        tickRotation: 0,
+        legend: 'Date',
+        legendPosition: 'middle',
+        legendOffset: 36,
+      }}
+      axisLeft={{
+        tickSize: 5,
+        tickPadding: 6,
+        tickRotation: 0,
+        legend: 'Hours',
+        legendPosition: 'middle',
+        legendOffset: -45,
+      }}
 
-            /* ===== THEME ===== */
-            theme={nivoDarkTheme}
+      enableGridX={false}
+      enableGridY={true}
 
-            /* ===== DATA ===== */
-            keys={['Work', 'Entertainment']}
-            indexBy="date"
+      borderRadius={6}
+      borderColor={{
+        from: 'color',
+        modifiers: [['darker', 1.3]],
+      }}
 
-            /* ===== LAYOUT ===== */
-            margin={{ top: 60, right: 40, bottom: 80, left: 60 }}
-            padding={0.4}
-            groupMode="stacked"
+      enableLabel={false}
+      enableTotals={true}
+      totalsOffset={10}
 
-            /* ===== SCALES ===== */
-            valueScale={{ type: 'linear' }}
-            indexScale={{ type: 'band', round: true }}
+      tooltip={({ id, value, color, indexValue }) => (
+        <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-md">
+          <div className="mb-1 text-[11px] text-muted-foreground text-center">
+            {indexValue}
+          </div>
 
-            /* ===== COLORS (SEMANTIC) ===== */
-            colors={({ id }) =>
-              id === 'Work' ? '#3b82f6' : '#f97316'
-            }
-
-            /* ===== AXES ===== */
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 6,
-              tickRotation: 0,
-              legend: 'Date',
-              legendPosition: 'middle',
-              legendOffset: 36,
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 6,
-              tickRotation: 0,
-              legend: 'Hours',
-              legendPosition: 'middle',
-              legendOffset: -45,
-            }}
-
-            /* ===== GRID ===== */
-            enableGridX={false}
-            enableGridY={true}
-
-            /* ===== BAR STYLE ===== */
-            borderRadius={6}
-            borderColor={{
-              from: 'color',
-              modifiers: [['darker', 1.3]],
-            }}
-
-            /* ===== LABELS ===== */
-            enableLabel={false}
-
-            /* ===== INTERACTION ===== */
-            enableTotals={true}
-            totalsOffset={10}
-
-            tooltip={({ id, value, color, indexValue }) => (
-              <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-md">
-                <div className="mb-1 text-[11px] text-muted-foreground text-center">
-                  {indexValue}
-                </div>
-
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="capitalize text-muted-foreground">
-                      {id}
-                    </span>
-                  </div>
-                  <span className="font-semibold">{value}h</span>
-                </div>
-              </div>
-            )}
-
-            /* ===== LEGEND ===== */
-            legends={[
-              {
-                dataFrom: 'keys',
-                anchor: 'top-right',
-                direction: 'column',
-                translateX: -20,  // ⬅ inside
-                translateY: 20,   // ⬇ below top
-                itemWidth: 90,
-                itemHeight: 18,
-                itemsSpacing: 6,
-                symbolSize: 10,
-                itemOpacity: 0.85,
-              },
-            ]}
-
-
-            /* ===== ANIMATION ===== */
-            animate={true}
-            motionConfig="gentle"
-          />
-
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: color }}
+              />
+              <span className="capitalize text-muted-foreground">{id}</span>
+            </div>
+            <span className="font-semibold">{value}h</span>
+          </div>
         </div>
+      )}
+
+      legends={[
+        {
+          dataFrom: 'keys',
+          anchor: 'top',
+          direction: 'row',
+          translateX: 0,
+          translateY: -55,
+          itemWidth: 90,
+          itemHeight: 18,
+          itemsSpacing: 6,
+          symbolSize: 10,
+          itemOpacity: 0.85,
+        },
+      ]}
+
+      animate={true}
+      motionConfig="gentle"
+    />
+  ) : (
+    <p className="text-center text-muted-foreground mt-10">
+      Add more entries to see trends
+    </p>
+  )}
+</div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
