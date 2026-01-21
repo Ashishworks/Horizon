@@ -29,6 +29,7 @@ import RootCauseInsightCard from './elements/RootCauseInsightCard';
 import SecondaryImpactInsight from './elements/SecondaryImpactInsight';
 import GentleSuggestionCard from './elements/GentleSuggestionCard';
 import ActivityRing from './elements/ActivityRing';
+import Cycler from '../components/lottie/cycler';
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -75,6 +76,19 @@ export default function DashboardPage() {
     });
   }, [entries, range]);
 
+  function useIsMobile(breakpoint = 640) {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+      const check = () => setIsMobile(window.innerWidth < breakpoint);
+      check();
+      window.addEventListener("resize", check);
+      return () => window.removeEventListener("resize", check);
+    }, [breakpoint]);
+
+    return isMobile;
+  }
+  const isMobile = useIsMobile();
 
   const hasEnoughData = filteredEntries.length >= 2;
   const nivoDarkTheme = useMemo(() => ({
@@ -261,32 +275,39 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 md:p-10 bg-background text-foreground min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center mb-8 gap-4 mt-16 ">
+      <div className="flex flex-col md:flex-row md:items-center mb-8 gap-4 mt-16">
         {/* Left */}
-        <h1 className="text-3xl md:text-5xl font-bold">
+        <h1 className="text-3xl md:text-5xl font-bold text-center md:text-left">
           Dashboard Reflection
         </h1>
-        <div className="mx-2">
+
+
+        {/* ECG line: new line in mobile, inline in desktop */}
+        <div className=" hidden md:block w-full md:w-auto md:mx-2">
           <ECGLine />
         </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-4 md:ml-auto">
-          <RiskLevelBadge />
+        {/* Right: stack in mobile, row in desktop */}
+        <div className="flex flex-col gap-4 w-full md:w-auto md:flex-row md:items-center md:ml-auto">
+          {/* Risk Badge: full width in mobile */}
+          <div className="w-full md:w-auto">
+            <RiskLevelBadge />
+          </div>
 
-          <div className="flex flex-col items-center">
+          {/* Selector: full width in mobile */}
+          <div className="flex flex-col items-center md:items-center w-full md:w-auto">
             <TimeRangeSelector value={range} onChange={setRange} />
             <p className="text-xs text-muted-foreground mt-1">
               Last {range} days • {filteredEntries.length} entries found
             </p>
           </div>
         </div>
-
-
       </div>
+
       {/* --- ROW 1: At-a-Glance --- */}
       {/* ================= ROW 2: LIFESTYLE ANALYTICS ================= */}
       <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
 
         {/* Weekly Activity */}
         <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
@@ -311,20 +332,36 @@ export default function DashboardPage() {
 
           <div className="flex-1">
             {(!exercisePieData || exercisePieData.length === 0) ? (
-              <p className="text-muted-foreground text-center mt-24">
-                Do some exercise to see breakdown
-              </p>
+              <div className="flex flex-col items-center">
+  <Cycler size={200} />
+  <p className="text-muted-foreground text-center mt-4">
+    Do some exercise to see breakdown
+  </p>
+</div>
+
+
             ) : (
               <ResponsivePie
                 data={exercisePieData}
                 theme={nivoDarkTheme}
-                margin={{ top: 20, right: 140, bottom: 20, left: 20 }}
-                innerRadius={0.55}
+
+                // ✅ Desktop margin same as your original
+                // ✅ Mobile margin smaller so pie becomes smaller
+                margin={
+                  isMobile
+                    ? { top: 40, right: 80, bottom: 40, left: 80 }
+                    : { top: 20, right: 140, bottom: 20, left: 20 }
+                }
+
+                // ✅ Desktop inner radius same as your original
+                // ✅ Mobile inner radius slightly more (thinner ring = looks smaller)
+                innerRadius={isMobile ? 0.6 : 0.55}
+
                 padAngle={1.2}
-                cornerRadius={3}
+                cornerRadius={4}
                 activeOuterRadiusOffset={10}
                 borderWidth={1}
-                borderColor={{ from: 'color', modifiers: [['darker', 1.2]] }}
+                borderColor={{ from: "color", modifiers: [["darker", 1.2]] }}
 
                 arcLinkLabelsSkipAngle={10}
                 arcLabelsSkipAngle={10}
@@ -332,29 +369,37 @@ export default function DashboardPage() {
                 arcLinkLabelsColor="var(--color-foreground)"
                 arcLinkLabelsThickness={0.2}
 
-                legends={[
-                  {
-                    anchor: 'right',
-                    direction: 'column',
-                    translateX: 40,
-                    itemWidth: 80,
-                    itemHeight: 18,
-                    symbolSize: 12,
-                    itemTextColor: 'var(--color-foreground)',
-                  },
-                ]}
+                // ✅ Desktop legend same as before
+                // ✅ Hide legend only on mobile (this prevents ugly overlap)
+                legends={
+                  isMobile
+                    ? []
+                    : [
+                      {
+                        anchor: "right",
+                        direction: "column",
+                        translateX: 40,
+                        itemWidth: 80,
+                        itemHeight: 18,
+                        symbolSize: 12,
+                        itemTextColor: "var(--color-foreground)",
+                      },
+                    ]
+                }
+
                 animate
                 colors={[
-                  'var(--color-chart-1)',
-                  'var(--color-chart-2)',
-                  'var(--color-chart-3)',
-                  'var(--color-chart-4)',
-                  'var(--color-chart-5)',
+                  "var(--color-chart-1)",
+                  "var(--color-chart-2)",
+                  "var(--color-chart-3)",
+                  "var(--color-chart-4)",
+                  "var(--color-chart-5)",
                 ]}
               />
             )}
           </div>
         </div>
+
 
 
         {/* Center Face */}
@@ -611,98 +656,97 @@ export default function DashboardPage() {
           )}
         </div>
         {/* Screen Time */}
-        {/* Screen Time */}
-<div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
-  <h2 className="text-xl font-semibold mb-4">
-    Screen Time (Work vs. Entertainment)
-  </h2>
+        <div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
+          <h2 className="text-xl font-semibold mb-4">
+            Screen Time (Work vs. Entertainment)
+          </h2>
+          
+          {screenTimeBarData?.length ? (
+            <ResponsiveBar
+              data={screenTimeBarData}
+              theme={nivoDarkTheme}
+              keys={['Work', 'Entertainment']}
+              indexBy="date"
+              margin={{ top: 90, right: 40, bottom: 80, left: 60 }}
+              padding={0.4}
+              groupMode="stacked"
+              valueScale={{ type: 'linear' }}
+              indexScale={{ type: 'band', round: true }}
+              colors={({ id }) => (id === 'Work' ? '#3b82f6' : '#f97316')}
 
-  {screenTimeBarData?.length ? (
-    <ResponsiveBar
-      data={screenTimeBarData}
-      theme={nivoDarkTheme}
-      keys={['Work', 'Entertainment']}
-      indexBy="date"
-      margin={{ top: 90, right: 40, bottom: 80, left: 60 }}
-      padding={0.4}
-      groupMode="stacked"
-      valueScale={{ type: 'linear' }}
-      indexScale={{ type: 'band', round: true }}
-      colors={({ id }) => (id === 'Work' ? '#3b82f6' : '#f97316')}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 6,
+                tickRotation: 0,
+                legend: 'Date',
+                legendPosition: 'middle',
+                legendOffset: 36,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 6,
+                tickRotation: 0,
+                legend: 'Hours',
+                legendPosition: 'middle',
+                legendOffset: -45,
+              }}
 
-      axisBottom={{
-        tickSize: 5,
-        tickPadding: 6,
-        tickRotation: 0,
-        legend: 'Date',
-        legendPosition: 'middle',
-        legendOffset: 36,
-      }}
-      axisLeft={{
-        tickSize: 5,
-        tickPadding: 6,
-        tickRotation: 0,
-        legend: 'Hours',
-        legendPosition: 'middle',
-        legendOffset: -45,
-      }}
+              enableGridX={false}
+              enableGridY={true}
 
-      enableGridX={false}
-      enableGridY={true}
+              borderRadius={6}
+              borderColor={{
+                from: 'color',
+                modifiers: [['darker', 1.3]],
+              }}
 
-      borderRadius={6}
-      borderColor={{
-        from: 'color',
-        modifiers: [['darker', 1.3]],
-      }}
+              enableLabel={false}
+              enableTotals={true}
+              totalsOffset={10}
 
-      enableLabel={false}
-      enableTotals={true}
-      totalsOffset={10}
+              tooltip={({ id, value, color, indexValue }) => (
+                <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-md">
+                  <div className="mb-1 text-[11px] text-muted-foreground text-center">
+                    {indexValue}
+                  </div>
 
-      tooltip={({ id, value, color, indexValue }) => (
-        <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2 text-xs shadow-md">
-          <div className="mb-1 text-[11px] text-muted-foreground text-center">
-            {indexValue}
-          </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="capitalize text-muted-foreground">{id}</span>
+                    </div>
+                    <span className="font-semibold">{value}h</span>
+                  </div>
+                </div>
+              )}
 
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: color }}
-              />
-              <span className="capitalize text-muted-foreground">{id}</span>
-            </div>
-            <span className="font-semibold">{value}h</span>
-          </div>
+              legends={[
+                {
+                  dataFrom: 'keys',
+                  anchor: 'top',
+                  direction: 'row',
+                  translateX: 0,
+                  translateY: -55,
+                  itemWidth: 90,
+                  itemHeight: 18,
+                  itemsSpacing: 6,
+                  symbolSize: 10,
+                  itemOpacity: 0.85,
+                },
+              ]}
+
+              animate={true}
+              motionConfig="gentle"
+            />
+          ) : (
+            <p className="text-center text-muted-foreground mt-10">
+              Add more entries to see trends
+            </p>
+          )}
         </div>
-      )}
-
-      legends={[
-        {
-          dataFrom: 'keys',
-          anchor: 'top',
-          direction: 'row',
-          translateX: 0,
-          translateY: -55,
-          itemWidth: 90,
-          itemHeight: 18,
-          itemsSpacing: 6,
-          symbolSize: 10,
-          itemOpacity: 0.85,
-        },
-      ]}
-
-      animate={true}
-      motionConfig="gentle"
-    />
-  ) : (
-    <p className="text-center text-muted-foreground mt-10">
-      Add more entries to see trends
-    </p>
-  )}
-</div>
 
       </div>
 

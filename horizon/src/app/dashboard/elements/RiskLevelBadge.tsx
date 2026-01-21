@@ -2,28 +2,37 @@
 
 import { useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { MutatingDots } from 'react-loader-spinner';
 import { subDays, format, startOfWeek, endOfWeek } from 'date-fns';
 
 type RiskLevel = 'Low' | 'Medium' | 'High' | null;
 
 export default function RiskLevelBadge() {
   function RiskLevelBadgeSkeleton() {
-    return (
-      <div className="flex items-center justify-center h-full animate-pulse">
-        <div
-          className="
-          h-12 w-44
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-3 perspective-[800px]">
+      <div
+        className="
+          relative
+          px-4 py-1
           rounded-full
           border border-border
-bg-muted
-dark:shadow-[0_0_25px_rgba(250,204,21,0.25)]
-
+          bg-muted
+          backdrop-blur-xl
+          animate-pulse
+          min-w-[90px]
+          dark:shadow-[0_0_25px_rgba(250,204,21,0.25)]
         "
-        />
+      >
+        {/* inner glass highlight */}
+        <span className="pointer-events-none absolute inset-0 rounded-full bg-white/5 dark:bg-white/10" />
+
+        {/* fake text block (keeps height same as badge but hidden) */}
+        <span className="invisible text-sm font-semibold">Low</span>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   const [risk, setRisk] = useState<RiskLevel>(null);
   const [loading, setLoading] = useState(true);

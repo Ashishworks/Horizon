@@ -79,7 +79,8 @@ export default function StreakCounter() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full space-y-4">
+    <div className="flex flex-row md:flex-col items-center justify-center h-full gap-8 md:gap-4">
+
       <div className="text-center">
         <p className="text-5xl font-bold text-orange-400"><FireFlames></FireFlames> {currentStreak}</p>
         <p className="text-sm text-muted-foreground">Current Streak</p>

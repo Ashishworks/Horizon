@@ -1,7 +1,7 @@
 // components/skeletons/StreakCounterSkeleton.tsx
 export default function StreakCounterSkeleton() {
   return (
-    <div className="flex flex-col items-center justify-center h-full space-y-6">
+    <div className="flex flex-row md:flex-col items-center justify-center h-full gap-8 md:gap-6">
       
       {/* Current Streak Skeleton */}
       <div className="text-center space-y-2">

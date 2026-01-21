@@ -18,7 +18,7 @@ export default function GentleSuggestionCard({ entries }: Props) {
     if (entries.length < 4) {
       return {
         title: 'Small steps go a long way',
-        message: 'Keep journaling — suggestions will appear as patterns emerge.',
+        message: 'Keep journaling, suggestions will appear as patterns emerge.',
         tone: null,
       };
     }

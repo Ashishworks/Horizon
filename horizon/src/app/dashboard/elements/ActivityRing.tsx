@@ -77,9 +77,11 @@ export default function ActivityRing({ entries, range }: ActivityRingProps) {
         />
       </div>
 
-      <div className="w-full md:w-1/2 h-[260px] flex items-center justify-center">
+      <div className="hidden md:flex w-full md:w-1/2 h-[260px] items-center justify-center">
         <StreakCounter />
       </div>
+      
+
     </div>
   );
 }
