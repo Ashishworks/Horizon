@@ -12,9 +12,10 @@ type MyPieDatum = {
 interface ActivityRingProps {
   entries: any[];
   range: 7 | 30 | 90;
+  allEntries: any[];
 }
 
-export default function ActivityRing({ entries, range }: ActivityRingProps) {
+export default function ActivityRing({ entries, range,allEntries }: ActivityRingProps) {
   const completed = entries.length;
   const remaining = Math.max(0, range - completed);
 
@@ -78,7 +79,7 @@ export default function ActivityRing({ entries, range }: ActivityRingProps) {
       </div>
 
       <div className="hidden md:flex w-full md:w-1/2 h-[260px] items-center justify-center">
-        <StreakCounter />
+        <StreakCounter entries={allEntries} />
       </div>
       
 

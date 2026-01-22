@@ -6,7 +6,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
-import { MutatingDots } from 'react-loader-spinner';
+// import { MutatingDots } from 'react-loader-spinner';
 import { format, parseISO } from 'date-fns';
 import WeeklyActivityRing from './elements/ActivityRing';
 import AverageMoodCard from './elements/AverageMoodCard';
@@ -291,7 +291,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4 w-full md:w-auto md:flex-row md:items-center md:ml-auto">
           {/* Risk Badge: full width in mobile */}
           <div className="w-full md:w-auto">
-            <RiskLevelBadge />
+            <RiskLevelBadge entries={entries} />
           </div>
 
           {/* Selector: full width in mobile */}
@@ -320,7 +320,7 @@ export default function DashboardPage() {
           </h2>
 
           <div className="flex-1">
-            <ActivityRing entries={filteredEntries} range={range} />
+            <ActivityRing entries={filteredEntries} range={range} allEntries={entries} />
           </div>
         </div>
 
