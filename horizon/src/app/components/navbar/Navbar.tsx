@@ -84,7 +84,7 @@ export default function Navbar() {
   const navLinks = [
     { label: "Home", href: "/dashboard" },
     { label: "Reflect", href: "/journal/new" },
-    { label: "Calender", href: "/journal/calendar" },
+    { label: "Calendar", href: "/journal/calendar" },
   ];
 
   const handleLogout = async () => {

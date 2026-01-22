@@ -255,10 +255,11 @@ export default function JournalHistoryPage() {
                         {/* Sticky container for desktop */}
                         <div className="md:sticky md:top-24">
                             <motion.div
-                                layoutId="calendar-wrapper" // Shares this ID
+                                layoutId="calendar-wrapper"
                                 animate={{ scale: selectedDate ? 1.0 : 1.2 }}
-                                className="w-fit"
+                                className="w-fit scale-[0.86] md:scale-100 origin-top"
                             >
+
                                 <DayPicker
                                     mode="single"
                                     selected={selectedDate}
@@ -276,7 +277,7 @@ export default function JournalHistoryPage() {
                                     transition={{ duration: 0.4, ease: 'easeOut' }}
                                     className="mt-4"
                                 >
-                                    <Computer size={350}/>
+                                    <Computer size={350} />
                                 </motion.div>
                             )}
                         </div>
