@@ -141,66 +141,54 @@ export default function JournalPage() {
 
     // --- SUBMIT ---
     const handleSubmit = async () => {
-        // Use toast.promise for a great loading/success/error UX
         const promise = (async () => {
             setLoading(true);
 
             if (!userId) {
-                router.push('/auth');
-                throw new Error('User session not found. Please log in again.');
+                router.push("/auth");
+                throw new Error("User session not found. Please log in again.");
             }
 
             if (!entry.mood) {
-                throw new Error('Please select your mood before submitting.');
+                throw new Error("Please select your mood before submitting.");
             }
 
-            const today = format(new Date(), 'yyyy-MM-dd');
+            const today = format(new Date(), "yyyy-MM-dd");
 
-            // ... inside handleSubmit
-
-            // 1. Filter the array: Remove the 'Other' toggle and any empty 'Other: ' strings
+            // ✅ Filter exercise
             const exercisesToSave = entry.exercise
-                ? entry.exercise.filter(ex => ex !== 'Other' && ex.trim() !== 'Other:')
-                : []; // Default to an empty array
+                ? entry.exercise.filter((ex) => ex !== "Other" && ex.trim() !== "Other:")
+                : [];
 
-            // 2. Prepare data for Supabase
-            const journalData = {
-                user_id: userId,
-                date: today,
-                ...entry,
-                // ✅ FIX: Send the filtered array directly, or null if it's empty
-                exercise: exercisesToSave.length ? exercisesToSave : null,
-                updated_at: new Date(),
-            };
-            // ...
+            // ✅ CALL API (server will: save to supabase + delete redis keys)
+            const res = await fetch("/api/journal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...entry,
+                    date: today,
+                    exercise: exercisesToSave.length ? exercisesToSave : null,
+                }),
+            });
 
-            const { error } = await supabase
-                .from('journals')
-                .upsert(journalData, { onConflict: 'user_id,date' });
+            const json = await res.json();
 
-            if (error) throw error;
+            if (!res.ok) {
+                throw new Error(json.error || "Failed to save journal");
+            }
         })();
 
-        // This will show a loading toast, then success or error
         try {
             await toast.promise(promise, {
-                loading: 'Saving journal...',
-                success: ' Journal saved successfully!',
-                error: (err) => ` Error: ${err.message || 'Failed to save.'}`,
+                loading: "Saving journal...",
+                success: " Journal saved successfully!",
+                error: (err) => ` Error: ${err.message || "Failed to save."}`,
             });
-            // router.push('/dashboard'); // Optionally redirect on success
-        } catch (err) {
-            // Check if the error is an Error object before accessing .message
-            if (err instanceof Error) {
-                console.error('Error saving journal:', err.message);
-            } else {
-                console.error('An unknown error occurred:', err);
-            }
-            // The toast.promise handles showing the error toast
         } finally {
             setLoading(false);
         }
     };
+
 
     // --- RENDER ---
 
@@ -226,12 +214,12 @@ export default function JournalPage() {
         <div className="relative z-0 h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center overflow-hidden">
 
 
-        {/* Background Noise Layer */}
-        <div className="fixed inset-0 -z-10 opacity-[0.15] pointer-events-none">
-            <Noise patternAlpha={60} />
-        </div>
+            {/* Background Noise Layer */}
+            <div className="fixed inset-0 -z-10 opacity-[0.15] pointer-events-none">
+                <Noise patternAlpha={60} />
+            </div>
             <Toaster position="top-center" reverseOrder={false} />
-            
+
             {/* Header */}
             <div className="fixed transition-all top-20 right-6 group hidden md:block">
                 <Face
