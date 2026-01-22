@@ -143,33 +143,35 @@ export default function DashboardPage() {
 
   // --- 3. IMPLEMENTED DATA FETCHING ---
   useEffect(() => {
-    const fetchEntries = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const fetchEntries = async () => {
+    try {
+      setLoading(true);
 
-      if (!user) {
-        router.push('/auth'); // Redirect if not logged in
+      const res = await fetch("/api/journals", { cache: "no-store" });
+
+      if (res.status === 401) {
+        router.push("/auth");
         return;
       }
 
-      // Fetch all journal data for this user, ordered by date
-      const { data, error } = await supabase
-        .from('journals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: true });
+      const json = await res.json();
 
-      if (error) {
-        console.error('Error fetching journal entries:', error);
-      } else if (data) {
-        setEntries(data as JournalEntry[]);
+      if (!res.ok) {
+        console.error(json.error || "Failed to fetch journals");
+        return;
       }
-      setLoading(false);
-    };
 
-    fetchEntries();
-  }, [supabase, router]);
+      setEntries(json.entries as JournalEntry[]);
+    } catch (err) {
+      console.error("Fetch journals error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEntries();
+}, [router]);
+
 
   // --- 4. IMPLEMENTED DATA PROCESSING (useMemo) ---
   const moodStressData = useMemo(() => {
