@@ -35,7 +35,7 @@ export async function GET() {
     }
 
     // ✅ store cache for 10 mins
-    await redis.set(cacheKey, JSON.stringify(entries ?? []), { ex: 1000 });
+    await redis.set(cacheKey, JSON.stringify(entries ?? []), { ex: 600 });
 
     return Response.json({ cached: false, entries: entries ?? [] });
   } catch (err) {
