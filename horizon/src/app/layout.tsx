@@ -1,31 +1,22 @@
-// app/layout.tsx
-"use client";
-
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { usePathname } from "next/navigation";
+// src/app/layout.tsx
 import "./globals.css";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
-import { shouldHideLayout } from "./layoutConfig";
-import { Providers } from "./providers"; // <-- 1. Import your new provider
+import { Providers } from "./providers";
+import LayoutWrapper from "./LayoutWrapper";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClientComponentClient();
-  const pathname = usePathname() || "/"; // fallback to "/" if null
-  const hideLayout = shouldHideLayout(pathname);
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    // 2. Add suppressHydrationWarning
     <html lang="en" suppressHydrationWarning>
       <body>
-        {/* 3. Wrap everything in your Providers for dark mode */}
         <Providers>
-          <SessionContextProvider supabaseClient={supabase}>
-            {!hideLayout && <Navbar />}
+          <LayoutWrapper>
             {children}
-            {!hideLayout && <Footer />}
-          </SessionContextProvider>
+          </LayoutWrapper>
         </Providers>
       </body>
     </html>

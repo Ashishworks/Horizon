@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { ResponsivePie } from '@nivo/pie';
-import { MutatingDots } from 'react-loader-spinner';
-import { startOfWeek, endOfWeek, format } from 'date-fns';
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { ResponsivePie } from "@nivo/pie";
+import { MutatingDots } from "react-loader-spinner";
+import { startOfWeek, endOfWeek, format } from "date-fns";
 
 type PieDatum = {
   id: string;
@@ -16,7 +16,7 @@ export default function SleepConsistencyRing() {
   const [goodSleepDays, setGoodSleepDays] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchSleepConsistency = async () => {
@@ -33,22 +33,21 @@ export default function SleepConsistencyRing() {
       const start = startOfWeek(today, { weekStartsOn: 1 });
       const end = endOfWeek(today, { weekStartsOn: 1 });
 
-      const startDate = format(start, 'yyyy-MM-dd');
-      const endDate = format(end, 'yyyy-MM-dd');
+      const startDate = format(start, "yyyy-MM-dd");
+      const endDate = format(end, "yyyy-MM-dd");
 
       const { data, error } = await supabase
-        .from('journals')
-        .select('sleep_hours')
-        .eq('user_id', user.id)
-        .gte('date', startDate)
-        .lte('date', endDate);
+        .from("journals")
+        .select("sleep_hours")
+        .eq("user_id", user.id)
+        .gte("date", startDate)
+        .lte("date", endDate);
 
       if (error || !data) {
         setGoodSleepDays(0);
       } else {
-        const count = data.filter(
-          (entry) => (entry.sleep_hours ?? 0) >= 7
-        ).length;
+        const count = data.filter((entry) => (entry.sleep_hours ?? 0) >= 7)
+          .length;
 
         setGoodSleepDays(count);
       }
@@ -70,16 +69,8 @@ export default function SleepConsistencyRing() {
   const remaining = Math.max(0, 7 - goodSleepDays);
 
   const pieData: PieDatum[] = [
-    {
-      id: 'good',
-      label: 'Good Sleep',
-      value: goodSleepDays,
-    },
-    {
-      id: 'missed',
-      label: 'Missed',
-      value: remaining,
-    },
+    { id: "good", label: "Good Sleep", value: goodSleepDays },
+    { id: "missed", label: "Missed", value: remaining },
   ];
 
   const CenterMetric = ({
@@ -95,9 +86,9 @@ export default function SleepConsistencyRing() {
       textAnchor="middle"
       dominantBaseline="central"
       style={{
-        fontSize: '2.25rem',
+        fontSize: "2.25rem",
         fontWeight: 700,
-        fill: '#f4f4f5',
+        fill: "#f4f4f5",
       }}
     >
       {goodSleepDays}
@@ -105,9 +96,9 @@ export default function SleepConsistencyRing() {
         x={centerX}
         dy="1.2em"
         style={{
-          fontSize: '1.125rem',
+          fontSize: "1.125rem",
           fontWeight: 400,
-          fill: '#a1a1aa',
+          fill: "#a1a1aa",
         }}
       >
         / 7 Days
@@ -125,17 +116,17 @@ export default function SleepConsistencyRing() {
       activeOuterRadiusOffset={8}
       colors={[
         goodSleepDays >= 5
-          ? 'hsl(160, 70%, 50%)' // good
+          ? "hsl(160, 70%, 50%)"
           : goodSleepDays >= 3
-          ? 'hsl(45, 90%, 55%)' // warning
-          : 'hsl(0, 70%, 55%)', // bad
-        '#3f3f46',
+          ? "hsl(45, 90%, 55%)"
+          : "hsl(0, 70%, 55%)",
+        "#3f3f46",
       ]}
       enableArcLinkLabels={false}
       arcLabelsSkipAngle={10}
       animate
       motionConfig="wobbly"
-      layers={['arcs', 'arcLabels', CenterMetric]}
+      layers={["arcs", "arcLabels", CenterMetric]}
     />
   );
 }

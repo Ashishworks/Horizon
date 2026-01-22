@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from "@/lib/supabase/client";
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
@@ -138,7 +138,7 @@ export default function DashboardPage() {
 
 
   // --- 2. INITIALIZED SUPABASE AND ROUTER ---
-  const supabase = createClientComponentClient();
+ const supabase = createClient();
   const router = useRouter();
 
   // --- 3. IMPLEMENTED DATA FETCHING ---

@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { MutatingDots } from 'react-loader-spinner';
-import { subDays, format } from 'date-fns';
-import MoodVolatilityLine from './MoodVolatilityLine';
+import { useEffect, useState, useMemo } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { subDays, format } from "date-fns";
+import MoodVolatilityLine from "./MoodVolatilityLine";
 
 type JournalEntry = {
   mood: number | null;
@@ -15,7 +14,7 @@ export default function MoodOverviewHorizontal() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchMoodData = async () => {
@@ -28,17 +27,17 @@ export default function MoodOverviewHorizontal() {
         return;
       }
 
-      const fromDate = format(subDays(new Date(), 6), 'yyyy-MM-dd');
+      const fromDate = format(subDays(new Date(), 6), "yyyy-MM-dd");
 
       const { data, error } = await supabase
-        .from('journals')
-        .select('mood, date')
-        .eq('user_id', user.id)
-        .gte('date', fromDate)
-        .order('date', { ascending: true });
+        .from("journals")
+        .select("mood, date")
+        .eq("user_id", user.id)
+        .gte("date", fromDate)
+        .order("date", { ascending: true });
 
       if (!error && data) {
-        setEntries(data);
+        setEntries(data as JournalEntry[]);
       }
 
       setLoading(false);
@@ -56,7 +55,7 @@ export default function MoodOverviewHorizontal() {
   }, [entries]);
 
   const moodVolatility = useMemo(() => {
-    if (entries.length < 2) return '0.00';
+    if (entries.length < 2) return "0.00";
 
     let totalChange = 0;
     for (let i = 1; i < entries.length; i++) {
@@ -72,23 +71,15 @@ export default function MoodOverviewHorizontal() {
 
   const moodColor =
     averageMood === null
-      ? 'text-muted-foreground'
+      ? "text-muted-foreground"
       : averageMood >= 7
-        ? 'text-green-400'
-        : averageMood >= 4
-          ? 'text-yellow-400'
-          : 'text-red-400';
-
-  const volatilityLabel =
-    Number(moodVolatility) <= 2
-      ? { text: 'Stable', color: 'text-green-500' }
-      : Number(moodVolatility) <= 4
-        ? { text: 'Moderate fluctuations', color: 'text-yellow-500' }
-        : { text: 'High mood swings', color: 'text-red-500' };
+      ? "text-green-400"
+      : averageMood >= 4
+      ? "text-yellow-400"
+      : "text-red-400";
 
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 gap-8 h-full items-center">
-
       {/* ===== Average Mood ===== */}
       <div className="flex items-center justify-center gap-6 w-full">
         <p className="text-2xl md:text-4xl font-semibold text-muted-foreground">
@@ -96,10 +87,9 @@ export default function MoodOverviewHorizontal() {
         </p>
 
         <p className={`text-6xl font-bold ${moodColor}`}>
-          {averageMood ?? '—'}
+          {averageMood ?? "—"}
         </p>
       </div>
-
 
       {/* ===== Divider ===== */}
       <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-border" />
@@ -108,8 +98,6 @@ export default function MoodOverviewHorizontal() {
       <div className="flex flex-col justify-center">
         <MoodVolatilityLine value={Number(moodVolatility)} />
       </div>
-
     </div>
   );
-
 }

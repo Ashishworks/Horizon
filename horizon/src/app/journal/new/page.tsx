@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from "@/lib/supabase/client";
 import { format } from 'date-fns';
 import { toast, Toaster } from 'react-hot-toast';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
@@ -62,7 +62,8 @@ export default function JournalPage() {
     const totalSteps = 4;
     const scrollRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-    const supabase = createClientComponentClient();
+    const supabase = createClient();
+
 
     // --- AUTH CHECK ---
     useEffect(() => {

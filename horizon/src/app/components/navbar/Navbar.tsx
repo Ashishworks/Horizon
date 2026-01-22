@@ -4,13 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useUser } from "@supabase/auth-helpers-react";
 import { User as UserIcon, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import PageTransition from "../pagetransitions/PageTransition";
+import { createClient } from "@/lib/supabase/client";
 
-// ... (interface, state, hooks, and functions remain the same) ...
 interface Profile {
   id: string;
   name?: string;
@@ -22,45 +20,67 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const user = useUser();
-
+  const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
+  const supabase = createClient();
+
+  useEffect(() => setMounted(true), []);
+
+  // ✅ Load user initially + listen for auth changes
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    let ignore = false;
 
-  // Fetches profile when the user object changes
+    const init = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!ignore) setUser(data.user ?? null);
+    };
+
+    init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      ignore = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  // ✅ Fetch profile when user changes
   useEffect(() => {
-    if (user) {
-      const fetchUserProfile = async () => {
-        const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (!error && profileData) {
-          setProfile(profileData as Profile);
-        }
-      };
-
-      fetchUserProfile();
-    } else {
-      setProfile(null); // Clear profile if user logs out
+    if (!user) {
+      setProfile(null);
+      return;
     }
+
+    const fetchUserProfile = async () => {
+      const { data: profileData, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && profileData) {
+        setProfile(profileData as Profile);
+      }
+    };
+
+    fetchUserProfile();
   }, [user, supabase]);
 
-  // Listen for profile updates (e.g., from a profile edit page)
+  // ✅ Listen for profile updates
   useEffect(() => {
     const handleProfileUpdate = async () => {
       if (!user) return;
+
       const { data: profileData, error } = await supabase
         .from("profiles")
         .select("*")
@@ -71,7 +91,8 @@ export default function Navbar() {
     };
 
     window.addEventListener("profileUpdated", handleProfileUpdate);
-    return () => window.removeEventListener("profileUpdated", handleProfileUpdate);
+    return () =>
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
   }, [user, supabase]);
 
   // Close dropdown on outside click
@@ -92,9 +113,8 @@ export default function Navbar() {
     router.push("/");
   };
 
-  // --- Theme Toggle Component ---
   const ThemeToggle = () => {
-    if (!mounted) return null; // Don't render on server
+    if (!mounted) return null;
 
     return (
       <div className="border-t border-border">
@@ -106,13 +126,16 @@ export default function Navbar() {
           className="w-full flex justify-between items-center px-4 py-2 text-foreground hover:bg-accent transition"
         >
           <span>{theme === "light" ? "Dark Mode" : "Light Mode"}</span>
-          {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {theme === "dark" ? (
+            <Sun className="w-5 h-5" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
         </button>
       </div>
     );
   };
 
-  // --- Avatar Component ---
   const Avatar = () =>
     profile?.avatar_url ? (
       <div className="w-8 h-8 rounded-full overflow-hidden">
@@ -129,14 +152,7 @@ export default function Navbar() {
     );
 
   return (
-    //
-    // --- 💡 MODIFIED LINE HERE ---
-    // Added `border-b border-border` to create a visible separator line
-    //
     <nav className="bg-background shadow-md dark:shadow-white/10 border-b border-border fixed w-full z-50 text-foreground">
-      
-      {/* ... (rest of the component is identical) ... */}
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center relative">
           {/* Mobile Hamburger + Logo */}
@@ -149,7 +165,12 @@ export default function Navbar() {
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
             </button>
-            <PageTransition targetUrl="/" circleColor="rgba(0, 0, 0, 0.18)" blurIntensity={5} duration = {1000}>
+            <PageTransition
+              targetUrl="/"
+              circleColor="rgba(0, 0, 0, 0.18)"
+              blurIntensity={5}
+              duration={1000}
+            >
               <span className="text-xl font-bold cursor-pointer">Horizon</span>
             </PageTransition>
           </div>
@@ -162,8 +183,8 @@ export default function Navbar() {
                 href={link.href}
                 className={`${
                   pathname === link.href
-                    ? "font-bold text-primary" // Active link
-                    : "font-normal text-foreground" // Inactive link
+                    ? "font-bold text-primary"
+                    : "font-normal text-foreground"
                 } hover:text-primary transition`}
               >
                 {link.label}
@@ -188,6 +209,7 @@ export default function Navbar() {
                     <div className="px-4 py-3 bg-muted text-muted-foreground font-semibold">
                       {profile?.name || "User"}
                     </div>
+
                     <Link
                       href="/profile"
                       className="block px-4 py-2 text-foreground hover:bg-accent transition"
@@ -223,11 +245,11 @@ export default function Navbar() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white/5 backdrop-blur-md
- border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white/5 backdrop-blur-md border border-border rounded-lg shadow-lg z-50 overflow-hidden">
                   <div className="px-4 py-3 bg-muted text-muted-foreground font-semibold">
                     {profile?.name || "User"}
                   </div>
+
                   <Link
                     href="/profile"
                     className="block px-4 py-2 text-foreground hover:bg-accent transition"
@@ -258,7 +280,10 @@ export default function Navbar() {
       >
         <div className="flex justify-between items-center px-4 py-4 border-b border-border">
           <span className="text-xl font-bold">Menu</span>
-          <button onClick={() => setMobileOpen(false)} className="text-foreground font-bold">
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="text-foreground font-bold"
+          >
             X
           </button>
         </div>
@@ -270,8 +295,8 @@ export default function Navbar() {
               href={link.href}
               className={`${
                 pathname === link.href
-                  ? "font-bold text-primary" // Active link
-                  : "font-normal text-foreground" // Inactive link
+                  ? "font-bold text-primary"
+                  : "font-normal text-foreground"
               }`}
               onClick={() => setMobileOpen(false)}
             >
