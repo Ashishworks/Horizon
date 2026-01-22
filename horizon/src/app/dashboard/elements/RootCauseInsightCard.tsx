@@ -123,16 +123,17 @@ export default function RootCauseInsightCard({ entries }: Props) {
         <h3 className="text-lg font-semibold">Why your mood changes</h3>
 
         {insight.strength && (
-          <span
-            className={`text-xs px-2 py-1 rounded-full font-medium ${
-              insight.strength === 'Strong'
-                ? 'bg-green-500/10 text-green-500'
-                : 'bg-yellow-500/10 text-yellow-500'
-            }`}
-          >
-            {insight.strength} impact
-          </span>
-        )}
+  <span
+    className={`text-xs px-2 py-1 rounded-full font-medium inline-flex items-center justify-center text-center ${
+      insight.strength === 'Strong'
+        ? 'bg-green-500/10 text-green-500'
+        : 'bg-yellow-500/10 text-yellow-500'
+    }`}
+  >
+    {insight.strength} impact
+  </span>
+)}
+
       </div>
 
       <p className="text-sm text-foreground mb-2">
