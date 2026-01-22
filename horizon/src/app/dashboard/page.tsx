@@ -30,6 +30,9 @@ import SecondaryImpactInsight from './elements/SecondaryImpactInsight';
 import GentleSuggestionCard from './elements/GentleSuggestionCard';
 import ActivityRing from './elements/ActivityRing';
 import Cycler from '../components/lottie/cycler';
+import Mobile from '../components/lottie/Mobile';
+import Bird from '../components/lottie/Bird';
+
 
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
@@ -333,11 +336,11 @@ export default function DashboardPage() {
           <div className="flex-1">
             {(!exercisePieData || exercisePieData.length === 0) ? (
               <div className="flex flex-col items-center">
-  <Cycler size={200} />
-  <p className="text-muted-foreground text-center mt-4">
-    Do some exercise to see breakdown
-  </p>
-</div>
+                <Cycler size={200} />
+                <p className="text-muted-foreground text-center mt-4">
+                  Do some exercise to see breakdown
+                </p>
+              </div>
 
 
             ) : (
@@ -650,9 +653,10 @@ export default function DashboardPage() {
             </div>
 
           ) : (
-            <p className="text-center text-muted-foreground mt-10">
-              Add more entries to see trends
-            </p>
+            <div className="flex flex-1 flex-col items-center justify-center text-center text-muted-foreground">
+              <Bird size={350} />
+              <p>Add more entries to see trends</p>
+            </div>
           )}
         </div>
         {/* Screen Time */}
@@ -660,8 +664,8 @@ export default function DashboardPage() {
           <h2 className="text-xl font-semibold mb-4">
             Screen Time (Work vs. Entertainment)
           </h2>
-          
-          {screenTimeBarData?.length ? (
+
+          {screenTimeBarData?.length > 1 ? (
             <ResponsiveBar
               data={screenTimeBarData}
               theme={nivoDarkTheme}
@@ -742,9 +746,11 @@ export default function DashboardPage() {
               motionConfig="gentle"
             />
           ) : (
-            <p className="text-center text-muted-foreground mt-10">
-              Add more entries to see trends
-            </p>
+            <div className="flex flex-1 flex-col items-center justify-center text-center text-muted-foreground">
+              <Mobile size={350} />
+              <p>Add more entries to see trends</p>
+            </div>
+
           )}
         </div>
 
