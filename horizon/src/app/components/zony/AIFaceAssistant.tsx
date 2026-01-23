@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import AIFaceModal from "./AIFaceModal";
 
 // ✅ routes where assistant should NOT appear
 const disabledRoutes = ["/auth", "/onboarding", "/"];
 const STORAGE_KEY = "horizon_ai_face_position_v1";
 
 export default function AIFaceAssistant() {
-    const pathname = usePathname();
-    if (disabledRoutes.includes(pathname)) return null;
+
 
     const faceWrapperRef = useRef<HTMLDivElement | null>(null);
     const leftEye = useRef<HTMLDivElement | null>(null);
@@ -28,7 +28,14 @@ export default function AIFaceAssistant() {
     const mouthH = size * 0.2;
 
     // position
-    const [pos, setPos] = useState({ x: EDGE_PADDING, y: 160 });
+    const [pos, setPos] = useState(() => {
+        if (typeof window === "undefined") return { x: EDGE_PADDING, y: 160 };
+
+        const x = window.innerWidth - size - EDGE_PADDING;  // ✅ right edge
+        const y = window.innerHeight / 2 - size / 2;        // ✅ middle vertically
+
+        return { x, y };
+    });
 
     // dragging states
     const [isDragging, setIsDragging] = useState(false);
@@ -40,6 +47,12 @@ export default function AIFaceAssistant() {
 
     // modal
     const [isOpen, setIsOpen] = useState(false);
+    const isOpenRef = useRef(false);
+
+    useEffect(() => {
+        isOpenRef.current = isOpen;
+    }, [isOpen]);
+
     const [isClosing, setIsClosing] = useState(false);
 
     const [isPressed, setIsPressed] = useState(false);
@@ -55,7 +68,13 @@ export default function AIFaceAssistant() {
 
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
+            if (!saved) {
+                const x = window.innerWidth - size - EDGE_PADDING;
+                const y = window.innerHeight / 2 - size / 2;
+                setPos({ x, y });
+                return;
+            }
+
 
             const parsed = JSON.parse(saved);
             if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number") return;
@@ -200,8 +219,15 @@ export default function AIFaceAssistant() {
         // ✅ open modal ONLY if it was a click
         if (!dragMoved) {
             triggerPress();
-            openModal();
+
+            // ✅ toggle modal
+            if (isOpenRef.current) {
+                closeModal();
+            } else {
+                openModal();
+            }
         }
+
 
     };
 
@@ -214,6 +240,9 @@ export default function AIFaceAssistant() {
             window.removeEventListener("mouseup", onMouseUp);
         };
     });
+
+    const pathname = usePathname();
+    if (disabledRoutes.includes(pathname)) return null;
 
     return (
         <>
@@ -312,49 +341,8 @@ export default function AIFaceAssistant() {
             </div>
 
             {/* ✅ Modal */}
-            {isOpen && (
-                <div className="fixed inset-0 z-[9998] flex items-center justify-center">
-                    {/* Backdrop */}
-                    <div
-                        onClick={closeModal}
-                        className={`absolute inset-0 bg-black/30 backdrop-blur-md transition-opacity duration-200 ${isClosing ? "opacity-0" : "opacity-100"
-                            }`}
-                    />
+            <AIFaceModal isOpen={isOpen} isClosing={isClosing} closeModal={closeModal} />
 
-                    {/* Popup */}
-                    <div
-                        className={`relative z-[9999] w-[70vw] h-[70vh] rounded-2xl 
-bg-card text-card-foreground shadow-2xl border border-border overflow-hidden
-transition-all duration-200 ease-out ${isClosing
-                                ? "opacity-0 scale-95 translate-y-2"
-                                : "opacity-100 scale-100 translate-y-0"
-                            }`}
-
-                    >
-                        {/* Close */}
-                        <button
-                            onClick={closeModal}
-                            className="absolute top-4 right-4 h-10 w-10 rounded-full 
-hover:bg-accent text-foreground flex items-center justify-center text-xl font-semibold"
-
-                        >
-                            ✕
-                        </button>
-
-                        <div className="h-full p-6">
-                            <h2 className="text-xl font-semibold">AI Insights</h2>
-                            <p className="mt-2 text-muted-foreground">
-
-                                under construction
-                            </p>
-
-                            <div className="mt-6 rounded-xl border border-dashed  h-[80%] flex items-center justify-center border-border text-muted-foreground">
-                                AI chat + info here
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }

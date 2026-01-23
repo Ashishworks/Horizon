@@ -8,6 +8,7 @@ import { User as UserIcon, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import PageTransition from "../pagetransitions/PageTransition";
 import { createClient } from "@/lib/supabase/client";
+import AmbientAudioToggle from "../ui/AmbientAudioToggle";
 
 interface Profile {
   id: string;
@@ -165,14 +166,19 @@ export default function Navbar() {
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
               <span className="block h-0.5 w-full bg-foreground rounded"></span>
             </button>
-            <PageTransition
-              targetUrl="/"
-              circleColor="rgba(0, 0, 0, 0.18)"
-              blurIntensity={5}
-              duration={1000}
-            >
-              <span className="text-xl font-bold cursor-pointer">Horizon</span>
-            </PageTransition>
+            <div className="flex items-center gap-2">
+              <AmbientAudioToggle src="/controlla.mp3" size={20} />
+
+              <PageTransition
+                targetUrl="/"
+                circleColor="rgba(0, 0, 0, 0.18)"
+                blurIntensity={5}
+                duration={1000}
+              >
+                <span className="text-xl font-bold cursor-pointer">Horizon</span>
+              </PageTransition>
+            </div>
+
           </div>
 
           {/* Desktop Menu */}
@@ -181,11 +187,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`${
-                  pathname === link.href
+                className={`${pathname === link.href
                     ? "font-bold text-primary"
                     : "font-normal text-foreground"
-                } hover:text-primary transition`}
+                  } hover:text-primary transition`}
               >
                 {link.label}
               </Link>
@@ -293,11 +298,10 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`${
-                pathname === link.href
+              className={`${pathname === link.href
                   ? "font-bold text-primary"
                   : "font-normal text-foreground"
-              }`}
+                }`}
               onClick={() => setMobileOpen(false)}
             >
               {link.label}

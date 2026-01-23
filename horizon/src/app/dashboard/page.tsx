@@ -34,6 +34,8 @@ import Mobile from '../components/lottie/Mobile';
 import Bird from '../components/lottie/Bird';
 
 
+
+
 // --- 1. FULLY DEFINED INTERFACE ---
 // Based on your journal page, this is the data structure
 interface JournalEntry {

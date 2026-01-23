@@ -1,10 +1,16 @@
 // src/app/layout.tsx
 import "./globals.css";
-import Footer from "./components/footer/Footer";
-import Navbar from "./components/navbar/Navbar";
 import { Providers } from "./providers";
 import LayoutWrapper from "./LayoutWrapper";
-import AIFaceAssistant from "./components/zony/AIFaceAssistant";
+import AIFaceAssistantClient from "./components/zony/AIFaceAssistantClient";
+
+export const metadata = {
+  title: {
+    default: "Horizon",
+    template: "%s | Horizon",
+  },
+  description: "Horizon helps you track mood & journal insights.",
+};
 
 export default function RootLayout({
   children,
@@ -15,10 +21,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
-          <LayoutWrapper>
-            {children}
-            <AIFaceAssistant/>
-          </LayoutWrapper>
+          {/* ✅ Keep assistant OUTSIDE layout wrapper to avoid hydration mismatch */}
+          <AIFaceAssistantClient />
+
+          <LayoutWrapper>{children}</LayoutWrapper>
         </Providers>
       </body>
     </html>
