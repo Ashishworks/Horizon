@@ -233,12 +233,12 @@ export default function JournalHistoryPage() {
   return (
     <LayoutGroup>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <div className="fixed transition-all top-20 right-6 group hidden md:block">
+        {/* <div className="fixed transition-all top-20 right-6 group hidden md:block">
           <Face size={60} color={4} shadow={2} mouthWidth={20} mouthHeight={12} />
           <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
             Don&apos;t touch me!
           </span>
-        </div>
+        </div> */}
 
         <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
           Journal History

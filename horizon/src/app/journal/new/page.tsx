@@ -221,7 +221,7 @@ export default function JournalPage() {
             <Toaster position="top-center" reverseOrder={false} />
 
             {/* Header */}
-            <div className="fixed transition-all top-20 right-6 group hidden md:block">
+            {/* <div className="fixed transition-all top-20 right-6 group hidden md:block">
                 <Face
                     size={60}
                     color={4}
@@ -232,7 +232,7 @@ export default function JournalPage() {
                 <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
                     Don&apos;t touch me!
                 </span>
-            </div>
+            </div> */}
             <motion.h1
                 layout
                 transition={{ duration: 0.3 }}

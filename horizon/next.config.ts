@@ -2,11 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
   images: {
-    domains: ["zckqgdgpbythgshmdzwz.supabase.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "zckqgdgpbythgshmdzwz.supabase.co",
+        pathname: "/storage/v1/object/public/**", // ✅ safest (only allow public bucket images)
+      },
+    ],
   },
-  // This is the fix: forces Next.js to process the 3D libraries correctly
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei', 'meshline'],
+
+  // Fix: forces Next.js to process the 3D libraries correctly
+  transpilePackages: ["three", "@react-three/fiber", "@react-three/drei", "meshline"],
 };
 
 export default nextConfig;

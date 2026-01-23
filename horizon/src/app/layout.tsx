@@ -4,6 +4,7 @@ import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
 import { Providers } from "./providers";
 import LayoutWrapper from "./LayoutWrapper";
+import AIFaceAssistant from "./components/zony/AIFaceAssistant";
 
 export default function RootLayout({
   children,
@@ -16,6 +17,7 @@ export default function RootLayout({
         <Providers>
           <LayoutWrapper>
             {children}
+            <AIFaceAssistant/>
           </LayoutWrapper>
         </Providers>
       </body>
