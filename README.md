@@ -40,7 +40,7 @@ AI helps interpret data — it does not replace human judgment.
 
 ---
 
-### 📊 Structured Tracking (Optional Fields)
+### 📊 Structured Tracking
 
 Each journal entry can optionally include:
 
@@ -214,3 +214,4 @@ Horizon is built as a **product first**:
 * analytics
 
 AI exists to **support these goals**, not replace them.
+
