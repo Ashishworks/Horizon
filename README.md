@@ -1,122 +1,216 @@
 # Horizon
-AI-Powered Mental Health Journal, Sentiment Analyzer and Report Generator
 
-Horizon is a Next.js-based mental health journaling platform where users can write daily journal entries and receive AI-powered insights like sentiment detection and mental condition prediction.  
-It also generates professional reports that can help psychiatrists/therapists understand a user’s mental health patterns faster and make better decisions during consultations.
+**AI‑Powered Mental Health Journal, Sentiment Analyzer & Report Generator**
 
----
+Horizon is a **mental health journaling platform** built with **Next.js** that helps users reflect on their daily life, track emotional and behavioral patterns, and generate meaningful insights over time.
 
-## Key Features
-
-### Daily Journaling
-- Write and save daily journal entries
-- Helps users reflect, track emotional patterns, and build consistency
-
-### AI-Powered Insights
-- Sentiment analysis for each journal entry
-- Condition prediction using journal text and context fields
-- Better long-term mental health trend tracking
-
-### Smart Search
-- Search past journal entries using keywords
-- Quickly find specific events, triggers, or emotional states
-
-### Structured Tracking (Optional Fields)
-Each journal entry can include additional structured fields:
-- Happiness score
-- Confidence level
-- Sleep hours and sleep quality
-- Physical problems/symptoms
-- Exception notes
-- Location (optional)
+AI in Horizon is an **enhancement layer**, not the product itself. The core of Horizon is **structured journaling, analytics, and reflection**, with AI used carefully to support understanding, summarization, and long‑term pattern recognition.
 
 ---
 
-## Onboarding Survey (Visible to General Users)
+## ✨ Key Features
 
-When a user opens Horizon for the first time, they answer a short onboarding survey to capture baseline mental and lifestyle information, such as:
-- Typical happiness level
-- Normal sleep hours and sleep quality
-- Common physical problems
-- Known mental conditions (if any)
-- Location (optional)
+### 📝 Daily Journaling
 
-This survey has two purposes:
-
-1. Personal Baseline Setup
-- Helps Horizon understand the user's normal condition
-- Improves accuracy of AI predictions and insights
-
-2. Community Survey Insights (For General Users)
-Horizon can show anonymous aggregated insights, like:
-- Average happiness trends
-- Common sleep patterns
-- Frequent physical problems
-- Common mental health concerns
-
-No personal identity is exposed. Only aggregated trends are shown.
+* Write and save daily journal entries
+* Encourages self‑reflection and emotional awareness
+* Helps users build consistency through daily tracking
+* Calendar‑based journal history
 
 ---
 
-## Report Generation (For Psychiatrists / Therapists)
+### 🧠 AI‑Powered Insights
 
-Horizon generates structured mental health reports that users can share with professionals.
+AI helps interpret data — it does not replace human judgment.
 
-Reports can include:
-- Mood trend (weekly/monthly)
-- Sentiment distribution (positive/neutral/negative)
-- AI predicted condition trends
-- Sleep correlation with mood
-- Consistency score (journaling frequency)
-- Highlighted risky/deterioration periods
-- Summary insights and key observations
+* Sentiment analysis for journal entries
+* Non‑clinical condition signals based on trends
+* Time‑aware insights (recent days vs long‑term patterns)
+* Better long‑term emotional and behavioral trend tracking
 
-This helps psychiatrists/therapists:
-- Understand patterns quickly
-- Reduce dependency on memory-based recall
-- Make data-backed decisions during sessions
+> AI explanations are grounded in structured analytics, not raw text guesses.
 
 ---
 
-## Journal Data Stored
+### 🔍 Smart Search
 
-Each journal entry can store:
-- text (journal content)
-- sentiment (label and score)
-- conditionPrediction (AI result)
-- happinessScore
-- confidence
-- sleepHours
-- sleepQuality
-- physicalProblems
-- exceptionNotes
-- location
-- createdAt
+* Search past journal entries using keywords
+* Quickly find specific events, triggers, or emotional states
+* Useful for reflection and therapist consultations
 
 ---
 
-## Tech Stack
+### 📊 Structured Tracking (Optional Fields)
 
-- Frontend: Next.js, React, Tailwind CSS
-- Backend: Node.js APIs (Next.js API routes)
-- AI/NLP: Sentiment analysis and condition prediction model/API
-- Database: Supabase
-- Auth (optional): Supabase Auth
+Each journal entry can optionally include:
+
+* Mood / happiness score
+* Confidence level
+* Sleep hours and sleep quality
+* Stress and overthinking level
+* Productivity
+* Exercise, diet, and screen time
+* Physical problems or symptoms
+* Exception notes
+* Location (optional)
+
+These structured signals power analytics and AI‑assisted insights.
 
 ---
 
-## Future Enhancements
-- Alerts if mental health deteriorates
-- Downloadable report export (PDF)
-- Nearby doctor suggestions (location-based)
-- Advanced analytics dashboard
-- Multi-user support with authentication
+## 🧭 Onboarding Survey
+
+When a user opens Horizon for the first time, they complete a short onboarding survey to capture a **personal baseline**, including:
+
+* Typical happiness level
+* Normal sleep duration and quality
+* Common problems or stressors
+* Known mental conditions (optional)
+* Location (optional)
+
+### Why this matters
+
+1. **Personal Baseline Setup**
+   Helps Horizon understand what is *normal* for the user.
+
+2. **Improved Insights**
+   Baselines are used for comparisons, trends, and AI explanations.
+
+3. **Anonymous Community Insights (Optional)**
+   Aggregated trends may be shown without exposing personal identity.
 
 ---
 
-## Project Setup
+## 📄 Report Generation (For Psychiatrists / Therapists)
 
-### 1) Clone the repository
+Horizon can generate **structured mental health reports** that users may choose to share with professionals.
+
+Reports may include:
+
+* Weekly / monthly mood trends
+* Sentiment distribution
+* Sleep‑mood correlations
+* Journaling consistency scores
+* Highlighted improvement or deterioration periods
+* Clear summary insights
+
+These reports help professionals:
+
+* Understand patterns quickly
+* Reduce reliance on memory‑based recall
+* Make data‑backed decisions
+
+---
+
+## 🧠 How AI Is Used in Horizon
+
+AI is **one component** of Horizon, not the entire system.
+
+* Raw journal data is never sent directly to AI
+* Data is normalized and analyzed in code first
+* Trends, correlations, and risk signals are computed deterministically
+* AI is primarily used for:
+
+  * explanation
+  * reflection
+  * summarization
+
+This design keeps Horizon **safe, explainable, and reliable**.
+
+---
+
+## 🗃️ Journal Data Stored
+
+Each journal entry may store:
+
+* Journal text
+* Sentiment label and score
+* Condition signal (non‑clinical)
+* Mood / happiness score
+* Confidence
+* Sleep hours and sleep quality
+* Stress and overthinking level
+* Productivity
+* Exercise, diet, and social interaction
+* Physical problems
+* Exception notes
+* Location
+* Created timestamp
+
+> AI works on **derived features**, not raw journal text.
+
+---
+
+## 🗃️ Tech Stack
+
+### Frontend
+
+* Next.js (App Router)
+* React
+* TypeScript
+* Tailwind CSS
+* Data visualizations & animations
+
+### Backend
+
+* Next.js API routes
+* TypeScript
+* Redis (caching & performance optimization)
+* Structured analytics pipelines
+
+### Data
+
+* Supabase (PostgreSQL)
+* Supabase Auth
+* Normalized journal schema
+* Derived analytics layer
+
+### AI / Analytics
+
+* Sentiment analysis
+* Time‑series trend analysis
+* Statistical metrics
+* Rule‑based intelligence
+* Controlled LLM usage (explanation only)
+
+---
+
+## 🚀 Future Enhancements
+
+* Alerts when mental health deteriorates over time
+* Weekly / monthly reflection summaries
+* Downloadable report export (PDF)
+* Nearby doctor suggestions (opt‑in, location‑based)
+* Advanced analytics dashboard
+* Long‑term progress visualization
+
+---
+
+## ⚠️ Disclaimer
+
+Horizon is **not a medical device** and does not provide diagnosis or treatment.
+It is a **self‑reflection and insight tool** intended to support mental well‑being.
+
+---
+
+## 🛠️ Project Setup
+
 ```bash
 git clone https://github.com/your-username/horizon.git
 cd horizon
+npm install
+npm run dev
+```
+
+---
+
+## Final Note
+
+Horizon is built as a **product first**:
+
+* journaling
+* reflection
+* structure
+* analytics
+
+AI exists to **support these goals**, not replace them.
