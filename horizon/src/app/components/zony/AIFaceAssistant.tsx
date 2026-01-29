@@ -11,15 +11,25 @@ const STORAGE_KEY = "horizon_ai_face_position_v1";
 export default function AIFaceAssistant() {
 
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    }, []);
+
+
     const faceWrapperRef = useRef<HTMLDivElement | null>(null);
     const leftEye = useRef<HTMLDivElement | null>(null);
     const rightEye = useRef<HTMLDivElement | null>(null);
 
     // assistant size (small face)
-    const size = 80;
+    const size = isMobile ? 64 : 80;
+
 
     // ✅ little space from edges
     const EDGE_PADDING = 24;
+    const DRAG_THRESHOLD = 6; // 👈 adjust (4–8 is ideal)
+
 
     // proportional sizes
     const eyeSize = size * 0.25;
@@ -43,7 +53,69 @@ export default function AIFaceAssistant() {
 
     // ✅ for preventing click open on drag
     const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
-    const [dragMoved, setDragMoved] = useState(false);
+    const dragMovedRef = useRef(false);
+
+   const onTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (!faceWrapperRef.current) return;
+
+    setIsDragging(true);
+    dragMovedRef.current = false; // ✅ RESET
+
+    const touch = e.touches[0];
+    setStartPoint({ x: touch.clientX, y: touch.clientY });
+
+    const rect = faceWrapperRef.current.getBoundingClientRect();
+    setDragOffset({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+    });
+};
+
+
+
+   const onTouchMove = (e: TouchEvent) => {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+
+    const dx = touch.clientX - startPoint.x;
+    const dy = touch.clientY - startPoint.y;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > DRAG_THRESHOLD) {
+        dragMovedRef.current = true;
+    }
+
+    const maxX = window.innerWidth - size;
+    const maxY = window.innerHeight - size;
+
+    setPos({
+        x: Math.min(Math.max(0, touch.clientX - dragOffset.x), maxX),
+        y: Math.min(Math.max(0, touch.clientY - dragOffset.y), maxY),
+    });
+};
+
+
+    const onTouchEnd = (e: TouchEvent) => {
+    if (!isDragging) return;
+
+    setIsDragging(false);
+
+    const touch = e.changedTouches[0];
+    snapToNearestEdge(
+        touch.clientX - dragOffset.x,
+        touch.clientY - dragOffset.y
+    );
+
+    if (!dragMovedRef.current) {
+        triggerPress();
+        isOpenRef.current ? closeModal() : openModal();
+    }
+};
+
+
+
 
     // modal
     const [isOpen, setIsOpen] = useState(false);
@@ -52,13 +124,45 @@ export default function AIFaceAssistant() {
     useEffect(() => {
         isOpenRef.current = isOpen;
     }, [isOpen]);
+    useEffect(() => {
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+
+        if (isMobile) {
+            window.addEventListener("touchmove", onTouchMove, { passive: false });
+            window.addEventListener("touchend", onTouchEnd);
+        }
+
+        return () => {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
+
+            if (isMobile) {
+                window.removeEventListener("touchmove", onTouchMove);
+                window.removeEventListener("touchend", onTouchEnd);
+            }
+        };
+    }, [isMobile, isDragging]);
+
+
+    useEffect(() => {
+        setPos((prev) => {
+            const maxX = window.innerWidth - size;
+            const maxY = window.innerHeight - size;
+
+            return {
+                x: Math.min(Math.max(EDGE_PADDING, prev.x), maxX - EDGE_PADDING),
+                y: Math.min(Math.max(EDGE_PADDING, prev.y), maxY - EDGE_PADDING),
+            };
+        });
+    }, [size]);
 
     const [isClosing, setIsClosing] = useState(false);
 
     const [isPressed, setIsPressed] = useState(false);
 
 
-    const DRAG_THRESHOLD = 6;
+   
 
     // -----------------------------
     // ✅ Restore position from localStorage
@@ -175,71 +279,67 @@ export default function AIFaceAssistant() {
     // ✅ Dragging logic
     // -----------------------------
     const onMouseDown = (e: React.MouseEvent) => {
-        if (!faceWrapperRef.current) return;
+    if (isMobile) return;
+    if (!faceWrapperRef.current) return;
 
-        setIsDragging(true);
-        setDragMoved(false);
+    setIsDragging(true);
+    dragMovedRef.current = false; // ✅ RESET
 
-        setStartPoint({ x: e.clientX, y: e.clientY });
+    setStartPoint({ x: e.clientX, y: e.clientY });
 
-        const rect = faceWrapperRef.current.getBoundingClientRect();
-        setDragOffset({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        });
-    };
+    const rect = faceWrapperRef.current.getBoundingClientRect();
+    setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+    });
+};
+
+
 
     const onMouseMove = (e: MouseEvent) => {
-        if (!isDragging) return;
+    if (!isDragging) return;
 
-        const movedDist = Math.hypot(e.clientX - startPoint.x, e.clientY - startPoint.y);
-        if (movedDist > DRAG_THRESHOLD) setDragMoved(true);
+    const dx = e.clientX - startPoint.x;
+    const dy = e.clientY - startPoint.y;
+    const distance = Math.hypot(dx, dy);
 
-        const maxX = window.innerWidth - size;
-        const maxY = window.innerHeight - size;
+    if (distance > DRAG_THRESHOLD) {
+        dragMovedRef.current = true;
+    }
 
-        const nextX = Math.min(Math.max(0, e.clientX - dragOffset.x), maxX);
-        const nextY = Math.min(Math.max(0, e.clientY - dragOffset.y), maxY);
+    const maxX = window.innerWidth - size;
+    const maxY = window.innerHeight - size;
 
-        setPos({ x: nextX, y: nextY });
-    };
+    setPos({
+        x: Math.min(Math.max(0, e.clientX - dragOffset.x), maxX),
+        y: Math.min(Math.max(0, e.clientY - dragOffset.y), maxY),
+    });
+};
+
+
+
 
     // ✅ mouseup should get latest pointer coords (more accurate)
-    const onMouseUp = (e: MouseEvent) => {
-        if (!isDragging) return;
+  const onMouseUp = (e: MouseEvent) => {
+    if (isMobile) return;
+    if (!isDragging) return;
 
-        setIsDragging(false);
+    setIsDragging(false);
 
-        const rawX = e.clientX - dragOffset.x;
-        const rawY = e.clientY - dragOffset.y;
+    snapToNearestEdge(
+        e.clientX - dragOffset.x,
+        e.clientY - dragOffset.y
+    );
 
-        // ✅ snap + save
-        snapToNearestEdge(rawX, rawY);
-
-        // ✅ open modal ONLY if it was a click
-        if (!dragMoved) {
-            triggerPress();
-
-            // ✅ toggle modal
-            if (isOpenRef.current) {
-                closeModal();
-            } else {
-                openModal();
-            }
-        }
+    if (!dragMovedRef.current) {
+        triggerPress();
+        isOpenRef.current ? closeModal() : openModal();
+    }
+};
 
 
-    };
 
-    useEffect(() => {
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
 
-        return () => {
-            window.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup", onMouseUp);
-        };
-    });
 
     const pathname = usePathname();
     if (disabledRoutes.includes(pathname)) return null;
@@ -250,6 +350,7 @@ export default function AIFaceAssistant() {
             <div
                 ref={faceWrapperRef}
                 onMouseDown={onMouseDown}
+                onTouchStart={onTouchStart}   // 👈 HERE
                 style={{
                     left: `${pos.x}px`,
                     top: `${pos.y}px`,
@@ -257,8 +358,9 @@ export default function AIFaceAssistant() {
                 className={`fixed z-[9999] select-none ${isDragging ? "" : "transition-[left,top] duration-300 ease-out"
                     }`}
             >
+
                 <div
-                    className={`cursor-grab active:cursor-grabbing transition-transform duration-950 ease-out ${isPressed ? "scale-80" : "scale-100"
+                    className={`cursor-grab active:cursor-grabbing touch-none transition-transform duration-950 ease-out ${isPressed ? "scale-80" : "scale-100"
                         }`}
                 >
                     <div className="relative rounded-full">
