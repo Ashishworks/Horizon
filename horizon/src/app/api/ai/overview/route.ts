@@ -1,44 +1,49 @@
+export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { buildUserMentalSummary } from "@/lib/intelligence/buildUserMentalSummary";
 import { createClient } from "@/lib/supabase/server";
 import type { UserMentalSummary } from "@/lib/intelligence/buildUserMentalSummary";
+import { geminiModel } from "@/lib/ai/gemini";
+
+
 
 type OverviewRequest = {
     timeRange: "7d" | "30d" | "90d";
 };
-function generateOverviewExplanation(
+async function generateOverviewExplanationLLM(
     summary: UserMentalSummary
-): string {
-    const lines: string[] = [];
+): Promise<string> {
+    console.log("GEMINI KEY EXISTS:", !!process.env.GEMINI_API_KEY);
 
-    if (summary.mood.average !== null) {
-        lines.push(
-            `Your average mood over this period was ${summary.mood.average}, with a ${summary.mood.trend} trend.`
-        );
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error("GEMINI_API_KEY is missing");
     }
 
-    if (summary.sleep.averageHours !== null) {
-        lines.push(
-            `You slept an average of ${summary.sleep.averageHours} hours per night.`
-        );
-    }
+    const prompt = `
+You are a mental health reflection assistant.
 
-    if (summary.stress.average !== null) {
-        lines.push(
-            `Your stress levels were generally ${summary.stress.trend} during this time.`
-        );
-    }
+STRICT RULES:
+- Use ONLY the data provided below.
+- Do NOT compute new numbers.
+- Do NOT guess missing data.
+- Do NOT diagnose or give medical advice.
+- If a field is null, do NOT mention it.
+- Use calm, supportive, non-clinical language.
+- Keep it concise (4-6 sentences).
 
-    if (summary.correlations.sleepMood !== null) {
-        lines.push(
-            `There appears to be a relationship between your sleep and mood.`
-        );
-    }
+DATA (JSON):
+${JSON.stringify(summary, null, 2)}
 
-    lines.push(`Overall, your current risk level is ${summary.riskLevel}.`);
+Explain this summary to the user.
+Focus on patterns and trends only.
+use words in range of 90-120 
+`;
 
-    return lines.join(" ");
+    const result = await geminiModel.generateContent(prompt);
+    return result.response.text();
 }
+
+
 
 export async function POST(req: Request) {
     try {
@@ -76,16 +81,21 @@ export async function POST(req: Request) {
             });
         }
 
-        // 🔹 LLM explanation layer (placeholder for now)
-        const explanation = generateOverviewExplanation(summary);
+
+        const explanation = await generateOverviewExplanationLLM(summary);
+
 
         return NextResponse.json({
             summary,
             explanation,
         });
     } catch (err) {
+        console.error("AI OVERVIEW ERROR:", err);
         return NextResponse.json(
-            { error: "Unexpected error" },
+            {
+                error: "Unexpected error",
+                details: String(err),
+            },
             { status: 500 }
         );
     }
