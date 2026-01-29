@@ -36,7 +36,7 @@ ${JSON.stringify(summary, null, 2)}
 
 Explain this summary to the user.
 Focus on patterns and trends only.
-use words in range of 90-120 
+use words in range of 80-100
 `;
 
     const result = await geminiModel.generateContent(prompt);
