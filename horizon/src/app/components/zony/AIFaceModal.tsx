@@ -178,7 +178,8 @@ rounded-full bg-background shadow-sm transition-transform duration-300 ease-in-o
                     )}
 
                     {/* Content */}
-                    <div className="mt-4 rounded-xl border border-dashed h-[60%] sm:h-[65%] border-border overflow-y-auto flex items-center justify-center">
+                    <div className="mt-4 rounded-xl border border-dashed border-border h-[60%] sm:h-[65%] overflow-y-auto flex justify-center items-start pt-6">
+
 
 
                         {activeTab === "overview" ? (

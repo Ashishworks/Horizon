@@ -28,6 +28,8 @@ export default function AIFaceAssistant() {
 
     // ✅ little space from edges
     const EDGE_PADDING = 24;
+    const DRAG_THRESHOLD = 6; // 👈 adjust (4–8 is ideal)
+
 
     // proportional sizes
     const eyeSize = size * 0.25;
@@ -72,12 +74,19 @@ export default function AIFaceAssistant() {
 
 
 
-    const onTouchMove = (e: TouchEvent) => {
+   const onTouchMove = (e: TouchEvent) => {
     if (!isDragging) return;
 
-    dragMovedRef.current = true; // ✅ INSTANT
-
     const touch = e.touches[0];
+
+    const dx = touch.clientX - startPoint.x;
+    const dy = touch.clientY - startPoint.y;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > DRAG_THRESHOLD) {
+        dragMovedRef.current = true;
+    }
+
     const maxX = window.innerWidth - size;
     const maxY = window.innerHeight - size;
 
@@ -86,6 +95,7 @@ export default function AIFaceAssistant() {
         y: Math.min(Math.max(0, touch.clientY - dragOffset.y), maxY),
     });
 };
+
 
     const onTouchEnd = (e: TouchEvent) => {
     if (!isDragging) return;
@@ -289,7 +299,13 @@ export default function AIFaceAssistant() {
     const onMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
 
-    dragMovedRef.current = true; // ✅ INSTANT
+    const dx = e.clientX - startPoint.x;
+    const dy = e.clientY - startPoint.y;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > DRAG_THRESHOLD) {
+        dragMovedRef.current = true;
+    }
 
     const maxX = window.innerWidth - size;
     const maxY = window.innerHeight - size;
@@ -299,6 +315,7 @@ export default function AIFaceAssistant() {
         y: Math.min(Math.max(0, e.clientY - dragOffset.y), maxY),
     });
 };
+
 
 
 
