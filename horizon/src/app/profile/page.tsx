@@ -25,330 +25,207 @@ export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  // Desktop skeleton loader
+  /* ---------------- Skeleton ---------------- */
   const DesktopSkeleton = () => (
     <div className="animate-pulse">
       <div className="flex flex-col md:flex-row md:items-center md:space-x-8 mb-6 p-8">
-        {/* Avatar */}
-        <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
-          <div className="w-32 h-32 bg-muted rounded-full mb-2" />
-          <div className="h-4 bg-muted rounded w-32" />
+        <div className="flex flex-col items-center justify-center mb-6 md:mb-0">
+          <div className="w-32 h-32 bg-muted/60 rounded-full mb-2" />
+          <div className="h-4 bg-muted/60 rounded-xl w-32" />
         </div>
 
-        {/* Form fields */}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex flex-col">
-              <div className="h-4 bg-muted rounded mb-2 w-3/4"></div>
-              <div className="h-10 bg-muted rounded"></div>
+            <div key={i}>
+              <div className="h-4 bg-muted/60 rounded-xl mb-2 w-3/4" />
+              <div className="h-10 bg-muted/60 rounded-xl" />
             </div>
           ))}
-
-          <div className="flex flex-col md:col-span-2">
-            <div className="h-4 bg-muted rounded mb-2 w-1/2"></div>
-            <div className="h-10 bg-muted rounded"></div>
+          <div className="md:col-span-2">
+            <div className="h-4 bg-muted/60 rounded-xl mb-2 w-1/2" />
+            <div className="h-10 bg-muted/60 rounded-xl" />
           </div>
-
-          <div className="flex flex-col md:col-span-2">
-            <div className="h-4 bg-muted rounded mb-2 w-1/3"></div>
-            <div className="h-10 bg-muted rounded"></div>
+          <div className="md:col-span-2">
+            <div className="h-4 bg-muted/60 rounded-xl mb-2 w-1/3" />
+            <div className="h-10 bg-muted/60 rounded-xl" />
           </div>
         </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="mt-6 space-y-3 md:space-y-0 md:flex md:space-x-4">
-        <div className="h-12 bg-muted rounded flex-1"></div>
-        <div className="h-12 bg-muted rounded flex-1"></div>
       </div>
     </div>
   );
 
-  // Fetch profile by userId
+  /* ---------------- Fetch Profile ---------------- */
   const fetchProfile = useCallback(
     async (userId: string) => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (error && (error as any).code !== "PGRST116") {
-          console.error(error);
-          setMessage("Error fetching profile");
-        } else {
-          setProfile(data as Profile | null);
-        }
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      setProfile(data as Profile);
+      setLoading(false);
     },
     [supabase]
   );
 
-  // Check session on mount
   useEffect(() => {
-    const checkSession = async () => {
+    const init = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/auth");
-        return;
-      }
-
+      if (!session) return router.push("/auth");
       fetchProfile(session.user.id);
     };
-
-    checkSession();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!session) router.push("/auth");
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
+    init();
   }, [fetchProfile, router, supabase]);
 
-  // Handle input change
+  /* ---------------- Handlers ---------------- */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
-
-    setProfile((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        [name]: type === "number" ? Number(value) : value,
-      };
-    });
+    setProfile((p) =>
+      p ? { ...p, [name]: type === "number" ? Number(value) : value } : p
+    );
   };
 
-  // Handle profile update
   const handleUpdate = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) return setMessage("Not logged in");
-
-    const updates: Partial<Profile> & { id: string; updated_at: Date } = {
-      id: session.user.id,
-      name: profile?.name || "",
-      typical_sleep_hours: profile?.typical_sleep_hours,
-      common_problems: profile?.common_problems,
-      known_conditions: profile?.known_conditions,
-      location: profile?.location,
-      baseline_happiness: profile?.baseline_happiness,
-      avatar_url: profile?.avatar_url,
+    if (!profile) return;
+    await supabase.from("profiles").upsert({
+      ...profile,
       updated_at: new Date(),
-    };
-
-    const { error } = await supabase.from("profiles").upsert(updates);
-    setMessage(error ? error.message : "Profile updated successfully!");
+    });
+    setMessage("Profile updated successfully!");
     window.dispatchEvent(new CustomEvent("profileUpdated"));
   };
 
-  // Handle avatar upload
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
-      const file = event.target.files?.[0];
+      const file = e.target.files?.[0];
+      if (!file) return;
 
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      if (!session) return;
 
-      if (!file || !session) return;
+      const path = `${session.user.id}-${Date.now()}.${file.name.split(".").pop()}`;
+      await supabase.storage.from("avatar").upload(path, file, { upsert: true });
 
-      const fileExt = file.name.split(".").pop();
-      if (!fileExt) throw new Error("Invalid file extension");
+      const { data } = supabase.storage.from("avatar").getPublicUrl(path);
 
-      const filePath = `${session.user.id}-${Date.now()}.${fileExt}`;
-
-      // Upload file
-      const { error: uploadError } = await supabase.storage
-        .from("avatar")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("avatar")
-        .getPublicUrl(filePath);
-
-      if (!publicUrlData?.publicUrl)
-        throw new Error("Could not get public URL");
-
-      // Update profile state
-      setProfile((prev) =>
-        prev ? { ...prev, avatar_url: publicUrlData.publicUrl } : prev
-      );
-
-      // Upsert profile in Supabase
-      const updates: Partial<Profile> & { id: string } = {
+      setProfile((p) => (p ? { ...p, avatar_url: data.publicUrl } : p));
+      await supabase.from("profiles").upsert({
         id: session.user.id,
-        avatar_url: publicUrlData.publicUrl,
-      };
-
-      const { error: upsertError } = await supabase
-        .from("profiles")
-        .upsert(updates, { onConflict: "id" });
-
-      if (upsertError) throw upsertError;
+        avatar_url: data.publicUrl,
+      });
 
       setMessage("Profile picture updated!");
-      window.dispatchEvent(new CustomEvent("profileUpdated"));
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error);
-        setMessage(error.message);
-      } else {
-        console.error(error);
-        setMessage("An unexpected error occurred");
-      }
     } finally {
       setUploading(false);
     }
   };
 
+  const handleRemoveAvatar = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) return;
+
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: null })
+      .eq("id", session.user.id);
+
+    setProfile((p) => (p ? { ...p, avatar_url: null } : p));
+    window.dispatchEvent(new CustomEvent("profileUpdated"));
+  };
+
+  /* ---------------- Loading ---------------- */
   if (loading || !profile) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-background text-foreground px-4">
-        <div className="w-full max-w-3xl p-8 mt-24 border rounded-lg shadow-lg bg-card text-card-foreground">
+      <div className="flex justify-center items-center min-h-screen px-4">
+        <div className="w-full max-w-3xl p-8 border rounded-2xl shadow-lg bg-card animate-in fade-in duration-500">
           <DesktopSkeleton />
         </div>
       </div>
     );
   }
 
+  /* ---------------- UI ---------------- */
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <main className="flex-grow flex items-center justify-center px-4 mt-24">
-        <div className="w-full max-w-3xl p-8 border rounded-lg shadow-lg bg-card text-card-foreground">
+    <div className="flex min-h-screen">
+      <main className="flex-grow flex items-center justify-center px-4 mt-24 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="w-full max-w-3xl p-8 border border-border/60 rounded-2xl shadow-lg bg-card">
           <h2 className="text-3xl font-bold mb-6 text-center">Your Profile</h2>
 
-          {/* Avatar & Form */}
           <div className="flex flex-col md:flex-row md:items-center md:space-x-8 mb-6">
-            <div className="flex flex-col items-center md:items-center mb-4 md:mb-0">
-              {profile.avatar_url ? (
-                <div className="relative w-32 h-32 mb-2 rounded-full overflow-hidden">
+            {/* Avatar column */}
+            <div className="flex flex-col items-center justify-center mb-4 md:mb-0">
+              <div className="relative w-32 h-32 mb-2 rounded-full overflow-hidden ring-2 ring-primary/30 transition-all hover:scale-[1.03]">
+                {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
                     alt="Avatar"
                     fill
                     className="object-cover"
                   />
-                </div>
-              ) : (
-                <div className="w-32 h-32 bg-muted rounded-full mb-2" />
-              )}
+                ) : (
+                  <div className="w-full h-full bg-muted/60" />
+                )}
+              </div>
 
-              <div className="flex flex-col items-center space-y-1">
-                <label
-                  htmlFor="avatar-upload"
-                  className="cursor-pointer text-primary hover:underline text-sm md:text-base"
-                >
-                  {uploading ? "Uploading..." : "Change Profile Picture"}
-                </label>
-
+              <label className="cursor-pointer text-primary text-sm hover:underline">
+                {uploading ? "Uploading..." : "Change Profile Picture"}
                 <input
-                  id="avatar-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleUpload}
                   className="hidden"
                 />
+              </label>
 
-                {profile.avatar_url && (
-                  <button
-                    onClick={async () => {
-                      const {
-                        data: { session },
-                      } = await supabase.auth.getSession();
-
-                      if (!session) return setMessage("Not logged in");
-
-                      const { error } = await supabase
-                        .from("profiles")
-                        .update({ avatar_url: null })
-                        .eq("id", session.user.id);
-
-                      if (error) setMessage(error.message);
-                      else
-                        setProfile((prev) =>
-                          prev ? { ...prev, avatar_url: null } : prev
-                        );
-
-                      window.dispatchEvent(new CustomEvent("profileUpdated"));
-                    }}
-                    className="text-destructive hover:underline text-sm md:text-base"
-                  >
-                    Remove Profile Picture
-                  </button>
-                )}
-              </div>
+              {profile.avatar_url && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  className="text-destructive text-sm mt-1 hover:underline"
+                >
+                  Remove Profile Picture
+                </button>
+              )}
             </div>
 
-            {/* Profile Form */}
+            {/* Form */}
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label className="mb-1">Full Name</label>
-                <input
-                  name="name"
-                  value={profile.name || ""}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded bg-input"
-                />
-              </div>
+              {[
+                ["name", "Full Name"],
+                ["typical_sleep_hours", "Typical Sleep Hours"],
+                ["common_problems", "Common Problems"],
+                ["known_conditions", "Known Conditions"],
+              ].map(([name, label]) => (
+                <div key={name}>
+                  <label className="mb-1 block">{label}</label>
+                  <input
+                    name={name}
+                    value={(profile as any)[name] || ""}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-border/60 rounded-xl bg-input transition-all focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+              ))}
 
-              <div className="flex flex-col">
-                <label className="mb-1">Typical Sleep Hours</label>
-                <input
-                  type="number"
-                  name="typical_sleep_hours"
-                  value={profile.typical_sleep_hours || ""}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded bg-input"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label className="mb-1">Common Problems</label>
-                <input
-                  name="common_problems"
-                  value={profile.common_problems || ""}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded bg-input"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label className="mb-1">Known Conditions</label>
-                <input
-                  name="known_conditions"
-                  value={profile.known_conditions || ""}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded bg-input"
-                />
-              </div>
-
-              <div className="flex flex-col md:col-span-2">
-                <label className="mb-1">Location</label>
+              <div className="md:col-span-2">
+                <label className="mb-1 block">Location</label>
                 <input
                   name="location"
                   value={profile.location || ""}
                   onChange={handleChange}
-                  className="w-full p-2 border rounded bg-input"
+                  className="w-full p-2 border rounded-xl bg-input focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
-              <div className="flex flex-col md:col-span-2">
-                <label className="mb-1">
+              <div className="md:col-span-2">
+                <label className="mb-1 block">
                   Happiness Level ({profile.baseline_happiness || 5}/10)
                 </label>
                 <input
@@ -366,20 +243,22 @@ export default function ProfilePage() {
 
           <button
             onClick={handleUpdate}
-            className="w-full bg-primary text-primary-foreground py-3 rounded hover:bg-primary/90 mb-4"
+            className="w-full bg-primary text-primary-foreground py-3 rounded-xl transition-all hover:bg-primary/90 hover:scale-[1.01]"
           >
             Save Changes
           </button>
 
           <button
             onClick={() => router.push("/dashboard")}
-            className="w-full bg-secondary text-secondary-foreground py-3 rounded hover:bg-secondary/80"
+            className="w-full mt-3 bg-secondary text-secondary-foreground py-3 rounded-xl transition-all hover:bg-secondary/80 hover:scale-[1.01]"
           >
             Back to Dashboard
           </button>
 
           {message && (
-            <p className="mt-2 text-center text-primary">{message}</p>
+            <p className="mt-3 text-center text-primary animate-in fade-in">
+              {message}
+            </p>
           )}
         </div>
       </main>
