@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 import { loginAction, signupAction } from "./action";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 export default function AuthBox() {
   const [isLogin, setIsLogin] = useState(true);
@@ -38,50 +40,118 @@ export default function AuthBox() {
       />
 
       <div className="flex justify-center items-center min-h-screen drop-shadow-2xl">
-        <div className="relative z-10 bg-white p-8 rounded-xl shadow-md w-96">
+        <div className="relative z-10 bg-white p-5 sm:p-8 rounded-xl shadow-md
+                w-[90%] sm:w-96 max-w-md">
           <div className="flex justify-between items-center mb-10">
-            <h2 className="text-2xl text-black font-bold">
-              {isLogin ? "Login" : "Sign Up"}
-            </h2>
-            <button
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={isLogin ? "login" : "signup"}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className="text-2xl text-black font-bold"
+              >
+                {isLogin ? "Login" : "Sign Up"}
+              </motion.h2>
+            </AnimatePresence>
+
+            <motion.button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-black underline text-sm"
+              whileHover={{ scale: 1.05, x: 2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="text-black underline text-sm relative"
             >
-              {isLogin ? "Sign Up" : "Login"}
-            </button>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={isLogin ? "signup-text" : "login-text"}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="inline-block"
+                >
+                  {isLogin ? "Sign Up" : "Login"}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
+
           </div>
 
-          <form action={handleAction} className="space-y-4">
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              required
-              className="w-full p-2 border placeholder-gray-300 border-gray-300 rounded text-black"
-            />
+          <form action={handleAction} className="space-y-6">
+            {/* Email */}
+            <div className="relative">
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder=" "
+                className="peer w-full px-3 py-2 border border-gray-300 rounded text-black focus:outline-none focus:border-black"
+              />
+              <label className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-500
+                peer-placeholder-shown:top-2.5
+                peer-placeholder-shown:text-base
+                peer-placeholder-shown:text-gray-400
+                peer-focus:-top-2.5
+                peer-focus:text-sm
+                peer-focus:text-black
+                transition-all">
+                Email
+              </label>
+            </div>
 
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              required
-              className="w-full p-2 border placeholder-gray-300 border-gray-300 rounded text-black"
-            />
+            {/* Password */}
+            <div className="relative">
+              <input
+                name="password"
+                type="password"
+                required
+                placeholder=" "
+                className="peer w-full px-3 py-2 border border-gray-300 rounded text-black focus:outline-none focus:border-black"
+              />
+              <label className="absolute left-3 -top-2.5 bg-white px-1 text-sm text-gray-500
+                peer-placeholder-shown:top-2.5
+                peer-placeholder-shown:text-base
+                peer-placeholder-shown:text-gray-400
+                peer-focus:-top-2.5
+                peer-focus:text-sm
+                peer-focus:text-black
+                transition-all">
+                Password
+              </label>
+            </div>
 
-            <button
+            <motion.button
               type="submit"
-              className="w-full py-2 rounded bg-black text-white hover:bg-white hover:text-black hover:border"
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="w-full py-2 rounded border border-black bg-black text-white
+    shadow-md active:shadow-inner"
             >
-              {isLogin ? "Login" : "Sign Up"}
-            </button>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={isLogin ? "login-btn" : "signup-btn"}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.1 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="block text-center"
+                >
+                  {isLogin ? "Login" : "Sign Up"}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
+
+
+
           </form>
 
           {message && (
             <p
-              className={`mt-4 text-center ${
-                error ? "text-red-500" : "text-green-500"
-              }`}
+              className={`mt-4 text-center ${error ? "text-red-500" : "text-green-500"
+                }`}
             >
               {message}
             </p>
