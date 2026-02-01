@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import TimeRangeSelector from "@/app/dashboard/elements/TimeRangeSelector";
 import Aiload from "../lottie/Aiload";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { ChatMessage, ChatContext } from "@/lib/ai/chatTypes";
 
 
 type AIFaceModalProps = {
@@ -20,18 +21,34 @@ export default function AIFaceModal({
     closeModal,
 }: AIFaceModalProps) {
     const [activeTab, setActiveTab] = useState<"overview" | "chat">("overview");
-
-    const [range, setRange] = useState<Range>(7);               // user selection
-    const [activeRange, setActiveRange] = useState<Range | null>(null); // currently shown overview
-
+    const [range, setRange] = useState<Range>(7);
+    const [activeRange, setActiveRange] = useState<Range | null>(null);
     const [loading, setLoading] = useState(false);
     const [overviewText, setOverviewText] = useState<string[] | null>(null);
+    const [chatStarted, setChatStarted] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
     const [overviewCache, setOverviewCache] = useState<
         Partial<Record<Range, string[]>>
     >({});
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [chatContext, setChatContext] = useState<ChatContext>({
+        focus: "general",
+        timeRange: "7d",
+    });
+    const [input, setInput] = useState("");
+    const [chatLoading, setChatLoading] = useState(false);
+    const [hasSentFirstMessage, setHasSentFirstMessage] = useState(false);
+    useEffect(() => {
+        if (isOpen) {
+            setChatStarted(false);
+            setHasSentFirstMessage(false);
+            setMessages([]);
+        }
+    }, [isOpen]);
+
 
     async function loadOverview(selectedRange: Range) {
-        // Serve from cache
         if (overviewCache[selectedRange]) {
             setOverviewText(overviewCache[selectedRange]!);
             setActiveRange(selectedRange);
@@ -47,18 +64,15 @@ export default function AIFaceModal({
             });
 
             const data = await res.json();
-
-
-
             const explanationArray = data.explanation
                 .split("\n")
-                .map((line: string) => line.trim())
+                .map((l: string) => l.trim())
                 .filter(Boolean);
+
             setOverviewCache((prev) => ({
                 ...prev,
                 [selectedRange]: explanationArray,
             }));
-
 
             setOverviewText(explanationArray);
             setActiveRange(selectedRange);
@@ -68,157 +82,309 @@ export default function AIFaceModal({
             setLoading(false);
         }
     }
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages, chatLoading]);
 
     useEffect(() => {
-        if (isOpen) {
-            setActiveTab("overview");
+        if (isOpen) setChatStarted(false);
+    }, [isOpen]);
+
+    async function sendChatMessage() {
+        if (!input.trim()) return;
+
+        const userMsg: ChatMessage = { role: "user", content: input };
+
+        setMessages((p) => [...p, userMsg]);
+        setInput("");
+        setChatLoading(true);
+
+        if (!hasSentFirstMessage) {
+            setHasSentFirstMessage(true);
         }
+
+        const res = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                message: userMsg.content,
+                context: chatContext,
+            }),
+        });
+
+        const data = await res.json();
+
+        setMessages((p) => [...p, { role: "assistant", content: data.reply }]);
+        setChatContext(data.nextContext);
+        setChatLoading(false);
+    }
+
+
+    useEffect(() => {
+        if (activeTab === "chat") {
+            setChatContext((p) => ({
+                ...p,
+                timeRange: `${range}d` as ChatContext["timeRange"],
+            }));
+        }
+    }, [activeTab, range]);
+
+    useEffect(() => {
+        if (isOpen) setActiveTab("overview");
     }, [isOpen]);
 
     if (!isOpen) return null;
 
     const isCurrent = activeRange === range;
+    const borderStyle =
+        activeTab === "overview"
+            ? "border-dashed border-border"
+            : "border-dotted border-border/60";
 
     return (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center">
-            {/* Backdrop */}
             <div
                 onClick={closeModal}
                 className={`absolute inset-0 bg-black/30 backdrop-blur-md transition-opacity duration-200 ${isClosing ? "opacity-0" : "opacity-100"
                     }`}
             />
 
-            {/* Modal */}
             <div
                 className={`relative z-[9999] w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[85vh] md:w-[85vw] md:h-[80vh]
- rounded-2xl 
-bg-card text-card-foreground shadow-2xl border border-border overflow-hidden
-transition-all duration-200 ease-out ${isClosing
+rounded-2xl bg-card text-card-foreground shadow-2xl border border-border overflow-hidden
+transition-all duration-200 ${isClosing
                         ? "opacity-0 scale-95 translate-y-2"
-                        : "opacity-100 scale-100 translate-y-0"
+                        : "opacity-100 scale-100"
                     }`}
             >
-                <div className="h-full p-3 sm:p-4 md:p-6
-">
-                    {/* Top Bar */}
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-4">
-                        <div />
-
-                        <div className="flex flex-col items-center">
-                            <div className="mt-4">
-                                <div className="relative flex w-[260px] sm:w-[300px] md:w-[360px]
- rounded-full border border-border bg-muted p-1 overflow-hidden">
-                                    <div
-                                        className="absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(50%-4px)]
-rounded-full bg-background shadow-sm transition-transform duration-300 ease-in-out"
-                                        style={{
-                                            transform:
-                                                activeTab === "overview"
-                                                    ? "translateX(0%)"
-                                                    : "translateX(100%)",
-                                        }}
-                                    />
-
-                                    <button
-                                        onClick={() => setActiveTab("overview")}
-                                        className={`relative z-10 flex-1 rounded-full px-3 py-2 text-xs sm:text-sm font-medium ${activeTab === "overview"
-                                            ? "text-foreground"
-                                            : "text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        AI Overview
-                                    </button>
-
-                                    <button
-                                        onClick={() => setActiveTab("chat")}
-                                        className={`relative z-10 flex-1 rounded-full px-3 py-2 text-xs sm:text-sm font-medium ${activeTab === "chat"
-                                            ? "text-foreground"
-                                            : "text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        Chat
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end">
+                <div className="h-full p-4 md:p-6">
+                    {/* Tabs */}
+                    <div className="flex justify-center mt-4">
+                        <div className="relative flex w-[320px] rounded-full border bg-muted p-1">
+                            <div
+                                className="absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(50%-4px)]
+rounded-full bg-background shadow transition-transform duration-300"
+                                style={{
+                                    transform:
+                                        activeTab === "overview"
+                                            ? "translateX(0%)"
+                                            : "translateX(100%)",
+                                }}
+                            />
                             <button
-                                onClick={closeModal}
-                                className="h-10 w-10 rounded-full hover:bg-accent flex items-center justify-center text-xl"
+                                onClick={() => setActiveTab("overview")}
+                                className="relative z-10 flex-1 py-2 text-sm"
                             >
-                                ✕
+                                AI Overview
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("chat")}
+                                className="relative z-10 flex-1 py-2 text-sm"
+                            >
+                                Chat
                             </button>
                         </div>
                     </div>
 
-                    {/* Controls ABOVE dashed box */}
                     {activeTab === "overview" && (
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-4 sm:mt-6">
+                        <div className="flex justify-center gap-4 mt-6">
                             <TimeRangeSelector value={range} onChange={setRange} />
-
                             <button
-                                onClick={() => loadOverview(range)}
-                                disabled={isCurrent || loading}
-                                className={`
-                  w-full sm:w-auto px-5 py-2 rounded-full text-sm font-medium transition
-                  ${isCurrent
-                                        ? "bg-muted text-muted-foreground cursor-default"
-                                        : "bg-primary text-primary-foreground hover:opacity-90"
-                                    }
-                `}
-                            >
-                                {isCurrent
-                                    ? "Currently showing"
-                                    : loading
-                                        ? "Generating…"
-                                        : "See AI Overview"}
-                            </button>
+  onClick={() => loadOverview(range)}
+  disabled={isCurrent || loading}
+  className={`px-5 py-2 rounded-full text-sm transition-all duration-200
+    ${isCurrent
+      ? "bg-muted text-muted-foreground cursor-not-allowed"
+      : "bg-primary text-primary-foreground hover:brightness-110 hover:shadow-md active:scale-95"
+    }`}
+>
+  {loading ? "Generating…" : "See AI Overview"}
+</button>
+
                         </div>
                     )}
 
-                    {/* Content */}
-                    <div className="mt-4 rounded-xl border border-dashed border-border h-[60%] sm:h-[65%] overflow-y-auto flex justify-center items-start pt-6">
-
-
-
+                    {/* Content Box */}
+                    <div
+                        className={`mt-6 h-[65%] rounded-xl border ${borderStyle} flex justify-center overflow-hidden`}
+                    >
                         {activeTab === "overview" ? (
-                            <div className="max-w-4xl mx-auto px-6 text-center">
-
+                            <div className="max-w-4xl px-6 text-center flex items-center">
                                 {loading ? (
-                                    <div className="flex flex-col items-center justify-center h-full gap-3">
+                                    <div className="space-y-3">
                                         <Aiload size={200} />
-                                        <p className="text-md text-muted-foreground text-center">
-                                            Horizon is reviewing patterns from your last {range} days…
+                                        <p className="text-muted-foreground">
+                                            Reviewing last {range} days…
                                         </p>
                                     </div>
-
                                 ) : overviewText ? (
                                     <div className="space-y-4">
-                                        {overviewText.map((line, i) => (
+                                        {overviewText.map((l, i) => (
                                             <TextGenerateEffect
-                                                key={`${activeRange}-${i}`}
-                                                words={line}
-                                                className="text-base sm:text-lg leading-relaxed text-foreground"
+                                                key={i}
+                                                words={l}
+                                                className="text-lg"
                                             />
                                         ))}
                                     </div>
-
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">
-                                        Select a time range to see your AI overview.
+                                    <p className="text-muted-foreground">
+                                        Select a range to begin.
                                     </p>
                                 )}
                             </div>
                         ) : (
-                            <div className="text-center">
-                                <p className="text-base sm:text-lg font-semibold">Chat Mode</p>
-                                <p className="text-sm mt-2 text-muted-foreground">
-                                    AI chat interface under development
-                                </p>
+                            <div className="flex flex-col h-full w-full max-w-4xl">
+                                {!hasSentFirstMessage ? (
+                                    <div className="flex flex-col justify-center items-center h-full text-center px-6">
+                                        <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight leading-tight">
+                                            Hey, I’m{" "}
+                                            <span className="text-primary ai-glow-toggle">
+                                                Zony
+                                            </span>
+
+                                        </h1>
+
+                                        <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
+                                            I track your mood, sleep, stress & habits — let’s explore.
+                                        </p>
+                                    </div>
+
+                                ) : (
+                                    <>
+                                        <div
+                                            className="
+    flex-1 overflow-y-auto px-4 py-4 space-y-3
+    [scrollbar-width:none]
+    [&::-webkit-scrollbar]:hidden
+  "
+                                        >
+
+                                            {messages.map((m, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={`flex ${m.role === "user"
+                                                        ? "justify-end"
+                                                        : "justify-start"
+                                                        }`}
+                                                >
+                                                    <div
+                                                        className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.role === "user"
+                                                            ? "bg-primary text-primary-foreground rounded-br-md"
+                                                            : "bg-muted rounded-bl-md"
+                                                            }`}
+                                                    >
+                                                        {m.content}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {chatLoading && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    Zony is thinking…
+                                                </p>
+                                            )}
+                                            <div ref={messagesEndRef} />
+                                        </div>
+
+                                        {/* CLEAN INPUT */}
+
+                                    </>
+                                )}
                             </div>
+
                         )}
                     </div>
+                    {activeTab === "chat" && !chatStarted && (
+                        <div className="mt-6 flex justify-center">
+                            <button
+                                onClick={() => setChatStarted(true)}
+                                className="
+      group
+      relative
+      px-8 py-3
+      rounded-full
+      bg-primary text-primary-foreground
+      text-sm font-medium
+      shadow-md
+      transition-all duration-300
+      hover:shadow-lg
+      hover:scale-[1.03]
+      active:scale-[0.97]
+      focus:outline-none
+    "
+                            >
+                                <span className="relative z-10">Let’s chat</span>
+
+                                {/* subtle glow */}
+                                <span
+                                    className="
+        absolute inset-0
+        rounded-full
+        bg-primary/20
+        blur-lg
+        opacity-0
+        transition-opacity duration-300
+        group-hover:opacity-100
+      "
+                                />
+                            </button>
+                        </div>
+
+                    )}
+
+                    {activeTab === "chat" && chatStarted && (
+                        <div className="mt-4 px-4">
+                            <div className="flex gap-2">
+                                <input
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+                                    placeholder="Ask about your patterns…"
+                                    className="
+  flex-1 rounded-full border border-border
+  px-4 py-2 text-sm
+  outline-none
+  focus:ring-0
+  focus:border-muted-foreground/40
+  transition-colors
+"
+
+                                />
+                                <button
+                                    onClick={sendChatMessage}
+                                    disabled={chatLoading}
+                                    className={`
+    group
+    px-4 py-2
+    rounded-full
+    text-sm font-medium
+    transition-all duration-200
+    focus:outline-none
+
+    ${chatLoading
+                                            ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                            : `
+            bg-primary text-primary-foreground
+            hover:shadow-md
+            hover:scale-[1.02]
+            active:scale-[0.97]
+          `
+                                        }
+  `}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        {chatLoading && (
+                                            <span className="h-3 w-3 rounded-full border-2 border-primary-foreground/40 border-t-primary-foreground animate-spin" />
+                                        )}
+                                        {chatLoading ? "Thinking…" : "Send"}
+                                    </span>
+                                </button>
+
+
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>

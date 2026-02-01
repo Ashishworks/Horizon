@@ -296,3 +296,51 @@
 .ai-glow {
   animation: pulseGlow 2.5s ease-in-out infinite;
 }
+
+.ai-glow-strong {
+  animation: ai-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes ai-glow {
+  0% {
+    text-shadow:
+      0 0 8px hsl(var(--primary) / 0.35),
+      0 0 16px hsl(var(--primary) / 0.25);
+  }
+  50% {
+    text-shadow:
+      0 0 16px hsl(var(--primary) / 0.6),
+      0 0 32px hsl(var(--primary) / 0.35);
+  }
+  100% {
+    text-shadow:
+      0 0 8px hsl(var(--primary) / 0.35),
+      0 0 16px hsl(var(--primary) / 0.25);
+  }
+}
+@keyframes ai-glow-toggle {
+  0% {
+    text-shadow: none;
+  }
+
+  15% {
+    text-shadow:
+      0 0 16px hsl(var(--primary) / 0.6),
+      0 0 32px hsl(var(--primary) / 0.35);
+  }
+
+  30% {
+    text-shadow:
+      0 0 8px hsl(var(--primary) / 0.3);
+  }
+
+  45%,
+  100% {
+    text-shadow: none;
+  }
+}
+
+
+.ai-glow-toggle {
+  animation: ai-glow-toggle 3.2s ease-in-out infinite;
+}
