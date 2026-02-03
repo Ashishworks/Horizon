@@ -53,7 +53,7 @@ export default function ActivityRing({ entries, range, allEntries }: ActivityRin
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-6 w-full">
-      <div className="w-full md:w-1/2 h-[250px]">
+      <div className="w-full md:w-1/2 h-[250px] chart-hover-fix">
         <ResponsivePie
           data={pieData}
           innerRadius={0.72}

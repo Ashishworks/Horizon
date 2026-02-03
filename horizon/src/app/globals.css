@@ -344,3 +344,35 @@
 .ai-glow-toggle {
   animation: ai-glow-toggle 3.2s ease-in-out infinite;
 }
+
+.hover-scale-glow {
+  /* Default Shadow (Matches shadow-xl and dark:shadow-white/10) */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Smooth transition for both scale and shadow */
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  
+  /* Performance optimization */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Dark mode specific shadow */
+.dark .hover-scale-glow {
+  box-shadow: 0 20px 25px -10px rgba(255, 255, 255, 0.1);
+}
+
+.hover-scale-glow:hover {
+  /* Scale up */
+  transform: scale(1.01);
+  
+  /* Enhanced Shadow on Hover (Makes it look like it's lifting) */
+  box-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.25);
+  z-index: 20;
+}
+
+/* Enhanced Dark mode Shadow on Hover */
+.dark .hover-scale-glow:hover {
+  box-shadow: 0 25px 50px -12px rgba(18, 100, 5, 0.15), 
+              0 0 15px -5px var(--color-chart-1); /* Subtle glow using your chart color */
+}

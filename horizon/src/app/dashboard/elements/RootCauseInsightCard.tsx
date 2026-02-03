@@ -118,7 +118,7 @@ export default function RootCauseInsightCard({ entries }: Props) {
   }, [entries]);
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover-scale-glow">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-semibold">Why your mood changes</h3>
 

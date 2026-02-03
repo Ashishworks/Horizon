@@ -308,7 +308,7 @@ export default function DashboardPage() {
 
 
         {/* Weekly Activity */}
-        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
+        <div className="bg-card p-4 hover-scale-glow rounded-xl border border-border h-[320px] flex flex-col ">
           <h2 className="text-lg font-semibold mb-2 text-center">
             {range === 7
               ? "Last 7 days Activty"
@@ -323,7 +323,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Exercise Breakdown */}
-        <div className="bg-card p-4 rounded-xl border border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
+        <div className="bg-card p-4 rounded-xl border hover-scale-glow border-border h-[320px] flex flex-col shadow-xl dark:shadow-white/10">
           <h2 className="text-lg font-semibold mb-2 text-center">
             Exercise Breakdown
           </h2>
@@ -398,16 +398,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-
-
-        {/* Center Face */}
-        {/* <div className="hidden lg:flex absolute inset-0 items-center justify-center pointer-events-none opacity-5">
-          <Face size={80} color={4} shadow={2} mouthHeight={18} mouthWidth={25} />
-        </div> */}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 ">
         {/* Best Day (1/4) */}
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[250px] md:col-span-1 flex flex-col">
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[250px] md:col-span-1 flex flex-col hover-scale-glow">
 
           {/* Row 1: Title (fixed at top) */}
           <h2 className="text-xl font-semibold text-center bg-gradient-to-br from-green-500/10 to-transparent rounded-xl">
@@ -448,7 +442,7 @@ export default function DashboardPage() {
 
 
         {/* Sleep Consistency (1/2) */}
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[150px] md:col-span-2">
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[150px] md:col-span-2 hover-scale-glow">
 
           {/* Row 1: Title */}
           <h2 className="text-xl font-semibold mb-4 text-center bg-gradient-to-br from-blue-500/10 to-transparent rounded-xl">
@@ -492,7 +486,7 @@ export default function DashboardPage() {
           </div>
         </div>
         {/* Worst Day (1/4) */}
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[250px] md:col-span-1 flex flex-col">
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[250px] md:col-span-1 flex flex-col hover-scale-glow">
 
           {/* Row 1: Title */}
           <h2 className="text-xl font-semibold mb-4 text-center bg-gradient-to-br from-red-500/10 to-transparent rounded-xl">
@@ -537,7 +531,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         {/* Mood & Stress */}
-        <div className="bg-card p-8 rounded-xl border border-border h-[400px] md:h-[500px]">
+        <div className="bg-card p-8 rounded-xl border border-border h-[400px] md:h-[500px] hover-scale-glow">
 
           <h2 className="text-xl font-semibold mb-4">Mood & Stress Over Time</h2>
           {hasEnoughData ? (
@@ -655,7 +649,7 @@ export default function DashboardPage() {
           )}
         </div>
         {/* Screen Time */}
-        <div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px]">
+        <div className="bg-card p-6 rounded-xl border border-border h-[400px] md:h-[500px] hover-scale-glow">
           <h2 className="text-xl font-semibold mb-4">
             Screen Time (Work vs. Entertainment)
           </h2>
@@ -751,12 +745,12 @@ export default function DashboardPage() {
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8">
-        <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 my-8 ">
+        <div className="bg-card p-6 rounded-xl border border-border min-h-[160px] md:col-span-3 hover-scale-glow">
           <MoodOverviewHorizontal />
 
         </div>
-        <RootCauseInsightCard entries={filteredEntries} />
+        <RootCauseInsightCard  entries={filteredEntries} />
         <SecondaryImpactInsight entries={filteredEntries} />
         <GentleSuggestionCard entries={filteredEntries} />
       </div>
