@@ -49,47 +49,47 @@ export default function AIFaceModal({
 
 
     async function loadOverview(selectedRange: Range) {
-    // 1. Clear current text so the UI "flickers" and resets the animation
-    setOverviewText(null);
-    setActiveRange(null); 
+        // 1. Clear current text so the UI "flickers" and resets the animation
+        setOverviewText(null);
+        setActiveRange(null);
 
-    if (overviewCache[selectedRange]) {
-        // Use a tiny delay to allow React to process the 'null' state
-        // This ensures the TextGenerateEffect restarts from scratch
-        setTimeout(() => {
-            setOverviewText(overviewCache[selectedRange]!);
+        if (overviewCache[selectedRange]) {
+            // Use a tiny delay to allow React to process the 'null' state
+            // This ensures the TextGenerateEffect restarts from scratch
+            setTimeout(() => {
+                setOverviewText(overviewCache[selectedRange]!);
+                setActiveRange(selectedRange);
+            }, 10);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch("/api/ai/overview", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ timeRange: `${selectedRange}d` }),
+            });
+
+            const data = await res.json();
+            const explanationArray = data.explanation
+                .split("\n")
+                .map((l: string) => l.trim())
+                .filter(Boolean);
+
+            setOverviewCache((prev) => ({
+                ...prev,
+                [selectedRange]: explanationArray,
+            }));
+
+            setOverviewText(explanationArray);
             setActiveRange(selectedRange);
-        }, 10);
-        return;
+        } catch {
+            setOverviewText(["Unable to load AI overview right now."]);
+        } finally {
+            setLoading(false);
+        }
     }
-
-    setLoading(true);
-    try {
-        const res = await fetch("/api/ai/overview", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ timeRange: `${selectedRange}d` }),
-        });
-
-        const data = await res.json();
-        const explanationArray = data.explanation
-            .split("\n")
-            .map((l: string) => l.trim())
-            .filter(Boolean);
-
-        setOverviewCache((prev) => ({
-            ...prev,
-            [selectedRange]: explanationArray,
-        }));
-
-        setOverviewText(explanationArray);
-        setActiveRange(selectedRange);
-    } catch {
-        setOverviewText(["Unable to load AI overview right now."]);
-    } finally {
-        setLoading(false);
-    }
-}
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, chatLoading]);
@@ -158,7 +158,7 @@ export default function AIFaceModal({
             />
 
             <div
-  className={`relative z-[9999]
+                className={`relative z-[9999]
     w-[95vw] h-[87vh]
     sm:w-[90vw] sm:h-[85vh]
     md:w-[85vw] md:h-[80vh]
@@ -170,10 +170,10 @@ export default function AIFaceModal({
     shadow-2xl border border-border overflow-hidden
     transition-all duration-200
     ${isClosing
-      ? "opacity-0 scale-95 translate-y-2"
-      : "opacity-100 scale-100"
-    }`}
->
+                        ? "opacity-0 scale-95 translate-y-2"
+                        : "opacity-100 scale-100"
+                    }`}
+            >
 
                 <div className="h-full p-4 md:p-6">
                     {/* Tabs */}
@@ -227,89 +227,64 @@ rounded-full bg-background shadow transition-transform duration-300"
                         className={`mt-6 h-[65%] rounded-xl border ${borderStyle} flex justify-center overflow-hidden`}
                     >
                         {activeTab === "overview" ? (
-                            <div className="max-w-4xl px-6 text-center flex items-center">
-                                {loading ? (
-                                    <div className="space-y-3">
-                                        <Aiload size={200} />
-                                        <p className="text-muted-foreground">
-                                            Reviewing last {range} days…
+                            <div
+                                className="w-full h-full overflow-y-auto px-6 py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                            >
+                                <div className="max-w-4xl mx-auto text-center flex flex-col items-center justify-start min-h-full">
+                                    {loading ? (
+                                        <div className="my-auto space-y-3">
+                                            <Aiload size={200} />
+                                            <p className="text-muted-foreground">
+                                                Reviewing last {range} days…
+                                            </p>
+                                        </div>
+                                    ) : overviewText ? (
+                                        /* The key={activeRange} forces a fresh animation when range changes */
+                                        <div className="space-y-6 pb-4" key={activeRange}>
+                                            {overviewText.map((l, i) => (
+                                                <TextGenerateEffect
+                                                    key={i}
+                                                    words={l}
+                                                    className="text-base sm:text-lg leading-relaxed"
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="my-auto text-muted-foreground">
+                                            Select a range to begin.
                                         </p>
-                                    </div>
-                                ) : overviewText ? (
-                                    <div className="space-y-4">
-                                        {overviewText.map((l, i) => (
-                                            <TextGenerateEffect
-                                                key={i}
-                                                words={l}
-                                                className="text-lg"
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-muted-foreground">
-                                        Select a range to begin.
-                                    </p>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         ) : (
+                            /* ... Chat Logic remains the same ... */
                             <div className="flex flex-col h-full w-full max-w-4xl">
                                 {!hasSentFirstMessage ? (
+                                    // ... intro screen ...
                                     <div className="flex flex-col justify-center items-center h-full text-center px-6">
                                         <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight leading-tight">
-                                            Hey, I’m{" "}
-                                            <span className="text-primary ai-glow-toggle">
-                                                Zony
-                                            </span>
-
+                                            Hey, I’m <span className="text-primary ai-glow-toggle">Zony</span>
                                         </h1>
-
                                         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
                                             I track your mood, sleep, stress & habits — let’s explore.
                                         </p>
                                     </div>
-
                                 ) : (
                                     <>
-                                        <div
-                                            className="
-    flex-1 overflow-y-auto px-4 py-4 space-y-3
-    [scrollbar-width:none]
-    [&::-webkit-scrollbar]:hidden
-  "
-                                        >
-
+                                        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                                             {messages.map((m, i) => (
-                                                <div
-                                                    key={i}
-                                                    className={`flex ${m.role === "user"
-                                                        ? "justify-end"
-                                                        : "justify-start"
-                                                        }`}
-                                                >
-                                                    <div
-                                                        className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.role === "user"
-                                                            ? "bg-primary text-primary-foreground rounded-br-md"
-                                                            : "bg-muted rounded-bl-md"
-                                                            }`}
-                                                    >
+                                                <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                                                    <div className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${m.role === "user" ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted rounded-bl-md"}`}>
                                                         {m.content}
                                                     </div>
                                                 </div>
                                             ))}
-                                            {chatLoading && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    Zony is thinking…
-                                                </p>
-                                            )}
+                                            {chatLoading && <p className="text-xs text-muted-foreground">Zony is thinking…</p>}
                                             <div ref={messagesEndRef} />
                                         </div>
-
-                                        {/* CLEAN INPUT */}
-
                                     </>
                                 )}
                             </div>
-
                         )}
                     </div>
                     {activeTab === "chat" && !chatStarted && (
@@ -352,22 +327,24 @@ rounded-full bg-background shadow transition-transform duration-300"
 
                     {activeTab === "chat" && chatStarted && (
                         <div className="mt-4 px-4">
-                            <div className="flex gap-2">
-                                <input
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
-                                    placeholder="Ask about your patterns…"
-                                    className="
-  flex-1 rounded-full border border-border
-  px-4 py-2 text-sm
-  outline-none
-  focus:ring-0
-  focus:border-muted-foreground/40
-  transition-colors
-"
+                            <div className="flex gap-2 items-center">
 
-                                />
+                                <input
+  value={input}
+  onChange={(e) => setInput(e.target.value)}
+  onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+  placeholder="Ask about your patterns…"
+  className="
+    flex-1 min-w-0
+    rounded-full border border-border
+    px-4 py-2 text-sm
+    outline-none
+    focus:ring-0
+    focus:border-muted-foreground/40
+    transition-colors
+  "
+/>
+
                                 <button
                                     onClick={sendChatMessage}
                                     disabled={chatLoading}
