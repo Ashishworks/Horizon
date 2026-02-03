@@ -54,9 +54,9 @@ export default function ReportPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end">
+                {/* <div className="flex justify-end">
                     <GeneratePDFButton />
-                </div>
+                </div> */}
 
                 {/* Report Preview */}
                 <div className="flex justify-center overflow-x-auto">
