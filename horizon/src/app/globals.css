@@ -27,7 +27,8 @@
   --accent-foreground: oklch(0.205 0 0);
 
   /* Brand */
-  --primary: oklch(0.65 0.18 145); /* green */
+  --primary: oklch(0.65 0.18 145);
+  /* green */
   --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.92 0 0);
@@ -197,18 +198,20 @@
 @keyframes candle-flicker {
   0% {
     box-shadow:
-      0 0 8px 2px rgba(255,255,255,0.5),
-      0 0 16px 4px rgba(255,255,255,0.25);
+      0 0 8px 2px rgba(255, 255, 255, 0.5),
+      0 0 16px 4px rgba(255, 255, 255, 0.25);
   }
+
   50% {
     box-shadow:
-      0 0 12px 3px rgba(255,255,255,0.7),
-      0 0 20px 6px rgba(255,255,255,0.3);
+      0 0 12px 3px rgba(255, 255, 255, 0.7),
+      0 0 20px 6px rgba(255, 255, 255, 0.3);
   }
+
   100% {
     box-shadow:
-      0 0 8px 2px rgba(255,255,255,0.5),
-      0 0 16px 4px rgba(255,255,255,0.25);
+      0 0 8px 2px rgba(255, 255, 255, 0.5),
+      0 0 16px 4px rgba(255, 255, 255, 0.25);
   }
 }
 
@@ -232,9 +235,9 @@
 
 .glow-slider::-webkit-slider-runnable-track {
   height: 6px;
-  background: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 8px;
-  box-shadow: 0 0 4px rgba(255,255,255,0.4);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
 }
 
 .glow-slider::-webkit-slider-thumb {
@@ -272,6 +275,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -282,11 +286,13 @@
 }
 
 @keyframes pulseGlow {
+
   0%,
   100% {
     transform: scale(0.9);
     opacity: 0.65;
   }
+
   50% {
     transform: scale(1);
     opacity: 0.85;
@@ -307,17 +313,20 @@
       0 0 8px hsl(var(--primary) / 0.35),
       0 0 16px hsl(var(--primary) / 0.25);
   }
+
   50% {
     text-shadow:
       0 0 16px hsl(var(--primary) / 0.6),
       0 0 32px hsl(var(--primary) / 0.35);
   }
+
   100% {
     text-shadow:
       0 0 8px hsl(var(--primary) / 0.35),
       0 0 16px hsl(var(--primary) / 0.25);
   }
 }
+
 @keyframes ai-glow-toggle {
   0% {
     text-shadow: none;
@@ -348,10 +357,10 @@
 .hover-scale-glow {
   /* Default Shadow (Matches shadow-xl and dark:shadow-white/10) */
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+
   /* Smooth transition for both scale and shadow */
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-  
+
   /* Performance optimization */
   backface-visibility: hidden;
   transform: translateZ(0);
@@ -365,7 +374,7 @@
 .hover-scale-glow:hover {
   /* Scale up */
   transform: scale(1.01);
-  
+
   /* Enhanced Shadow on Hover (Makes it look like it's lifting) */
   box-shadow: 0 25px 50px -15px rgba(0, 0, 0, 0.25);
   z-index: 20;
@@ -373,6 +382,24 @@
 
 /* Enhanced Dark mode Shadow on Hover */
 .dark .hover-scale-glow:hover {
-  box-shadow: 0 25px 50px -12px rgba(18, 100, 5, 0.15), 
-              0 0 15px -5px var(--color-chart-1); /* Subtle glow using your chart color */
+  box-shadow: 0 25px 50px -12px rgba(18, 100, 5, 0.15),
+    0 0 15px -5px var(--color-chart-1);
+  /* Subtle glow using your chart color */
+}
+
+/* ---- PDF / html2canvas safety ---- */
+#report-sheet * {
+  color: rgb(0, 0, 0) !important;
+  background-color: transparent !important;
+}
+
+#report-sheet svg {
+  background: transparent !important;
+}
+
+/* Disable modern color spaces for canvas */
+@media print {
+  * {
+    color-adjust: exact;
+  }
 }
