@@ -150,23 +150,13 @@ export default function AIFaceModal({
             />
 
             <div
-  className={`relative z-[9999]
-    w-[95vw] h-[87vh]
-    sm:w-[90vw] sm:h-[85vh]
-    md:w-[85vw] md:h-[80vh]
-
-    mx-3 my-3        
-    sm:mx-0 sm:my-0   
-
-    rounded-2xl bg-card text-card-foreground
-    shadow-2xl border border-border overflow-hidden
-    transition-all duration-200
-    ${isClosing
-      ? "opacity-0 scale-95 translate-y-2"
-      : "opacity-100 scale-100"
-    }`}
->
-
+                className={`relative z-[9999] w-[95vw] h-[90vh] sm:w-[90vw] sm:h-[85vh] md:w-[85vw] md:h-[80vh]
+rounded-2xl bg-card text-card-foreground shadow-2xl border border-border overflow-hidden
+transition-all duration-200 ${isClosing
+                        ? "opacity-0 scale-95 translate-y-2"
+                        : "opacity-100 scale-100"
+                    }`}
+            >
                 <div className="h-full p-4 md:p-6">
                     {/* Tabs */}
                     <div className="flex justify-center mt-4">
@@ -197,19 +187,19 @@ rounded-full bg-background shadow transition-transform duration-300"
                     </div>
 
                     {activeTab === "overview" && (
-                        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-6">
+                        <div className="flex justify-center gap-4 mt-6">
                             <TimeRangeSelector value={range} onChange={setRange} />
                             <button
-                                onClick={() => loadOverview(range)}
-                                disabled={isCurrent || loading}
-                                className={`px-5 py-2 rounded-full text-sm transition-all duration-200
+  onClick={() => loadOverview(range)}
+  disabled={isCurrent || loading}
+  className={`px-5 py-2 rounded-full text-sm transition-all duration-200
     ${isCurrent
-                                        ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                        : "bg-primary text-primary-foreground hover:brightness-110 hover:shadow-md active:scale-95"
-                                    }`}
-                            >
-                                {loading ? "Generating…" : "See AI Overview"}
-                            </button>
+      ? "bg-muted text-muted-foreground cursor-not-allowed"
+      : "bg-primary text-primary-foreground hover:brightness-110 hover:shadow-md active:scale-95"
+    }`}
+>
+  {loading ? "Generating…" : "See AI Overview"}
+</button>
 
                         </div>
                     )}
