@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
+import Building from "./components/lottie/Building";
 
 export default function NotFound() {
   const router = useRouter();
@@ -41,13 +42,7 @@ export default function NotFound() {
       ></div>
 
       {/* Not Found Image */}
-      <Image
-        src="/nf.png"
-        alt="Not found"
-        width={700}
-        height={700}
-        className="z-10 -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-28 w-[80vw] max-w-[700px] h-auto"
-      />
+      <Building size={400}/>
 
       {/* Heading */}
       <h1

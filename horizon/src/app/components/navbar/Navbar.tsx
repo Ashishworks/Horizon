@@ -4,11 +4,12 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { User as UserIcon, Moon, Sun } from "lucide-react";
+import { User as UserIcon, Moon, Sun, FileText } from "lucide-react";
 import { useTheme } from "next-themes";
 import PageTransition from "../pagetransitions/PageTransition";
 import { createClient } from "@/lib/supabase/client";
 import AmbientAudioToggle from "../ui/AmbientAudioToggle";
+
 
 interface Profile {
   id: string;
@@ -33,7 +34,7 @@ export default function Navbar() {
   const lastFetchedId = useRef<string | null>(null);
 
   useEffect(() => setMounted(true), []);
-  
+
   // ✅ 1. Profile Fetcher with Retry Logic
   const getProfile = useCallback(async (userId: string, retries = 3) => {
     if (!userId) return;
@@ -67,7 +68,7 @@ export default function Navbar() {
       }
     };
     checkUser();
-    
+
     // Listen for Auth Events
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user ?? null;
@@ -88,45 +89,45 @@ export default function Navbar() {
     };
   }, [supabase, getProfile]);
   useEffect(() => {
-  const syncUser = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const syncUser = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (session?.user) {
-      setUser(session.user);
-      if (lastFetchedId.current !== session.user.id) {
-        getProfile(session.user.id);
-      }
-    } else {
-      setUser(null);
-      setProfile(null);
-      lastFetchedId.current = null;
-    }
-  };
-
-  syncUser();
-
-  const { data: authListener } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser && lastFetchedId.current !== currentUser.id) {
-        getProfile(currentUser.id);
-      }
-
-      if (!currentUser) {
+      if (session?.user) {
+        setUser(session.user);
+        if (lastFetchedId.current !== session.user.id) {
+          getProfile(session.user.id);
+        }
+      } else {
+        setUser(null);
         setProfile(null);
         lastFetchedId.current = null;
       }
-    }
-  );
+    };
 
-  return () => {
-    authListener.subscription.unsubscribe();
-  };
-}, [supabase, getProfile, pathname]); // 👈 THIS is the key
+    syncUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser && lastFetchedId.current !== currentUser.id) {
+          getProfile(currentUser.id);
+        }
+
+        if (!currentUser) {
+          setProfile(null);
+          lastFetchedId.current = null;
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase, getProfile, pathname]); // 👈 THIS is the key
 
 
   // ✅ 3. Listen for Custom Profile Updates
@@ -201,7 +202,7 @@ export default function Navbar() {
     <nav className="bg-background shadow-md dark:shadow-white/5 border-b border-border fixed w-full z-50 text-foreground transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          
+
           {/* Left: Logo & Audio */}
           <div className="flex items-center space-x-4">
             <button
@@ -234,15 +235,24 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm transition-colors ${
-                  pathname === link.href
-                    ? "font-bold text-primary"
-                    : "font-medium text-muted-foreground hover:text-foreground"
-                }`}
+                className={`text-sm transition-colors ${pathname === link.href
+                  ? "font-bold text-primary"
+                  : "font-medium text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {link.label}
               </Link>
             ))}
+
+            {user && (
+              <Link
+                href="/report"
+                title="Generate Mental Health Report"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition"
+              >
+                <FileText className="w-5 h-5" />
+              </Link>
+            )}
 
             {user && (
               <div className="relative">
@@ -312,28 +322,43 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-72 bg-background border-r border-border shadow-2xl transform transition-transform duration-300 z-[60] ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-72 bg-background border-r border-border shadow-2xl transform transition-transform duration-300 z-[60] ${mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-5 border-b border-border">
           <span className="text-lg font-bold">Navigation</span>
           <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-accent rounded-md">✕</button>
         </div>
         <div className="flex flex-col p-4 space-y-2">
+          
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className={`p-3 rounded-md text-base transition-colors ${
-                pathname === link.href ? "bg-primary/10 text-primary font-bold" : "hover:bg-accent"
-              }`}
+              className={`p-3 rounded-md text-base transition-colors ${pathname === link.href ? "bg-primary/10 text-primary font-bold" : "hover:bg-accent"
+                }`}
             >
               {link.label}
             </Link>
+            
+
           ))}
+          {user && (
+          <Link
+            href="/report"
+            onClick={() => setMobileOpen(false)}
+            className={`p-3 rounded-md text-base transition-colors text-center ${pathname === "/report"
+                ? "bg-primary/10 text-primary font-bold"
+                : "hover:bg-accent"
+              }`}
+          >
+             Generate Report
+          </Link>
+        )}
         </div>
+        
+
       </div>
 
       {/* Overlay */}
