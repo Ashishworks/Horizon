@@ -49,39 +49,47 @@ export default function AIFaceModal({
 
 
     async function loadOverview(selectedRange: Range) {
-        if (overviewCache[selectedRange]) {
+    // 1. Clear current text so the UI "flickers" and resets the animation
+    setOverviewText(null);
+    setActiveRange(null); 
+
+    if (overviewCache[selectedRange]) {
+        // Use a tiny delay to allow React to process the 'null' state
+        // This ensures the TextGenerateEffect restarts from scratch
+        setTimeout(() => {
             setOverviewText(overviewCache[selectedRange]!);
             setActiveRange(selectedRange);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const res = await fetch("/api/ai/overview", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ timeRange: `${selectedRange}d` }),
-            });
-
-            const data = await res.json();
-            const explanationArray = data.explanation
-                .split("\n")
-                .map((l: string) => l.trim())
-                .filter(Boolean);
-
-            setOverviewCache((prev) => ({
-                ...prev,
-                [selectedRange]: explanationArray,
-            }));
-
-            setOverviewText(explanationArray);
-            setActiveRange(selectedRange);
-        } catch {
-            setOverviewText(["Unable to load AI overview right now."]);
-        } finally {
-            setLoading(false);
-        }
+        }, 10);
+        return;
     }
+
+    setLoading(true);
+    try {
+        const res = await fetch("/api/ai/overview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ timeRange: `${selectedRange}d` }),
+        });
+
+        const data = await res.json();
+        const explanationArray = data.explanation
+            .split("\n")
+            .map((l: string) => l.trim())
+            .filter(Boolean);
+
+        setOverviewCache((prev) => ({
+            ...prev,
+            [selectedRange]: explanationArray,
+        }));
+
+        setOverviewText(explanationArray);
+        setActiveRange(selectedRange);
+    } catch {
+        setOverviewText(["Unable to load AI overview right now."]);
+    } finally {
+        setLoading(false);
+    }
+}
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, chatLoading]);
@@ -135,7 +143,7 @@ export default function AIFaceModal({
 
     if (!isOpen) return null;
 
-    const isCurrent = activeRange === range;
+    const isCurrent = activeRange === range && overviewText !== null;
     const borderStyle =
         activeTab === "overview"
             ? "border-dashed border-border"
