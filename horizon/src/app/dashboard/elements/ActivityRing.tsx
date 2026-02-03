@@ -15,7 +15,7 @@ interface ActivityRingProps {
   allEntries: any[];
 }
 
-export default function ActivityRing({ entries, range,allEntries }: ActivityRingProps) {
+export default function ActivityRing({ entries, range, allEntries }: ActivityRingProps) {
   const completed = entries.length;
   const remaining = Math.max(0, range - completed);
 
@@ -53,13 +53,14 @@ export default function ActivityRing({ entries, range,allEntries }: ActivityRing
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-6 w-full">
-      <div className="w-full md:w-1/2 h-[230px]">
+      <div className="w-full md:w-1/2 h-[250px]">
         <ResponsivePie
           data={pieData}
           innerRadius={0.72}
           padAngle={1}
           cornerRadius={4}
-          activeOuterRadiusOffset={6}
+          activeOuterRadiusOffset={12}
+           margin={{ top: 16, right: 16, bottom: 16, left: 16 }}
           enableArcLinkLabels={false}
           enableArcLabels={false}
 
@@ -75,13 +76,26 @@ export default function ActivityRing({ entries, range,allEntries }: ActivityRing
           layers={['arcs', CenteredMetric]}
           animate
           motionConfig="gentle"
+
+          theme={{
+            tooltip: {
+              container: {
+                background: '#000000',                   // ✅ black background
+                color: '#ffffff',                        // ✅ white text
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
+              },
+            },
+          }}
         />
+
       </div>
 
       <div className="hidden md:flex w-full md:w-1/2 h-[260px] items-center justify-center">
         <StreakCounter entries={allEntries} />
       </div>
-      
+
 
     </div>
   );
