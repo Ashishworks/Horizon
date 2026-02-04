@@ -35,6 +35,7 @@ export function useReportData(days: number) {
                             mood: json.averages?.mood ?? null,
                             sleep: json.averages?.sleep_hours ?? null,
                             stress: json.averages?.stress_level ?? null,
+                            productivity: json.averages?.productivity ?? null,
                         },
                     },
 

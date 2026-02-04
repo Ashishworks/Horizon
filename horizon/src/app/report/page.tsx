@@ -27,30 +27,49 @@ export default function ReportPage() {
                     <div>
                         <h1 className="text-2xl font-bold">Mental Health Report</h1>
                         <p className="text-sm text-muted-foreground">
-                            AI-generated summary based on your journal entries
+                            A thoughtful, AI-assisted reflection from what you've been journaling
                         </p>
                     </div>
 
                     {/* Range Selector */}
-                    <div className="flex flex-wrap gap-2">
-                        {[
-                            { label: "1 month", value: "1m" },
-                            { label: "3 months", value: "3m" },
-                            { label: "6 months", value: "6m" },
-                            { label: "1 year", value: "1y" },
-                        ].map((opt) => (
-                            <button
-                                key={opt.value}
-                                onClick={() => setRange(opt.value as ReportRange)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition ${range === opt.value
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-background border border-border hover:bg-accent"
-                                    }`}
-                            >
-                                {opt.label}
-                            </button>
-                        ))}
-                    </div>
+                   <div className="flex justify-center mt-4">
+    <div className="relative flex w-[360px] rounded-full border bg-muted p-1">
+        {/* sliding background with ring */}
+        <div
+            className="absolute top-1 left-1 h-[calc(100%-8px)] w-[calc(25%-2px)] 
+                       rounded-full bg-background shadow-sm
+                       ring-1 ring-black/10 dark:ring-white/20 
+                       transition-transform duration-300 ease-in-out"
+            style={{
+                transform: `translateX(${
+                    range === "1m" ? "0%" : 
+                    range === "3m" ? "100%" : 
+                    range === "6m" ? "200%" : "300%"
+                })`,
+            }}
+        />
+
+        {[
+            { label: "1 month", value: "1m" },
+            { label: "3 months", value: "3m" },
+            { label: "6 months", value: "6m" },
+            { label: "1 year", value: "1y" },
+        ].map((opt) => (
+            <button
+                key={opt.value}
+                onClick={() => setRange(opt.value as ReportRange)}
+                className={`relative z-10 flex-1 py-2 text-sm font-medium transition-colors duration-300 ${
+                    range === opt.value 
+                        ? "text-foreground" 
+                        : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+                {opt.label}
+            </button>
+        ))}
+    </div>
+</div>
+
                 </div>
 
                 {/* Actions */}

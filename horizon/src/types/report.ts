@@ -5,6 +5,7 @@ export type SnapshotStats = {
         mood: number | null;
         sleep: number | null;
         stress: number | null;
+        productivity: number | null;
     };
 };
 

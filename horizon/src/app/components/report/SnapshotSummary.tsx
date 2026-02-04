@@ -7,9 +7,14 @@ export default function SnapshotSummary({
 }: {
     stats: SnapshotStats;
 }) {
-    const { mood, sleep, stress } = stats.averages;
+    const { mood, sleep, stress, productivity } = stats.averages;
 
-    if (mood === null && sleep === null && stress === null) {
+    if (
+        mood === null &&
+        sleep === null &&
+        stress === null &&
+        productivity === null
+    ) {
         return (
             <section>
                 <h3 className="text-lg font-semibold mb-4">
@@ -32,6 +37,9 @@ export default function SnapshotSummary({
                 {mood !== null && <div>Avg Mood: {mood.toFixed(1)}</div>}
                 {sleep !== null && <div>Avg Sleep: {sleep.toFixed(1)}h</div>}
                 {stress !== null && <div>Avg Stress: {stress.toFixed(1)}</div>}
+                {productivity !== null && (
+                    <div>Avg Productivity: {productivity.toFixed(1)}</div>
+                )}
             </div>
         </section>
     );

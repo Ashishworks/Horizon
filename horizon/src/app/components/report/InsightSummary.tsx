@@ -29,8 +29,8 @@ export default function InsightSummary({
                 {insights.map((i, idx) => (
                     <li key={idx} className="flex justify-between gap-4">
                         <span>• {i.text}</span>
-                        <span className="text-gray-500 capitalize">
-                            {i.confidence}
+                        <span className="text-sm  capitalize">
+                            Impact: {i.confidence}
                         </span>
                     </li>
                 ))}
