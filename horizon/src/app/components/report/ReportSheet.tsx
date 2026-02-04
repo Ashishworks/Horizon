@@ -42,49 +42,42 @@ export default function ReportSheet({
         );
     }
 
-    return (
-        <div
-            id="report-sheet"
-            className="relative pdf-safe bg-white text-black w-[210mm] min-h-[297mm] p-10 shadow-xl"
-        >
-            {/* Compiled on – top right */}
-            <div className="absolute top-6 right-10 text-xs text-gray-500">
-                Compiled on: {today}
+    // Inside ReportSheet component
+return (
+    <div id="report-container">
+        {/* PAGE 1 */}
+        <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
+             <div className="absolute top-6 right-10 text-xs text-gray-500">Compiled on: {today}</div>
+             <div className="text-center mb-6">
+                <h1 className="text-4xl font-extrabold tracking-tight">Horizon</h1>
+                <p className="text-sm text-gray-500 mt-1">Mental Health Insights Report</p>
             </div>
-
-
-            {/* 🔹 Horizon Heading */}
-            <div className="text-center mb-6">
-                <h1 className="text-4xl font-extrabold tracking-tight"
-                >
-                    Horizon
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                    Mental Health Insights Report
-                </p>
-            </div>
-
             <ReportHeader range={range} days={days} />
-
             <div className="mt-8 space-y-12">
-                
                 <SnapshotSummary stats={data.snapshot} />
                 <InsightSummary insights={data.insights} />
                 <RiskAssessment risk={data.risk} />
+            </div>
+        </div>
+
+        {/* PAGE 2 */}
+        <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
+            <div className="space-y-12">
                 <TrendLineCharts trends={data.trends} />
                 <HabitConsistencyTable habits={data.habits} />
-                <DayComparison
-                    best={data.bestDays}
-                    worst={data.worstDays}
-                />
-                <PersonalizedSuggestions
-                    suggestions={data.recommendations}
-                />
             </div>
+        </div>
 
-            <footer className="mt-16 text-xs text-gray-500 border-t pt-4">
-                This report is generated from user-entered journal data and structured responses, refined by AI. It is not a medical diagnosis.
+        {/* PAGE 3 */}
+        <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
+             <div className="space-y-12">
+                <DayComparison best={data.bestDays} worst={data.worstDays} />
+                <PersonalizedSuggestions suggestions={data.recommendations} />
+            </div>
+            <footer className="absolute bottom-10 left-10 right-10 text-xs text-gray-500 border-t pt-4">
+                This report is generated from user-entered journal data...
             </footer>
         </div>
-    );
+    </div>
+);
 }
