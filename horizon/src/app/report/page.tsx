@@ -42,7 +42,7 @@ export default function ReportPage() {
                             <button
                                 key={opt.value}
                                 onClick={() => setRange(opt.value as ReportRange)}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition ${range === opt.value
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition ${range === opt.value
                                         ? "bg-primary text-primary-foreground"
                                         : "bg-background border border-border hover:bg-accent"
                                     }`}

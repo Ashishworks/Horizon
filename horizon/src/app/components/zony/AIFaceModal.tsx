@@ -306,7 +306,7 @@ rounded-full bg-background shadow transition-transform duration-300"
       focus:outline-none
     "
                             >
-                                <span className="relative z-10">Let’s chat</span>
+                                <span className="relative z-10">Let's chat</span>
 
                                 {/* subtle glow */}
                                 <span
@@ -330,11 +330,11 @@ rounded-full bg-background shadow transition-transform duration-300"
                             <div className="flex gap-2 items-center">
 
                                 <input
-  value={input}
-  onChange={(e) => setInput(e.target.value)}
-  onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
-  placeholder="Ask about your patterns…"
-  className="
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && sendChatMessage()}
+                                    placeholder="Ask about your patterns…"
+                                    className="
     flex-1 min-w-0
     rounded-full border border-border
     px-4 py-2 text-sm
@@ -343,7 +343,7 @@ rounded-full bg-background shadow transition-transform duration-300"
     focus:border-muted-foreground/40
     transition-colors
   "
-/>
+                                />
 
                                 <button
                                     onClick={sendChatMessage}
