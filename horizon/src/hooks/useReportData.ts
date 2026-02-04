@@ -19,30 +19,40 @@ export function useReportData(days: number) {
                 const res = await fetch(`/api/report?days=${days}`, {
                     signal: controller.signal,
                 });
+                console.log("watch this", res);
 
                 if (!res.ok) {
                     throw new Error("Failed to fetch report");
                 }
 
-                const json: any = await res.json();
+                const json = await res.json();
 
                 const report: ReportData = {
+                    /* -------------------------
+                       SNAPSHOT (from API)
+                    ------------------------- */
                     snapshot: {
                         averages: {
                             mood: json.averages?.mood ?? null,
-                            sleep: json.averages?.sleep ?? null,
-                            stress: json.averages?.stress ?? null,
+                            sleep: json.averages?.sleep_hours ?? null,
+                            stress: json.averages?.stress_level ?? null,
                         },
                     },
 
-                    insights: Array.isArray(json.insights) ? json.insights : [],
-                    habits: Array.isArray(json.habits) ? json.habits : [],
-                    bestDays: Array.isArray(json.bestDays) ? json.bestDays : [],
-                    worstDays: Array.isArray(json.worstDays) ? json.worstDays : [],
-                    recommendations: Array.isArray(json.recommendations)
-                        ? json.recommendations
-                        : [],
-                    trends: json.trends ?? {},
+                    /* -------------------------
+                       HABITS + TRENDS
+                    ------------------------- */
+                    habits: json.habits ?? {},
+                    trends: Array.isArray(json.trends) ? json.trends : [],
+
+                    /* -------------------------
+                       REQUIRED DEFAULTS (OPTION 1)
+                       These WILL be filled by AI later
+                    ------------------------- */
+                    insights: json.insights ?? [],
+                    bestDays: json.bestDays ?? [],
+                    worstDays: json.worstDays ?? [],
+                    recommendations: json.recommendations ?? [],
                     risk: json.risk ?? {
                         moodVolatility: 0,
                         sleepRegularity: 0,

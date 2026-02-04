@@ -7,7 +7,7 @@ export default function ReportHeader({
     range: ReportRange;
     days: number;
 }) {
-    const today = new Date().toLocaleDateString();
+    
 
     const labelMap: Record<ReportRange, string> = {
         "1m": "Last 1 month",
@@ -22,7 +22,6 @@ export default function ReportHeader({
 
             <div className="flex justify-between mt-2 text-sm text-gray-600">
                 <span>Period: {labelMap[range]}</span>
-                <span>Generated on: {today}</span>
             </div>
         </div>
     );

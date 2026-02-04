@@ -18,7 +18,7 @@ export default function ReportPage() {
     const days = RANGE_TO_DAYS[range];
 
     return (
-        <div className="min-h-screen bg-muted/30 pt-24 pb-10">
+        <div className="min-h-screen pdf-export-container bg-muted/30 pt-24 pb-10 ">
 
             <div className="max-w-7xl mx-auto px-4 space-y-6 ">
 
@@ -54,9 +54,9 @@ export default function ReportPage() {
                 </div>
 
                 {/* Actions */}
-                {/* <div className="flex justify-end">
+                <div className="flex justify-end">
                     <GeneratePDFButton />
-                </div> */}
+                </div>
 
                 {/* Report Preview */}
                 <div className="flex justify-center overflow-x-auto">
