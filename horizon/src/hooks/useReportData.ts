@@ -19,7 +19,6 @@ export function useReportData(days: number) {
                 const res = await fetch(`/api/report?days=${days}`, {
                     signal: controller.signal,
                 });
-                console.log("watch this", res);
 
                 if (!res.ok) {
                     throw new Error("Failed to fetch report");

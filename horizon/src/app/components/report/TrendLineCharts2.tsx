@@ -3,11 +3,11 @@
 import { ResponsiveLine } from "@nivo/line";
 
 const METRICS = [
-    { key: "mood", label: "Mood", yLabel: "Mood Score" },
-    { key: "sleep", label: "Sleep Hours", yLabel: "Hours" },
+    { key: "stress", label: "Stress", yLabel: "Stress Level" },
+    { key: "productivity", label: "Productivity", yLabel: "Productivity Score" },
 ];
 
-export default function TrendLineCharts({
+export default function TrendLineCharts2({
     trends,
 }: {
     trends?: any[];

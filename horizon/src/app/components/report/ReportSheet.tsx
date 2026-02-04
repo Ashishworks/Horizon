@@ -11,6 +11,9 @@ import RiskAssessment from "./RiskAssessment";
 import HabitConsistencyTable from "./HabitConsistencyTable";
 import DayComparison from "./DayComparison";
 import PersonalizedSuggestions from "./PersonalizedSuggestions";
+import TrendLineCharts2 from "./TrendLineCharts2";
+import { useUserDetails } from "@/hooks/useUserDetails";
+import UserDetails from "./UserDetails";
 
 
 export default function ReportSheet({
@@ -22,9 +25,9 @@ export default function ReportSheet({
 }) {
     const today = new Date().toLocaleDateString();
     const { data, loading, error } = useReportData(days);
-    console.log(data);
+    const { userName, userLoading } = useUserDetails();
 
-    if (loading) {
+    if (loading || userLoading) {
         return (
             <div className="bg-white w-[210mm] min-h-[297mm] p-10">
                 <p className="text-sm text-gray-500">Generating report…</p>
@@ -54,9 +57,11 @@ return (
             </div>
             <ReportHeader range={range} days={days} />
             <div className="mt-8 space-y-12">
+                <UserDetails label="Prepared for" name={userName} />
                 <SnapshotSummary stats={data.snapshot} />
                 <InsightSummary insights={data.insights} />
                 <RiskAssessment risk={data.risk} />
+                <HabitConsistencyTable habits={data.habits} />
             </div>
         </div>
 
@@ -64,7 +69,12 @@ return (
         <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
             <div className="space-y-12">
                 <TrendLineCharts trends={data.trends} />
-                <HabitConsistencyTable habits={data.habits} />
+            </div>
+        </div>
+
+        <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
+            <div className="space-y-12">
+                <TrendLineCharts2 trends={data.trends} />
             </div>
         </div>
 
