@@ -368,7 +368,7 @@
 
 /* Dark mode specific shadow */
 .dark .hover-scale-glow {
-  box-shadow: 0 20px 25px -10px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 25px -18px rgba(255, 255, 255, 0.1);
 }
 
 .hover-scale-glow:hover {
@@ -382,8 +382,8 @@
 
 /* Enhanced Dark mode Shadow on Hover */
 .dark .hover-scale-glow:hover {
-  box-shadow: 0 25px 50px -12px rgba(18, 100, 5, 0.15),
-    0 0 15px -5px var(--color-chart-1);
+  box-shadow: 0 25px 50px -28px rgba(255, 255, 255, 0.15),
+    0 0 10px -5px var(--foreground);
   /* Subtle glow using your chart color */
 }
 

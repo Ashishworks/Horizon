@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from "@/lib/supabase/client";
 import { format } from 'date-fns';
-import { toast, Toaster } from 'react-hot-toast';
 import ElasticSlider from '@/app/components/ui/ElasticSlider';
 import { RiEmotionSadFill, RiEmotionHappyFill } from 'react-icons/ri';
 import FrostGlassScrollButton from '@/app/components/ui/FrostGlassScrollButton';
@@ -141,53 +140,53 @@ export default function JournalPage() {
 
     // --- SUBMIT ---
     const handleSubmit = async () => {
-        const promise = (async () => {
-            setLoading(true);
+    try {
+        setLoading(true);
 
-            if (!userId) {
-                router.push("/auth");
-                throw new Error("User session not found. Please log in again.");
-            }
-
-            if (!entry.mood) {
-                throw new Error("Please select your mood before submitting.");
-            }
-
-            const today = format(new Date(), "yyyy-MM-dd");
-
-            // ✅ Filter exercise
-            const exercisesToSave = entry.exercise
-                ? entry.exercise.filter((ex) => ex !== "Other" && ex.trim() !== "Other:")
-                : [];
-
-            // ✅ CALL API (server will: save to supabase + delete redis keys)
-            const res = await fetch("/api/journal", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...entry,
-                    date: today,
-                    exercise: exercisesToSave.length ? exercisesToSave : null,
-                }),
-            });
-
-            const json = await res.json();
-
-            if (!res.ok) {
-                throw new Error(json.error || "Failed to save journal");
-            }
-        })();
-
-        try {
-            await toast.promise(promise, {
-                loading: "Saving journal...",
-                success: " Journal saved successfully!",
-                error: (err) => ` Error: ${err.message || "Failed to save."}`,
-            });
-        } finally {
-            setLoading(false);
+        if (!userId) {
+            router.push("/auth");
+            throw new Error("User session not found. Please log in again.");
         }
-    };
+
+        if (!entry.mood) {
+            throw new Error("Please select your mood before submitting.");
+        }
+
+        const today = format(new Date(), "yyyy-MM-dd");
+
+        const exercisesToSave = entry.exercise
+            ? entry.exercise.filter(
+                  (ex) => ex !== "Other" && ex.trim() !== "Other:"
+              )
+            : [];
+
+        const res = await fetch("/api/journal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...entry,
+                date: today,
+                exercise: exercisesToSave.length ? exercisesToSave : null,
+            }),
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            throw new Error(json.error || "Failed to save journal");
+        }
+
+        // Optional: redirect or reset form
+        // router.push("/dashboard");
+
+    } catch (err: any) {
+        console.error("Journal save error:", err.message);
+        alert(err.message || "Failed to save journal");
+    } finally {
+        setLoading(false);
+    }
+};
+
 
 
     // --- RENDER ---
@@ -218,7 +217,6 @@ export default function JournalPage() {
             <div className="fixed inset-0 -z-10 opacity-[0.15] pointer-events-none">
                 <Noise patternAlpha={60} />
             </div>
-            <Toaster position="top-center" reverseOrder={false} />
 
             {/* Header */}
             {/* <div className="fixed transition-all top-20 right-6 group hidden md:block">
