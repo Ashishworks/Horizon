@@ -12,8 +12,7 @@ import { MutatingDots } from 'react-loader-spinner';
 import Noise from '@/app/components/ui/noise';
 import RotatingText from '@/components/RotatingText';
 import { motion } from 'framer-motion';
-import Face from '@/app/components/ui/face';
-// or whatever source you use for the motion component
+import { Toaster, toast } from 'sonner';
 
 // Interface for the journal entry data
 interface JournalEntry {
@@ -140,52 +139,58 @@ export default function JournalPage() {
 
     // --- SUBMIT ---
     const handleSubmit = async () => {
-    try {
-        setLoading(true);
+        // 1. Validation Check (Immediate Warning)
+        if (!entry.mood) {
+            toast.warning("Hold up!", {
+                description: "Please select your mood before submitting."
+            });
+            return;
+        }
 
         if (!userId) {
+            toast.error("Session expired", {
+                description: "Please log in again."
+            });
             router.push("/auth");
-            throw new Error("User session not found. Please log in again.");
+            return;
         }
 
-        if (!entry.mood) {
-            throw new Error("Please select your mood before submitting.");
-        }
+        // 2. The Submission Promise
+        const saveEntry = async () => {
+            const today = format(new Date(), "yyyy-MM-dd");
+            const exercisesToSave = entry.exercise
+                ? entry.exercise.filter((ex) => ex !== "Other" && ex.trim() !== "Other:")
+                : [];
 
-        const today = format(new Date(), "yyyy-MM-dd");
+            const res = await fetch("/api/journal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ...entry,
+                    date: today,
+                    exercise: exercisesToSave.length ? exercisesToSave : null,
+                }),
+            });
 
-        const exercisesToSave = entry.exercise
-            ? entry.exercise.filter(
-                  (ex) => ex !== "Other" && ex.trim() !== "Other:"
-              )
-            : [];
+            if (!res.ok) {
+                const json = await res.json();
+                throw new Error(json.error || "Failed to save journal");
+            }
 
-        const res = await fetch("/api/journal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ...entry,
-                date: today,
-                exercise: exercisesToSave.length ? exercisesToSave : null,
-            }),
+            return res.json();
+        };
+
+        // 3. Trigger the Toast
+        toast.promise(saveEntry(), {
+            loading: 'Saving your journey...',
+            success: (data) => {
+                // Optional: redirect or reset form here
+                // router.push("/dashboard");
+                return `Journal saved for ${format(new Date(), "MMMM do")}!`;
+            },
+            error: (err) => err.message,
         });
-
-        const json = await res.json();
-
-        if (!res.ok) {
-            throw new Error(json.error || "Failed to save journal");
-        }
-
-        // Optional: redirect or reset form
-        // router.push("/dashboard");
-
-    } catch (err: any) {
-        console.error("Journal save error:", err.message);
-        alert(err.message || "Failed to save journal");
-    } finally {
-        setLoading(false);
-    }
-};
+    };
 
 
 
@@ -211,26 +216,17 @@ export default function JournalPage() {
 
     return (
         <div className="relative z-0 h-screen py-10 px-4 bg-background text-foreground flex flex-col items-center overflow-hidden">
+            <Toaster position="top-center"
+                toastOptions={{
+                    // 'w-full' ensures the inner container stretches so text can center
+                    className: "flex flex-row items-center justify-center text-center w-full",
+                }} offset={80} expand />
 
 
             {/* Background Noise Layer */}
             <div className="fixed inset-0 -z-10 opacity-[0.15] pointer-events-none">
                 <Noise patternAlpha={60} />
             </div>
-
-            {/* Header */}
-            {/* <div className="fixed transition-all top-20 right-6 group hidden md:block">
-                <Face
-                    size={60}
-                    color={4}
-                    shadow={2}
-                    mouthWidth={20}
-                    mouthHeight={12}
-                />
-                <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
-                    Don&apos;t touch me!
-                </span>
-            </div> */}
             <motion.h1
                 layout
                 transition={{ duration: 0.3 }}
