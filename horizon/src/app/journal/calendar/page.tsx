@@ -13,6 +13,7 @@ import { toast } from "react-hot-toast";
 import { MutatingDots } from "react-loader-spinner";
 import Face from "@/app/components/ui/face";
 import Computer from "@/app/components/lottie/computer";
+import LoadingHorizon from "@/components/LoadingHorizon";
 
 // --- INTERFACE (No changes) ---
 interface JournalEntry {
@@ -217,15 +218,7 @@ export default function JournalHistoryPage() {
   if (!userId) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background">
-        <MutatingDots
-          visible={true}
-          height="100"
-          width="100"
-          color="#ff0000ff"
-          secondaryColor="#4fa94d"
-          radius="12.5"
-          ariaLabel="mutating-dots-loading"
-        />
+        <LoadingHorizon/>
       </div>
     );
   }
@@ -233,13 +226,6 @@ export default function JournalHistoryPage() {
   return (
     <LayoutGroup>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
-        {/* <div className="fixed transition-all top-20 right-6 group hidden md:block">
-          <Face size={60} color={4} shadow={2} mouthWidth={20} mouthHeight={12} />
-          <span className="absolute hidden top-18 right-1 group-hover:block p-2 bg-gray-800 text-white text-sm rounded-lg whitespace-nowrap shadow-lg ">
-            Don&apos;t touch me!
-          </span>
-        </div> */}
-
         <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
           Journal History
         </h1>

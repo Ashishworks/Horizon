@@ -13,6 +13,7 @@ import Noise from '@/app/components/ui/noise';
 import RotatingText from '@/components/RotatingText';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster, toast } from 'sonner';
+import LoadingHorizon from '@/components/LoadingHorizon';
 
 // Interface for the journal entry data
 interface JournalEntry {
@@ -200,17 +201,7 @@ export default function JournalPage() {
     if (!userId) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-background">
-                <MutatingDots
-                    visible={true}
-                    height="100"
-                    width="100"
-                    color="#ff0000ff"
-                    secondaryColor="#4fa94d"
-                    radius="12.5"
-                    ariaLabel="mutating-dots-loading"
-                    wrapperStyle={{}}
-                    wrapperClass=""
-                />
+                <LoadingHorizon />
             </div>
         );
     }
@@ -230,22 +221,27 @@ export default function JournalPage() {
             </div>
             <motion.h1
                 layout
-                transition={{ duration: 0.3 }}
-                className="flex flex-wrap items-center justify-center mt-10 mb-8 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center"
+                transition={{ duration: 0.4 }}
+                className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mt-8 mb-8 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-center"
             >
-                Capture Your
-                <RotatingText
-                    texts={['Journey', 'Moments', 'Feelings!', 'Thoughts',]}
-                    mainClassName="px-1 sm:px-2 md:px-3 bg-white text-black overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg ml-2 sm:ml-3 md:ml-4"
-                    staggerFrom={"last"}
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "-120%" }}
-                    staggerDuration={0.025}
-                    splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                <span className="text-foreground/90">Capture Your</span>
 
-                    rotationInterval={1700}
-                />
+                <div className="relative inline-flex items-center">
+                    <RotatingText
+                        texts={['Journey', 'Moments', 'Feelings!', 'Thoughts']}
+                        mainClassName="relative px-3 sm:px-4 py-1.5 sm:py-2 
+                           bg-primary text-primary-foreground 
+                           overflow-hidden justify-center rounded-2xl 
+                           shadow-lg shadow-primary/20"
+                        staggerFrom={"last"}
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "-100%", opacity: 0 }}
+                        staggerDuration={0.025}
+                        splitLevelClassName="overflow-hidden"
+                        rotationInterval={2000}
+                    />
+                </div>
             </motion.h1>
 
 
@@ -254,15 +250,50 @@ export default function JournalPage() {
             <div className="w-full max-w-4xl bg-card p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border animate-candle-glow">
 
                 {/* Stepper */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-center text-primary">
-                        {stepTitles[currentStep - 1]}
-                    </h2>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-4">
+                <div className="relative mb-6 w-full max-w-md mx-auto space-y-3">
+                    {/* Compact Header */}
+                    <div className="flex items-end justify-between px-1">
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/50">
+                                Current Progress
+                            </p>
+                            <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                                {stepTitles[currentStep - 1]}
+                            </h2>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-light tracking-tighter text-primary">
+                                {Math.round((currentStep / totalSteps) * 100)}%
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Slim Progress Track */}
+                    <div className="relative h-2 w-full">
+                        {/* Outer Track */}
+                        <div className="absolute inset-0 rounded-full border border-primary/10 bg-muted/20 backdrop-blur-md" />
+
+                        {/* Progress Fill */}
                         <div
-                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                            className="relative h-full rounded-full bg-gradient-to-r from-primary/60 to-primary transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)]"
                             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-                        ></div>
+                        >
+                            {/* Subtle Lead Glow */}
+                            <div className="absolute right-0 top-0 h-full w-2 rounded-full bg-white/30 blur-[2px]" />
+
+                            {/* Shimmer */}
+                            <div className="absolute inset-0 overflow-hidden rounded-full">
+                                <div className="h-full w-full animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                            </div>
+                        </div>
+
+                        {/* Small Follower Dot */}
+                        <div
+                            className="absolute -bottom-3 transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                            style={{ left: `${(currentStep / totalSteps) * 100}%`, transform: 'translateX(-50%)' }}
+                        >
+                            <div className="h-0.5 w-0.5 rounded-full bg-primary/30" />
+                        </div>
                     </div>
                 </div>
 
@@ -518,9 +549,22 @@ export default function JournalPage() {
                                         <button
                                             key={tag}
                                             onClick={() => {
-                                                const current = entry.stress_triggers || '';
-                                                const newValue = current ? `${current.trim()}, ${tag}` : tag;
-                                                handleChange('stress_triggers', newValue);
+                                                const current = (entry.stress_triggers || '').trim();
+
+                                                // Regex to find the tag at the very end of the string, with optional " xN"
+                                                const regex = new RegExp(`${tag}(?: x(\\d+))?$`);
+                                                const match = current.match(regex);
+
+                                                if (match) {
+                                                    // If tag found at end, increment count (default to 1 + 1 = 2)
+                                                    const count = match[1] ? parseInt(match[1], 10) : 1;
+                                                    const updatedValue = current.replace(regex, `${tag} x${count + 1}`);
+                                                    handleChange('stress_triggers', updatedValue);
+                                                } else {
+                                                    // If tag not at end, append with comma if field isn't empty
+                                                    const newValue = current ? `${current}, ${tag}` : tag;
+                                                    handleChange('stress_triggers', newValue);
+                                                }
                                             }}
                                             className="rounded-full border border-border bg-background/50 px-3 py-1 text-[10px] font-medium text-muted-foreground transition-all hover:border-destructive/40 hover:bg-destructive/5 hover:text-destructive active:scale-95"
                                         >
@@ -536,10 +580,10 @@ export default function JournalPage() {
                                         onChange={(e) => handleChange('stress_triggers', e.target.value)}
                                         placeholder="What triggered stress today?"
                                         className="min-h-[120px] w-full resize-none rounded-2xl border border-border bg-background/50 p-5 
-                 text-sm leading-relaxed text-foreground shadow-sm
-                 placeholder:text-muted-foreground/40
-                 focus:bg-background focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive/40
-                 transition-all duration-300 group-hover:shadow-md"
+                     text-sm leading-relaxed text-foreground shadow-sm
+                     placeholder:text-muted-foreground/40
+                     focus:bg-background focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:border-destructive/40
+                     transition-all duration-300 group-hover:shadow-md"
                                     ></textarea>
 
                                     {/* Subtle Icon Indicator */}

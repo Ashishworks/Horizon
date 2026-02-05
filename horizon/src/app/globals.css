@@ -414,3 +414,21 @@
 .leaflet-marker-shadow {
   z-index: 1;
 }
+
+
+@layer utilities {
+  @keyframes blink-bw {
+    0%, 100% {
+      color: black;
+      opacity: 1;
+    }
+    50% {
+      color: white;
+      opacity: 0.5; /* Added slight opacity change for a better effect on light/dark backgrounds */
+    }
+  }
+
+  .animate-horizon-blink {
+    animation: blink-bw 2s ease-in-out infinite;
+  }
+}
