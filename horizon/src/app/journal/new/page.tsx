@@ -247,7 +247,7 @@ export default function JournalPage() {
 
 
             {/* Card Container */}
-            <div className="w-full max-w-4xl bg-card p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border animate-candle-glow">
+            <div className="w-full max-w-4xl bg-card p-4 md:p-8 rounded-xl shadow flex flex-col flex-1 overflow-hidden border border-border animate-candle-glow">
 
                 {/* Stepper */}
                 <div className="relative mb-6 w-full max-w-md mx-auto space-y-3">
@@ -300,12 +300,12 @@ export default function JournalPage() {
                 {/* Step Content (Scrollable Area) */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 overflow-y-auto pr-4 -mr-4 hide-scrollbar relative px-4"
+                    className="flex-1 overflow-y-auto hide-scrollbar relative  px-2 md:px-4"
                 >
                     {/* === STEP 1 === */}
                     {currentStep === 1 && (
                         <div className="space-y-8">
-                            <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-[3rem] border border-border/50 bg-card/20 p-8 md:p-12 backdrop-blur-2xl">
+                            <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-[3rem] border border-border/50 bg-card/20 p-4 md:p-8 backdrop-blur-2xl">
                                 {/* Ambient Mood Glow (Optional: Dynamic background color based on mood value) */}
                                 <div
                                     className="absolute inset-0 -z-10 opacity-10 transition-colors duration-700 blur-[100px]"
@@ -373,7 +373,7 @@ export default function JournalPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 m-2">
                                 <div className="flex justify-between items-center">
                                     <label className="block font-semibold text-foreground">
                                         Overthinking Status
@@ -454,7 +454,7 @@ export default function JournalPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 m-2">
                                 <div className="flex justify-between items-center">
                                     <label className="block font-semibold text-foreground">
                                         Stress Level
@@ -532,7 +532,7 @@ export default function JournalPage() {
                                 </div>
                             </div>
 
-                            <div className="group relative space-y-3 rounded-3xl border border-border/50 bg-card/30 p-6 backdrop-blur-md transition-all hover:border-destructive/30">
+                            <div className="group relative space-y-3 rounded-3xl border border-border/50 bg-card/30 p-6 backdrop-blur-md transition-all hover:border-destructive/30 mt-8">
                                 {/* Header Section */}
                                 <div className="flex items-center justify-between px-1">
                                     <div className="space-y-1">
@@ -595,11 +595,11 @@ export default function JournalPage() {
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-4xl mx-auto p-6">
+                            <div className="w-full max-w-4xl mx-auto p-2">
                                 <motion.div
                                     layout
                                     transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                                    className={`flex flex-col md:flex-row items-center justify-center gap-10 min-h-[200px] rounded-[2.5rem] bg-card/20 p-8 backdrop-blur-xl border border-border/40 ${entry.negative_thoughts === 'Yes' ? 'md:justify-between' : 'justify-center'
+                                    className={`flex flex-col md:flex-row items-center justify-center gap-10 min-h-[200px] rounded-[2.5rem] bg-card/20 p-6 backdrop-blur-xl border border-border/40 ${entry.negative_thoughts === 'Yes' ? 'md:justify-between' : 'justify-center'
                                         }`}
                                 >
                                     {/* Left Side: Question & Toggle */}
@@ -896,8 +896,11 @@ export default function JournalPage() {
                                         Time Spent Outdoors
                                     </label>
 
-                                    <div className="text-3xl font-black text-primary mb-2">
-                                        {entry.time_outdoors ?? '0 mins'}
+                                    {/* Centered Text Container with fixed minimum height to prevent jumping */}
+                                    <div className="flex flex-col items-center justify-center text-center min-h-[80px] w-full mb-2">
+                                        <div className="text-3xl font-black text-primary leading-tight break-words">
+                                            {entry.time_outdoors ?? '0 mins'}
+                                        </div>
                                     </div>
 
                                     <div className="w-full max-w-[240px] mb-8">
@@ -932,22 +935,29 @@ export default function JournalPage() {
                                                     onClick={() => {
                                                         const currentStr = entry.time_outdoors ?? "0 mins";
                                                         const mins = parseInt(currentStr) || 0;
-                                                        let updatedStr: string;
+
+                                                        // 1. Get existing tags from inside the parentheses
+                                                        const tagsMatch = currentStr.match(/\((.*)\)/);
+                                                        let currentTags = tagsMatch ? tagsMatch[1].split(',').map(t => t.trim()).filter(Boolean) : [];
+
+                                                        // 2. Add or Remove the tag
                                                         if (isSelected) {
-                                                            updatedStr = currentStr.replace(tag, "").replace(/\(\s+\)/g, "").replace(/\s+/g, " ").trim();
-                                                            if (!updatedStr.includes('mins')) updatedStr = `${mins} mins ${updatedStr}`;
+                                                            currentTags = currentTags.filter(t => t !== tag);
                                                         } else {
-                                                            if (currentStr.includes('(')) {
-                                                                updatedStr = currentStr.replace(')', ` ${tag})`);
-                                                            } else {
-                                                                updatedStr = `${mins} mins (${tag})`;
-                                                            }
+                                                            currentTags.push(tag);
                                                         }
-                                                        handleChange('time_outdoors', updatedStr.trim());
+
+                                                        // 3. Format the final string
+                                                        let updatedStr = `${mins} mins`;
+                                                        if (currentTags.length > 0) {
+                                                            updatedStr += ` (${currentTags.join(', ')})`;
+                                                        }
+
+                                                        handleChange('time_outdoors', updatedStr);
                                                     }}
                                                     className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 ${isSelected
-                                                        ? 'bg-primary text-primary-foreground border-transparent shadow-lg'
-                                                        : 'bg-background/50 text-muted-foreground border border-border hover:border-muted-foreground/50'
+                                                            ? 'bg-primary text-primary-foreground border-transparent shadow-lg'
+                                                            : 'bg-background/50 text-muted-foreground border border-border hover:border-muted-foreground/50'
                                                         }`}
                                                 >
                                                     {tag}
@@ -1220,7 +1230,7 @@ export default function JournalPage() {
                             </div>
 
                             {/* Daily Summary - The Centerpiece */}
-                            <div className="group relative space-y-4 rounded-[2.5rem] border border-border/50 bg-gradient-to-b from-card/50 to-card/20 p-8 backdrop-blur-xl transition-all hover:border-primary/20">
+                            <div className="group relative space-y-4 rounded-[2.5rem] border border-border/50 bg-gradient-to-b from-card/50 to-card/20 p-6 backdrop-blur-xl transition-all hover:border-primary/20">
                                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
                                     <div className="space-y-1">
                                         <h3 className="text-xs font-black uppercase tracking-[0.3em] text-primary">Daily Summary</h3>
