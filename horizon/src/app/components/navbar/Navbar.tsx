@@ -245,16 +245,6 @@ export default function Navbar() {
             ))}
 
             {user && (
-              <Link
-                href="/report"
-                title="Generate Mental Health Report"
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition"
-              >
-                <FileText className="w-5 h-5" />
-              </Link>
-            )}
-
-            {user && (
               <div className="relative">
                 <button
                   onClick={(e) => {
@@ -330,33 +320,36 @@ export default function Navbar() {
           <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-accent rounded-md">✕</button>
         </div>
         <div className="flex flex-col p-4 space-y-2">
-          
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={`p-3 rounded-md text-base transition-colors ${pathname === link.href ? "bg-primary/10 text-primary font-bold" : "hover:bg-accent"
-                }`}
-            >
-              {link.label}
-            </Link>
-            
+  {navLinks.map((link) => (
+    <Link
+      key={link.href}
+      href={link.href}
+      onClick={() => setMobileOpen(false)}
+      className={`p-3 rounded-md text-base transition-colors ${
+        pathname === link.href 
+          ? "bg-primary/10 text-primary font-bold" 
+          : "hover:bg-accent"
+      }`}
+    >
+      {link.label}
+    </Link>
+  ))}
 
-          ))}
-          {user && (
-          <Link
-            href="/report"
-            onClick={() => setMobileOpen(false)}
-            className={`p-3 rounded-md text-base transition-colors text-center ${pathname === "/report"
-                ? "bg-primary/10 text-primary font-bold"
-                : "hover:bg-accent"
-              }`}
-          >
-             Generate Report
-          </Link>
-        )}
-        </div>
+  {/* Only show "Report" as a text link on mobile if logged in */}
+  {user && (
+    <Link
+      href="/report"
+      onClick={() => setMobileOpen(false)}
+      className={`p-3 rounded-md text-base transition-colors ${
+        pathname === "/report" 
+          ? "bg-primary/10 text-primary font-bold" 
+          : "hover:bg-accent"
+      }`}
+    >
+      Report
+    </Link>
+  )}
+</div>
         
 
       </div>

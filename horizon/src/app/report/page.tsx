@@ -73,14 +73,16 @@ export default function ReportPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end">
-                    <GeneratePDFButton />
-                </div>
+               <div className="flex justify-center md:justify-end">
+    <GeneratePDFButton />
+</div>
 
                 {/* Report Preview */}
-                <div className="flex justify-center overflow-x-auto">
-                    <ReportSheet range={range} days={days} />
-                </div>
+                <div className="flex justify-center w-full overflow-hidden">
+    <div className="w-full max-w-full flex justify-center py-4 md:py-0">
+        <ReportSheet range={range} days={days} />
+    </div>
+</div>
 
             </div>
         </div>

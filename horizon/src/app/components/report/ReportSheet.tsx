@@ -48,7 +48,26 @@ export default function ReportSheet({
 
     // Inside ReportSheet component
     return (
-        <div id="report-container">
+        <div id="report-container" className="flex flex-col items-center">
+            {/* We add 'origin-top' and a responsive scale.
+                On mobile: scale(0.4) to 0.6 depending on screen width.
+                On desktop: scale(1).
+            */}
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .report-sheet {
+                        transform: scale(0.45); /* Adjust this value so it fits your mobile screen */
+                        transform-origin: top center;
+                        margin-bottom: -160mm !important; /* Pull up the space lost by scaling */
+                    }
+                }
+                @media (max-width: 480px) {
+                    .report-sheet {
+                        transform: scale(0.38);
+                        margin-bottom: -185mm !important;
+                    }
+                }
+            `}</style>
             {/* PAGE 1 */}
             <div className="report-sheet relative pdf-safe bg-white text-black w-[210mm] h-[297mm] p-10 shadow-xl mb-10 mx-auto">
                 <div className="absolute top-6 right-10 text-xs text-gray-500">Compiled on: {today}</div>

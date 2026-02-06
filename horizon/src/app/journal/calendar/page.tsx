@@ -1,5 +1,3 @@
-// app/journal/history/page.tsx
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,157 +7,50 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
-import { MutatingDots } from "react-loader-spinner";
-import Face from "@/app/components/ui/face";
-import Computer from "@/app/components/lottie/computer";
+import { Activity, Brain, Rocket, PenLine, Sparkles } from "lucide-react";
 import LoadingHorizon from "@/components/LoadingHorizon";
+import Computer from "@/app/components/lottie/computer";
 
-// --- INTERFACE (No changes) ---
+// --- INTERFACE (Updated to match all DB columns) ---
 interface JournalEntry {
+  [key: string]: any; // Allows dynamic access to all columns
   date: string;
   mood: number;
-  sleep_quality?: string;
-  sleep_hours?: number;
-  exercise: string[];
-  deal_breaker?: string;
-  productivity?: number;
-  productivity_comparison?: "Better" | "Same" | "Worse";
-  overthinking?: number;
-  special_day?: string;
-  stress_level?: number;
-  diet_status?: "Okaish" | "Good" | "Bad";
-  stress_triggers?: string;
-  main_challenges?: string;
   daily_summary?: string;
-  social_time?: "Decent" | "Less" | "Zero";
-  negative_thoughts?: "Yes" | "No";
-  negative_thoughts_detail?: string;
-  screen_work?: number;
-  screen_entertainment?: number;
-  caffeine_intake?: string;
-  time_outdoors?: string;
 }
 
-// --- HELPER CARD COMPONENT (CHANGED) ---
-const InfoCard = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
+const InfoCard = ({ title, icon: Icon, children, className = "" }: any) => (
   <motion.div
-    className="bg-card text-card-foreground rounded-xl shadow p-6"
-    variants={{
-      hidden: { opacity: 0, y: 20 },
-      visible: { opacity: 1, y: 0 },
-    }}
-    transition={{ duration: 0.5, ease: "easeOut" }}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={`bg-card/40 backdrop-blur-md border border-border/50 rounded-[2rem] p-6 ${className}`}
   >
-    <h3 className="text-xl font-bold mb-4 text-blue-500">{title}</h3>
-    <div className="space-y-4">{children}</div>
+    <div className="flex items-center gap-3 mb-4">
+      <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500"><Icon size={20} /></div>
+      <h3 className="font-bold text-lg tracking-tight">{title}</h3>
+    </div>
+    <div className="space-y-2">{children}</div>
   </motion.div>
 );
 
-// --- HELPER DATA ROW COMPONENT (CHANGED) ---
-const DataRow = ({ label, value }: { label: string; value: React.ReactNode }) => {
-  if (!value) return null;
+const DataRow = ({ label, value }: { label: string; value: any }) => {
+  if (value === null || value === undefined || value === "") return null;
+  // Format arrays (like exercise) into comma-separated strings
+  const displayValue = Array.isArray(value) ? value.join(", ") : value;
+  
   return (
-    <div>
-      <strong className="text-muted-foreground">{label}:</strong>
-      <span className="ml-2 text-foreground">{value}</span>
+    <div className="flex justify-between items-center py-2 border-b border-border/5 last:border-0">
+      <span className="text-sm text-muted-foreground capitalize">{label.replace(/_/g, " ")}</span>
+      <span className="text-sm font-semibold text-foreground text-right ml-4">{displayValue}</span>
     </div>
   );
 };
 
-// --- 2x2 JOURNAL DISPLAY COMPONENT (CHANGED) ---
-function JournalDisplay({ entry }: { entry: JournalEntry }) {
-  const displayDate = new Date(entry.date + "T12:00:00");
-
-  return (
-    <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 gap-6"
-      initial="hidden"
-      animate="visible"
-      variants={{
-        visible: { transition: { staggerChildren: 0.1 } },
-      }}
-    >
-      <h2 className="text-3xl font-bold mb-2 text-foreground md:col-span-2">
-        Journal for {format(displayDate, "MMMM d, yyyy")}
-      </h2>
-
-      <InfoCard title="Mental Check-in">
-        <DataRow label="Mood" value={`${entry.mood} / 10`} />
-        <DataRow label="Overthinking" value={`${entry.overthinking} / 5`} />
-        <DataRow label="Stress Level" value={`${entry.stress_level} / 10`} />
-        <DataRow label="Stress Triggers" value={entry.stress_triggers} />
-        <DataRow
-          label="Negative Thoughts"
-          value={
-            entry.negative_thoughts === "Yes"
-              ? entry.negative_thoughts_detail || "Yes"
-              : "No"
-          }
-        />
-      </InfoCard>
-
-      <InfoCard title="Health & Activity">
-        <DataRow label="Sleep Quality" value={entry.sleep_quality} />
-        <DataRow label="Sleep Hours" value={entry.sleep_hours} />
-        <DataRow label="Diet Status" value={entry.diet_status} />
-        <DataRow label="Caffeine Intake" value={entry.caffeine_intake} />
-        <DataRow label="Time Outdoors" value={entry.time_outdoors} />
-
-        {entry.exercise && entry.exercise.length > 0 && (
-          <div>
-            <strong className="text-muted-foreground">Exercise:</strong>
-            <ul className="list-disc list-inside ml-4 mt-1">
-              {entry.exercise.map((ex) => (
-                <li key={ex}>{ex}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </InfoCard>
-
-      <InfoCard title="Productivity & Events">
-        <DataRow label="Productivity" value={`${entry.productivity} / 10`} />
-        <DataRow label="Comparison" value={entry.productivity_comparison} />
-        <DataRow label="Social Time" value={entry.social_time} />
-        <DataRow
-          label="Screen (Work)"
-          value={entry.screen_work ? `${entry.screen_work} hours` : null}
-        />
-        <DataRow
-          label="Screen (Fun)"
-          value={
-            entry.screen_entertainment
-              ? `${entry.screen_entertainment} hours`
-              : null
-          }
-        />
-        <DataRow label="Main Challenges" value={entry.main_challenges} />
-      </InfoCard>
-
-      <InfoCard title="Daily Reflection">
-        <DataRow label="Special Day" value={entry.special_day} />
-        <DataRow label="Deal Breaker" value={entry.deal_breaker} />
-        <DataRow
-          label="Daily Summary"
-          value={<p className="italic text-muted-foreground">{entry.daily_summary}</p>}
-        />
-      </InfoCard>
-    </motion.div>
-  );
-}
-
-// --- MAIN PAGE COMPONENT ---
 export default function JournalHistoryPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [journalEntry, setJournalEntry] = useState<JournalEntry | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isMoved, setIsMoved] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const supabase = createClient();
@@ -167,148 +58,185 @@ export default function JournalHistoryPage() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        setUserId(user.id);
-      } else {
-        toast.error("Please log in to view your history.");
-        router.push("/auth");
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+      else router.push("/auth");
     };
-
     getUser();
   }, [router, supabase]);
 
   useEffect(() => {
-    if (!userId || !selectedDate) {
-      setJournalEntry(null);
-      return;
+    if (!userId || !selectedDate) { 
+        setJournalEntry(null); 
+        setIsMoved(false);
+        return; 
     }
 
-    const fetchJournalEntry = async () => {
+    const fetchEntry = async () => {
       setLoading(true);
-      setJournalEntry(null);
       const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      
+      const { data } = await supabase
+        .from("journals")
+        .select("*") // Fetches all columns automatically
+        .eq("user_id", userId)
+        .eq("date", formattedDate)
+        .single();
 
-      try {
-        const { data, error } = await supabase
-          .from("journals")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("date", formattedDate)
-          .single();
-
-        if (error) console.warn("No journal entry found for this date.");
-        if (data) setJournalEntry(data as JournalEntry);
-      } catch (err) {
-        if (err instanceof Error) {
-          console.error("Error fetching journal:", err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
+      setJournalEntry(data as JournalEntry);
+      setLoading(false);
+      setIsMoved(true);
     };
 
-    fetchJournalEntry();
+    fetchEntry();
   }, [selectedDate, userId, supabase]);
 
-  if (!userId) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
-        <LoadingHorizon/>
-      </div>
-    );
-  }
+  if (!userId) return <div className="h-screen flex items-center justify-center"><LoadingHorizon/></div>;
 
   return (
     <LayoutGroup>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <h1 className="text-3xl font-bold pt-16 pb-6 mt-8 text-center flex-shrink-0">
-          Journal History
-        </h1>
+      <div className="min-h-screen bg-background text-foreground pb-20 overflow-hidden">
+        <header className="pt-20 pb-12 text-center px-4">
+            <motion.h1 layout className="text-4xl md:text-5xl font-black tracking-tight mb-3">Journal History</motion.h1>
+            <motion.p layout className="text-muted-foreground">Select a date to unlock your past insights.</motion.p>
+        </header>
 
-        <div className="w-full max-w-7xl mx-auto flex-grow flex flex-col md:flex-row p-4 md:p-6">
-          {/* CALENDAR COLUMN */}
-          <motion.div
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
             layout
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-            className={`w-full ${
-              selectedDate ? "md:w-1/4 md:items-start" : "md:w-full md:items-center"
-            } flex-shrink-0 flex items-center justify-center`}
+            transition={{ type: "spring", stiffness: 150, damping: 25 }}
+            className={`flex flex-col lg:flex-row gap-12 ${!isMoved ? "items-center justify-center" : "items-start"}`}
           >
-            <div className="md:sticky md:top-24">
-              <motion.div
-                layoutId="calendar-wrapper"
-                animate={{ scale: selectedDate ? 1.0 : 1.2 }}
-                className="w-fit scale-[0.86] md:scale-100 origin-top"
+            {/* SIDEBAR / CENTERED CALENDAR */}
+            <motion.aside layout className="flex flex-col items-center flex-shrink-0 w-full lg:w-auto">
+              <motion.div 
+                layout
+                layoutId="calendar-box"
+                animate={{ scale: isMoved ? 1 : 1.05 }}
+                className="bg-card border border-border p-4 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl z-20 relative w-fit mx-auto"
               >
                 <DayPicker
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  className="text-foreground"
                   disabled={{ after: new Date() }}
-                  fixedWeeks
+                  className="modern-day-picker"
                 />
+                
+                <AnimatePresence>
+                    {loading && (
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-card/80 backdrop-blur-sm flex items-center justify-center rounded-[2.5rem] md:rounded-[3rem] z-30"
+                        >
+                            <LoadingHorizon />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
               </motion.div>
 
-              {selectedDate && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="mt-4"
-                >
-                  <Computer size={350} />
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* INFO COLUMN */}
-          <div
-            className={`w-full md:w-3/4 flex-grow md:pl-8 ${
-              selectedDate ? "block" : "hidden"
-            }`}
-          >
-            <div className="w-full md:pb-32">
-              <AnimatePresence mode="wait">
-                {loading && (
-                  <motion.p
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+              <AnimatePresence>
+                {isMoved && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }} 
+                    animate={{ opacity: 0.3, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-center text-muted-foreground pt-10"
+                    className="hidden lg:block mt-10"
                   >
-                    Loading...
-                  </motion.p>
-                )}
-
-                {!loading && !journalEntry && selectedDate && (
-                  <motion.p
-                    key="no-entry"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-center text-muted-foreground pt-10"
-                  >
-                    No journal entry found for{" "}
-                    {format(selectedDate, "MMMM d, yyyy")}.
-                  </motion.p>
-                )}
-
-                {!loading && journalEntry && (
-                  <JournalDisplay key={journalEntry.date} entry={journalEntry} />
+                    <Computer size={280} />
+                  </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-          </div>
+            </motion.aside>
+
+            {/* CONTENT AREA */}
+            <AnimatePresence mode="popLayout">
+              {isMoved && !loading && (
+                <motion.main 
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  className="flex-1 w-full"
+                >
+                  {journalEntry ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                             <h2 className="text-3xl md:text-4xl font-black text-blue-500">
+                                {format(new Date(journalEntry.date + "T12:00:00"), "MMMM d, yyyy")}
+                             </h2>
+                        </div>
+                        
+                        <InfoCard title="Mental Health" icon={Brain}>
+                            <DataRow label="Mood Score" value={`${journalEntry.mood}/10`} />
+                            <DataRow label="Stress Level" value={`${journalEntry.stress_level}/10`} />
+                            <DataRow label="Overthinking" value={`${journalEntry.overthinking}/10`} />
+                            <DataRow label="Negative Thoughts" value={journalEntry.negative_thoughts} />
+                        </InfoCard>
+
+                        <InfoCard title="Physical & Routine" icon={Activity}>
+                            <DataRow label="Sleep" value={`${journalEntry.sleep_hours}h (${journalEntry.sleep_quality})`} />
+                            <DataRow label="Exercise" value={journalEntry.exercise} />
+                            <DataRow label="Caffeine" value={journalEntry.caffeine_intake} />
+                            <DataRow label="Diet" value={journalEntry.diet_status} />
+                        </InfoCard>
+
+                        <InfoCard title="Work & Focus" icon={Rocket}>
+                            <DataRow label="Productivity" value={`${journalEntry.productivity}/10`} />
+                            <DataRow label="VS Yesterday" value={journalEntry.productivity_comparison} />
+                            <DataRow label="Screen (Work)" value={`${journalEntry.screen_work}h`} />
+                            <DataRow label="Screen (Ent.)" value={`${journalEntry.screen_entertainment}h`} />
+                        </InfoCard>
+
+                        <InfoCard title="Context" icon={Sparkles}>
+                            <DataRow label="Special Day" value={journalEntry.special_day} />
+                            <DataRow label="Social Time" value={journalEntry.social_time} />
+                            <DataRow label="Time Outdoors" value={journalEntry.time_outdoors} />
+                            <DataRow label="Deal Breaker" value={journalEntry.deal_breaker} />
+                        </InfoCard>
+
+                        <InfoCard title="Daily Summary" icon={PenLine} className="md:col-span-2">
+                            <p className="text-lg italic font-medium leading-relaxed">
+                                "{journalEntry.daily_summary || "No summary written for this day."}"
+                            </p>
+                            {journalEntry.main_challenges && (
+                                <div className="mt-4 pt-4 border-t border-border/10">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-blue-500">Main Challenge</span>
+                                    <p className="text-sm text-muted-foreground mt-1">{journalEntry.main_challenges}</p>
+                                </div>
+                            )}
+                        </InfoCard>
+                    </div>
+                  ) : (
+                    <div className="text-center py-20 border-2 border-dashed border-border/50 rounded-[3rem]">
+                      <p className="text-muted-foreground text-lg">No record found for this date.</p>
+                      <button onClick={() => setSelectedDate(undefined)} className="mt-4 text-blue-500 font-bold">Pick another</button>
+                    </div>
+                  )}
+                </motion.main>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .modern-day-picker {
+            --rdp-cell-size: 50px;
+            --rdp-accent-color: #3b82f6;
+            --rdp-background-color: #3b82f615;
+            margin: 0;
+        }
+        /* MOBILE FIX: Reduce size so it doesn't cut off */
+        @media (max-width: 640px) {
+            .modern-day-picker {
+                --rdp-cell-size: 38px; 
+            }
+        }
+        .rdp-day_selected { font-weight: 800; border-radius: 12px !important; }
+        .rdp-button:hover:not([disabled]) { border-radius: 12px; background-color: rgba(59, 130, 246, 0.05); }
+      `}</style>
     </LayoutGroup>
   );
 }
