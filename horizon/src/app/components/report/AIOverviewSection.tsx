@@ -55,7 +55,7 @@ export default function AIOverviewSection({ days }: { days: number }) {
   return (
     <section>
       <h2 className="text-xl font-bold mb-4">
-        AI Mental Health Overview <span className="text-sm font-normal">(Zony's comment)</span>
+        AI Mental Health Overview <span className="text-sm font-normal">(Horizon's comment)</span>
       </h2>
 
       {loading ? (

@@ -263,10 +263,10 @@ rounded-full bg-background shadow transition-transform duration-300"
                                     // ... intro screen ...
                                     <div className="flex flex-col justify-center items-center h-full text-center px-6">
                                         <h1 className="text-5xl sm:text-6xl font-semibold tracking-tight leading-tight">
-                                            Hey, I’m <span className="text-primary ai-glow-toggle">Zony</span>
+                                            Hey, I'm <span className="text-primary ai-glow-toggle">Horizon</span>
                                         </h1>
                                         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                                            I track your mood, sleep, stress & habits — let’s explore.
+                                            I track your mood, sleep, stress & habits,  let's explore!
                                         </p>
                                     </div>
                                 ) : (
@@ -279,7 +279,7 @@ rounded-full bg-background shadow transition-transform duration-300"
                                                     </div>
                                                 </div>
                                             ))}
-                                            {chatLoading && <p className="text-xs text-muted-foreground">Zony is thinking…</p>}
+                                            {chatLoading && <p className="text-xs text-muted-foreground">Horizon is thinking…</p>}
                                             <div ref={messagesEndRef} />
                                         </div>
                                     </>

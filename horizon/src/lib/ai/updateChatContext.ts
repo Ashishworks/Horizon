@@ -1,4 +1,4 @@
-import { ChatContext } from "./chatTypes";
+import { ChatContext, ChatMessage } from "./chatTypes";
 
 export function updateChatContext(
   prev: ChatContext = {},
@@ -6,8 +6,28 @@ export function updateChatContext(
   aiReply: string
 ): ChatContext {
   const text = userMessage.toLowerCase();
-  const next: ChatContext = { ...prev };
+  
+  // 1. Get existing messages or empty array
+  const previousMessages = prev.messages || [];
 
+  // 2. Explicitly type the new array as ChatMessage[] 
+  // to satisfy the literal type requirements for "role"
+  const updatedMessages: ChatMessage[] = [
+    ...previousMessages,
+    { role: "user", content: userMessage },
+    { role: "assistant", content: aiReply },
+  ];
+
+  // 3. Keep only the last 2 exchanges (4 messages total)
+  const trimmedMessages = updatedMessages.slice(-4);
+
+  const next: ChatContext = { 
+    ...prev, 
+    messages: trimmedMessages 
+  };
+
+  /* --- Focus & Metadata Logic --- */
+  
   // focus detection
   if (text.includes("sleep")) next.focus = "sleep";
   else if (text.includes("stress")) next.focus = "stress";
