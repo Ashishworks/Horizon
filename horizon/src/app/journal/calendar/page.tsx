@@ -7,13 +7,13 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Activity, Brain, Rocket, PenLine, Sparkles } from "lucide-react";
-import LoadingHorizon from "@/components/LoadingHorizon";
+import { Activity, Brain, Rocket, PenLine, Sparkles, Loader2 } from "lucide-react";
 import Computer from "@/app/components/lottie/computer";
+import LoadingHorizon from "@/components/LoadingHorizon";
 
-// --- INTERFACE (Updated to match all DB columns) ---
+// --- INTERFACE ---
 interface JournalEntry {
-  [key: string]: any; // Allows dynamic access to all columns
+  [key: string]: any; 
   date: string;
   mood: number;
   daily_summary?: string;
@@ -35,7 +35,6 @@ const InfoCard = ({ title, icon: Icon, children, className = "" }: any) => (
 
 const DataRow = ({ label, value }: { label: string; value: any }) => {
   if (value === null || value === undefined || value === "") return null;
-  // Format arrays (like exercise) into comma-separated strings
   const displayValue = Array.isArray(value) ? value.join(", ") : value;
   
   return (
@@ -78,7 +77,7 @@ export default function JournalHistoryPage() {
       
       const { data } = await supabase
         .from("journals")
-        .select("*") // Fetches all columns automatically
+        .select("*")
         .eq("user_id", userId)
         .eq("date", formattedDate)
         .single();
@@ -91,11 +90,15 @@ export default function JournalHistoryPage() {
     fetchEntry();
   }, [selectedDate, userId, supabase]);
 
-  if (!userId) return <div className="h-screen flex items-center justify-center"><LoadingHorizon/></div>;
+  if (!userId) return (
+    <div className="h-screen flex items-center justify-center">
+        <LoadingHorizon/>
+    </div>
+  );
 
   return (
     <LayoutGroup>
-      <div className="min-h-screen bg-background text-foreground pb-20 overflow-hidden">
+      <div className="min-h-screen bg-background text-foreground pb-20">
         <header className="pt-20 pb-12 text-center px-4">
             <motion.h1 layout className="text-4xl md:text-5xl font-black tracking-tight mb-3">Journal History</motion.h1>
             <motion.p layout className="text-muted-foreground">Select a date to unlock your past insights.</motion.p>
@@ -105,22 +108,27 @@ export default function JournalHistoryPage() {
           <motion.div 
             layout
             transition={{ type: "spring", stiffness: 150, damping: 25 }}
-            className={`flex flex-col lg:flex-row gap-12 ${!isMoved ? "items-center justify-center" : "items-start"}`}
+            className={`flex flex-col lg:flex-row gap-12 ${!isMoved ? "items-center justify-center" : "items-start justify-start"}`}
           >
-            {/* SIDEBAR / CENTERED CALENDAR */}
-            <motion.aside layout className="flex flex-col items-center flex-shrink-0 w-full lg:w-auto">
+            {/* SIDEBAR / CALENDAR */}
+            <motion.aside 
+                layout 
+                className={`flex flex-col items-center w-full lg:w-auto 
+                  ${isMoved ? "md:sticky md:top-24 md:self-start z-30" : ""}`}
+            >
               <motion.div 
                 layout
                 layoutId="calendar-box"
                 animate={{ scale: isMoved ? 1 : 1.05 }}
-                className="bg-card border border-border p-4 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl z-20 relative w-fit mx-auto"
+                /* Added w-full max-w-fit and mx-auto for better centering on mobile */
+                className="bg-card border border-border p-4 md:p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-xl relative w-full max-w-fit mx-auto overflow-hidden"
               >
                 <DayPicker
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={{ after: new Date() }}
-                  className="modern-day-picker"
+                  className="modern-day-picker mx-auto"
                 />
                 
                 <AnimatePresence>
@@ -131,7 +139,7 @@ export default function JournalHistoryPage() {
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-card/80 backdrop-blur-sm flex items-center justify-center rounded-[2.5rem] md:rounded-[3rem] z-30"
                         >
-                            <LoadingHorizon />
+                            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -141,11 +149,11 @@ export default function JournalHistoryPage() {
                 {isMoved && (
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.8 }} 
-                    animate={{ opacity: 0.3, scale: 1 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     className="hidden lg:block mt-10"
                   >
-                    <Computer size={280} />
+                    <Computer size={300} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -227,11 +235,15 @@ export default function JournalHistoryPage() {
             --rdp-accent-color: #3b82f6;
             --rdp-background-color: #3b82f615;
             margin: 0;
+            display: flex;
+            justify-content: center;
         }
-        /* MOBILE FIX: Reduce size so it doesn't cut off */
         @media (max-width: 640px) {
             .modern-day-picker {
                 --rdp-cell-size: 38px; 
+            }
+            .rdp-months {
+                justify-content: center;
             }
         }
         .rdp-day_selected { font-weight: 800; border-radius: 12px !important; }
