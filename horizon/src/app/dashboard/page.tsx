@@ -131,39 +131,39 @@ export default function DashboardPage() {
 
 
   // --- 2. INITIALIZED SUPABASE AND ROUTER ---
- const supabase = createClient();
+  const supabase = createClient();
   const router = useRouter();
 
   // --- 3. IMPLEMENTED DATA FETCHING ---
   useEffect(() => {
-  const fetchEntries = async () => {
-    try {
-      setLoading(true);
+    const fetchEntries = async () => {
+      try {
+        setLoading(true);
 
-      const res = await fetch("/api/journals", { cache: "no-store" });
+        const res = await fetch("/api/journals", { cache: "no-store" });
 
-      if (res.status === 401) {
-        router.push("/auth");
-        return;
+        if (res.status === 401) {
+          router.push("/auth");
+          return;
+        }
+
+        const json = await res.json();
+
+        if (!res.ok) {
+          console.error(json.error || "Failed to fetch journals");
+          return;
+        }
+
+        setEntries(json.entries as JournalEntry[]);
+      } catch (err) {
+        console.error("Fetch journals error:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const json = await res.json();
-
-      if (!res.ok) {
-        console.error(json.error || "Failed to fetch journals");
-        return;
-      }
-
-      setEntries(json.entries as JournalEntry[]);
-    } catch (err) {
-      console.error("Fetch journals error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchEntries();
-}, [router]);
+    fetchEntries();
+  }, [router]);
 
 
   // --- 4. IMPLEMENTED DATA PROCESSING (useMemo) ---
@@ -543,7 +543,7 @@ export default function DashboardPage() {
                 theme={nivoDarkTheme}
 
                 /* ===== LAYOUT ===== */
-                margin={{ top: 90, right: 40, bottom: 80, left: 60 }}   // ✅ more top space
+                margin={{ top: 90, right: 40, bottom: 110, left: 60 }}   // ✅ more top space
 
                 /* ===== SCALES ===== */
                 xScale={{ type: 'point' }}
@@ -558,11 +558,26 @@ export default function DashboardPage() {
                 /* ===== AXES ===== */
                 axisBottom={{
                   tickSize: 5,
-                  tickPadding: 6,
-                  tickRotation: 0,
+                  tickPadding: 10,
+                  tickRotation: -45, // Rotates labels to prevent overlap
+
+                  /* DYNAMIC TICK FILTERING:
+                    If data is large (e.g., > 14 days), show only every 5th label.
+                    Otherwise, show all labels.
+                  */
+                  tickValues: screenTimeBarData.length > 14 ? "every 5 days" : undefined,
+
+                  format: (value) => {
+                    // Shortens "2024-05-01" to "May 1" to save space
+                    return new Date(value).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    });
+                  },
+
                   legend: 'Date',
-                  legendOffset: 36,
                   legendPosition: 'middle',
+                  legendOffset: 70, // Increased offset so it doesn't collide with rotated ticks
                 }}
                 axisLeft={{
                   tickSize: 5,
@@ -660,7 +675,7 @@ export default function DashboardPage() {
               theme={nivoDarkTheme}
               keys={['Work', 'Entertainment']}
               indexBy="date"
-              margin={{ top: 90, right: 40, bottom: 80, left: 60 }}
+              margin={{ top: 90, right: 40, bottom: 110, left: 60 }}
               padding={0.4}
               groupMode="stacked"
               valueScale={{ type: 'linear' }}
@@ -670,10 +685,19 @@ export default function DashboardPage() {
               axisBottom={{
                 tickSize: 5,
                 tickPadding: 6,
-                tickRotation: 0,
+                tickRotation: -45, // Tilt for better fit
+                // Use a number to limit the total labels shown (e.g., max 10 ticks)
+                tickValues: screenTimeBarData.length > 20 ? 10 : undefined,
+                format: (value) => {
+                  // Show shorter date format
+                  return new Date(value).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                },
                 legend: 'Date',
                 legendPosition: 'middle',
-                legendOffset: 36,
+                legendOffset: 60, // Pushed down to avoid hitting rotated labels
               }}
               axisLeft={{
                 tickSize: 5,
@@ -750,7 +774,7 @@ export default function DashboardPage() {
           <MoodOverviewHorizontal />
 
         </div>
-        <RootCauseInsightCard  entries={filteredEntries} />
+        <RootCauseInsightCard entries={filteredEntries} />
         <SecondaryImpactInsight entries={filteredEntries} />
         <GentleSuggestionCard entries={filteredEntries} />
       </div>

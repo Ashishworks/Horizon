@@ -35,7 +35,7 @@ export default function SecondaryImpactInsightCard({ entries }: Props) {
     const sleepDiff =
       goodSleep.length && poorSleep.length
         ? avg(goodSleep.map(e => e.mood)) -
-          avg(poorSleep.map(e => e.mood))
+        avg(poorSleep.map(e => e.mood))
         : 0;
 
     // ─── Exercise ───────────────────────────
@@ -49,7 +49,7 @@ export default function SecondaryImpactInsightCard({ entries }: Props) {
     const exerciseDiff =
       exerciseDays.length && noExerciseDays.length
         ? avg(exerciseDays.map(e => e.mood)) -
-          avg(noExerciseDays.map(e => e.mood))
+        avg(noExerciseDays.map(e => e.mood))
         : 0;
 
     // ─── Screen Time ────────────────────────
@@ -66,7 +66,7 @@ export default function SecondaryImpactInsightCard({ entries }: Props) {
     const screenDiff =
       highScreen.length && lowScreen.length
         ? avg(lowScreen.map(e => e.mood)) -
-          avg(highScreen.map(e => e.mood))
+        avg(highScreen.map(e => e.mood))
         : 0;
 
     const factors = [
@@ -125,11 +125,12 @@ export default function SecondaryImpactInsightCard({ entries }: Props) {
 
         {insight.strength && (
           <span
-            className={`text-xs px-2 py-1 rounded-full font-medium ${
-              insight.strength === 'Moderate'
+            className={`text-xs px-2 py-1 rounded-full font-medium ${insight.strength === 'Moderate'
                 ? 'bg-yellow-500/10 text-yellow-500'
-                : 'bg-muted text-muted-foreground'
-            }`}
+                : insight.strength === 'Low'
+                  ? 'bg-blue-500/10 text-blue-500' // Added color for Low
+                  : 'bg-muted text-muted-foreground'
+              }`}
           >
             {insight.strength} impact
           </span>

@@ -150,19 +150,53 @@ export default function NearbyHelpModal({
                             onClick={handleSearch}
                             disabled={loading}
                             className="
-        mt-2
-        px-7 py-3
-        rounded-xl
-        bg-primary
-        text-primary-foreground
-        font-medium
-        transition
-        hover:scale-[1.02]
-        active:scale-[0.97]
-        disabled:opacity-60
-      "
+    group relative flex items-center justify-center gap-3 mt-4 px-8 py-4
+    rounded-2xl font-bold text-sm uppercase tracking-widest
+    bg-primary text-primary-foreground
+    transition-all duration-300 ease-in-out
+    hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)]
+    active:scale-95 disabled:opacity-80 disabled:cursor-not-allowed
+  "
                         >
-                            {loading ? 'Finding nearby support…' : 'Search near your area'}
+                            {loading ? (
+                                <>
+                                    {/* The Rotating Loader */}
+                                    <svg
+                                        className="animate-spin h-5 w-5 text-current"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        ></circle>
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        ></path>
+                                    </svg>
+                                    <span className="animate-pulse">Finding nearby support...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Search near your area</span>
+                                    {/* Subtle arrow that appears on hover */}
+                                    <svg
+                                        className="w-5 h-5 opacity-70 transition-transform group-hover:translate-x-1"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </>
+                            )}
                         </button>
 
                     </div>
