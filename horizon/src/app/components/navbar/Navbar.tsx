@@ -245,6 +245,20 @@ export default function Navbar() {
             ))}
 
             {user && (
+  <Link
+    href="/report"
+    className={`flex items-center justify-center p-2 rounded-md transition-colors ${
+      pathname === "/report"
+        ? "text-primary bg-primary/10"
+        : "text-muted-foreground hover:text-foreground hover:bg-accent"
+    }`}
+    title="Report"
+  >
+    <FileText className="w-5 h-5" />
+  </Link>
+)}
+
+            {user && (
               <div className="relative">
                 <button
                   onClick={(e) => {

@@ -78,8 +78,9 @@ export default function ReportPage() {
 </div>
 
                 {/* Report Preview */}
-                <div className="flex justify-center w-full overflow-hidden">
-    <div className="w-full max-w-full flex justify-center py-4 md:py-0">
+                {/* Change the wrapper in ReportPage.tsx */}
+<div className="w-full overflow-x-auto pb-8 flex justify-start md:justify-center">
+    <div className="inline-block min-w-[210mm] md:min-w-0">
         <ReportSheet range={range} days={days} />
     </div>
 </div>
