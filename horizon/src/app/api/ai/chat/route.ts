@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       .join("\n");
 
     const prompt = `
-You are Horizon, a calm and empathetic conversational AI.
+You are Zony, a calm and empathetic conversational AI.
 
 Behavior:
 - Respond naturally and concisely.
